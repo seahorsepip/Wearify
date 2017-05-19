@@ -1,10 +1,10 @@
-package com.seapip.thomas.wearify;
+package com.seapip.thomas.wearify.Wearify;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 
-public interface WearifyService {
+public interface Service {
     @GET("token")
     Call<Token> getToken();
     @GET("token/{token}")

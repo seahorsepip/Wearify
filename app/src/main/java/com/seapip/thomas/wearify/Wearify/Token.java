@@ -1,4 +1,6 @@
-package com.seapip.thomas.wearify;
+package com.seapip.thomas.wearify.Wearify;
+
+import java.util.Calendar;
 
 public class Token {
     public String token;
@@ -9,4 +11,5 @@ public class Token {
     public int expires_in;
     public String refresh_token;
     public String scope;
+    public Calendar date;
 }

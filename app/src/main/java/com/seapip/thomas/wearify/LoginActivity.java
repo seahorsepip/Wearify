@@ -2,7 +2,6 @@ package com.seapip.thomas.wearify;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -14,8 +13,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.preference.PreferenceManager;
 import android.support.wearable.activity.WearableActivity;
+import android.util.Log;
 import android.view.Display;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -26,16 +25,15 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import com.seapip.thomas.wearify.Wearify.Token;
+import com.seapip.thomas.wearify.Wearify.Manager;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.prefs.Preferences;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class LoginActivity extends WearableActivity {
 
@@ -58,21 +56,18 @@ public class LoginActivity extends WearableActivity {
         mQRCodeView = (ImageView) findViewById(R.id.QRCode);
         mLogo = getDrawable(R.drawable.ic_logo);
         mLogoBurnIn = getDrawable(R.drawable.ic_logo_burn_in);
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://wearify.seapip.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        final WearifyService service = retrofit.create(WearifyService.class);
+        Manager.init(getApplicationContext());
         final Handler handler = new Handler();
         final Runnable qrCodeService = new Runnable() {
             @Override
             public void run() {
-                final Call<Token> call = service.getToken();
+                final Call<Token> call = Manager.getService().getToken();
                 call.enqueue(new Callback<Token>() {
                     @Override
                     public void onResponse(Call<Token> call, Response<Token> response) {
                         if (response.isSuccessful()) {
                             Token token = response.body();
+                            Log.d("WEARIFY", token.toString());
                             if (token != null) {
                                 mToken = token.token;
                                 mKey = token.key;
@@ -93,7 +88,7 @@ public class LoginActivity extends WearableActivity {
         final Runnable loginService = new Runnable() {
             @Override
             public void run() {
-                Call<Token> call = service.getToken(mToken, mKey);
+                Call<Token> call = Manager.getService().getToken(mToken, mKey);
                 call.enqueue(new Callback<Token>() {
                     @Override
                     public void onResponse(Call<Token> call, Response<Token> response) {
@@ -101,7 +96,7 @@ public class LoginActivity extends WearableActivity {
                             Token token = response.body();
                             if (token != null && token.access_token != null) {
                                 handler.removeCallbacksAndMessages(null);
-                                new TokenManager(LoginActivity.this).setToken(token);
+                                Manager.setToken(token);
                                 Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                                 v.vibrate(500);
                                 Toast.makeText(getApplicationContext(), "Logged in!", Toast.LENGTH_LONG).show();

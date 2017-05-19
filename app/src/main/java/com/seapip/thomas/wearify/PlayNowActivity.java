@@ -3,19 +3,13 @@ package com.seapip.thomas.wearify;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 
-import com.spotify.sdk.android.authentication.AuthenticationClient;
-import com.spotify.sdk.android.authentication.AuthenticationRequest;
-import com.spotify.sdk.android.authentication.AuthenticationResponse;
+import com.seapip.thomas.wearify.Wearify.Manager;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Connectivity;
@@ -30,7 +24,7 @@ import com.spotify.sdk.android.player.SpotifyPlayer;
 public class PlayNowActivity extends Activity implements
         Player.NotificationCallback, ConnectionStateCallback {
 
-    private static final String TEST_SONG_URI = "spotify:user:myplay.com:playlist:11X76c5MphTG1VgKmC7hgb";
+    private static final String TEST_SONG_URI = "spotify:track:2habSXqcJGExM6JJyskY7O";
     private static final String CLIENT_ID = "59fb3493386b4a6f8db44f3df59e5a34";
     private SpotifyPlayer mPlayer;
     private PlaybackState mCurrentPlaybackState;
@@ -41,12 +35,14 @@ public class PlayNowActivity extends Activity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        onAuthenticationComplete(new TokenManager(this).getToken());
+        String token = Manager.getToken();
+        onAuthenticationComplete(token);
     }
 
     private void onAuthenticationComplete(String token) {
         // Once we have obtained an authorization token, we can proceed with creating a Player.
         if (mPlayer == null) {
+            Log.d("WEARIFY", token);
             Config playerConfig = new Config(getApplicationContext(), token, CLIENT_ID);
             // Since the Player is a static singleton owned by the Spotify class, we pass "this" as
             // the second argument in order to refcount it properly. Note that the method
@@ -56,9 +52,9 @@ public class PlayNowActivity extends Activity implements
             mPlayer = Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
                 @Override
                 public void onInitialized(SpotifyPlayer player) {
-                    mPlayer.setConnectivityStatus(null, getNetworkConnectivity(PlayNowActivity.this));
-                    mPlayer.addNotificationCallback(PlayNowActivity.this);
-                    mPlayer.addConnectionStateCallback(PlayNowActivity.this);
+                    player.setConnectivityStatus(null, getNetworkConnectivity(PlayNowActivity.this));
+                    player.addNotificationCallback(PlayNowActivity.this);
+                    player.addConnectionStateCallback(PlayNowActivity.this);
                     //Log.d("WEARIFY", mPlayer.getMetadata().toString());
                     // Trigger UI refresh
                 }
