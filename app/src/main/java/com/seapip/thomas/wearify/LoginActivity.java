@@ -1,5 +1,8 @@
 package com.seapip.thomas.wearify;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,9 +12,13 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.support.wearable.activity.WearableActivity;
 import android.view.Display;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -22,6 +29,7 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.prefs.Preferences;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -46,8 +54,7 @@ public class LoginActivity extends WearableActivity {
         Display display = getWindowManager().getDefaultDisplay();
         final Point size = new Point();
         display.getSize(size);
-        int inset = (size.x - (int) Math.sqrt(size.x * size.x / 2)) / 2;
-        mSize = getResources().getConfiguration().isScreenRound() ? size.x / 3 * 2 : size.x - size.x / 10;
+        mSize = getResources().getConfiguration().isScreenRound() ? size.x / 3 * 2 : size.x - size.x / 20;
         mQRCodeView = (ImageView) findViewById(R.id.QRCode);
         mLogo = getDrawable(R.drawable.ic_logo);
         mLogoBurnIn = getDrawable(R.drawable.ic_logo_burn_in);
@@ -55,62 +62,103 @@ public class LoginActivity extends WearableActivity {
                 .baseUrl("https://wearify.seapip.com/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
-        WearifyService service = retrofit.create(WearifyService.class);
-        Call<Token> call = service.getToken();
-        call.enqueue(new Callback<Token>() {
+        final WearifyService service = retrofit.create(WearifyService.class);
+        final Handler handler = new Handler();
+        final Runnable qrCodeService = new Runnable() {
             @Override
-            public void onResponse(Call<Token> call, Response<Token> response) {
-                if (response.isSuccessful()) {
-                    Token token = response.body();
-                    if (token != null) {
-                        mToken = token.token;
-                        mKey = token.key;
-                        drawQRCode(false);
+            public void run() {
+                final Call<Token> call = service.getToken();
+                call.enqueue(new Callback<Token>() {
+                    @Override
+                    public void onResponse(Call<Token> call, Response<Token> response) {
+                        if (response.isSuccessful()) {
+                            Token token = response.body();
+                            if (token != null) {
+                                mToken = token.token;
+                                mKey = token.key;
+                                drawQRCode(false);
+                            }
+                        }
                     }
-                }
-            }
 
+                    @Override
+                    public void onFailure(Call<Token> call, Throwable t) {
+
+                    }
+                });
+                handler.postDelayed(this, 600000);
+            }
+        };
+        qrCodeService.run();
+        final Runnable loginService = new Runnable() {
             @Override
-            public void onFailure(Call<Token> call, Throwable t) {
+            public void run() {
+                Call<Token> call = service.getToken(mToken, mKey);
+                call.enqueue(new Callback<Token>() {
+                    @Override
+                    public void onResponse(Call<Token> call, Response<Token> response) {
+                        if (response.isSuccessful()) {
+                            Token token = response.body();
+                            if (token != null && token.access_token != null) {
+                                handler.removeCallbacksAndMessages(null);
+                                new TokenManager(LoginActivity.this).setToken(token);
+                                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                                v.vibrate(500);
+                                Toast.makeText(getApplicationContext(), "Logged in!", Toast.LENGTH_LONG).show();
+                                Intent intent = new Intent(LoginActivity.this, PlayNowActivity.class);
+                                finish();
+                                startActivity(intent);
+                            }
+                        }
+                    }
 
+                    @Override
+                    public void onFailure(Call<Token> call, Throwable t) {
+                    }
+                });
+                handler.postDelayed(this, 5000);
             }
-        });
+        };
+        loginService.run();
     }
 
     private void drawQRCode(boolean ambient) {
-        String loginUri = "https://wearify.seapip.com/login/" + mToken + "/" + mKey;
-        QRCodeWriter writer = new QRCodeWriter();
-        try {
-            Map<EncodeHintType, Object> hints = new HashMap<EncodeHintType, Object>(3);
-            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
-            hints.put(EncodeHintType.MARGIN, 2); /* default = 4 */
-            hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M); /* default = 4 */
-            BitMatrix bitMatrix = writer.encode(loginUri, BarcodeFormat.QR_CODE,
-                    mSize, mSize, hints);
-            Bitmap bmp = Bitmap.createBitmap(mSize, mSize, Bitmap.Config.ARGB_8888);
-            for (int x = 0; x < bitMatrix.getWidth(); x++) {
-                for (int y = 0; y < bitMatrix.getHeight(); y++) {
-                    boolean bit = bitMatrix.get(x, y);
-                    if (ambient && bit && !(x < 1 || y < 1
-                            || x > bitMatrix.getWidth() - 1 || y > bitMatrix.getHeight() - 1)) {
-                        bit = !(bitMatrix.get(x - 1, y) && bitMatrix.get(x + 1, y)
-                                && bitMatrix.get(x, y - 1) && bitMatrix.get(x, y + 1));
+        if(mToken != null) {
+            String loginUri = "https://wearify.seapip.com/login/" + mToken + "/" + mKey;
+            QRCodeWriter writer = new QRCodeWriter();
+            try {
+                Map<EncodeHintType, Object> hints = new HashMap<EncodeHintType, Object>(3);
+                hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+                hints.put(EncodeHintType.MARGIN, 0);
+                hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
+                BitMatrix bitMatrix = writer.encode(loginUri, BarcodeFormat.QR_CODE,
+                        mSize, mSize, hints);
+                Bitmap bmp = Bitmap.createBitmap(mSize, mSize, Bitmap.Config.ARGB_8888);
+                int color = ambient ? Color.WHITE : Color.parseColor("#999999");
+                for (int x = 0; x < bitMatrix.getWidth(); x++) {
+                    for (int y = 0; y < bitMatrix.getHeight(); y++) {
+                        boolean bit = bitMatrix.get(x, y);
+                        if (ambient && bit && !(x < 1 || y < 1
+                                || x > bitMatrix.getWidth() - 1 || y > bitMatrix.getHeight() - 1)) {
+                            bit = !(bitMatrix.get(x - 1, y) && bitMatrix.get(x + 1, y)
+                                    && bitMatrix.get(x, y - 1) && bitMatrix.get(x, y + 1));
+                        }
+                        bmp.setPixel(x, y, bit ? color : Color.TRANSPARENT);
                     }
-                    bmp.setPixel(x, y, bit ? Color.WHITE : Color.TRANSPARENT);
                 }
-            }
-            Paint paint = new Paint();
-            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-            Canvas canvas = new Canvas(bmp);
-            canvas.drawCircle(mSize / 2, mSize / 2, mSize / 8, paint);
-            Drawable logo = ambient ? mLogoBurnIn : mLogo;
-            logo.setBounds(mSize / 2 - mSize / 10, mSize / 2 - mSize / 10,
-                    mSize / 2 + mSize / 10, mSize / 2 + mSize / 10);
-            logo.draw(canvas);
-            mQRCodeView.setImageBitmap(bmp);
+                Paint paint = new Paint();
+                paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+                Canvas canvas = new Canvas(bmp);
+                canvas.drawCircle(mSize / 2, mSize / 2, mSize / 8, paint);
+                Drawable logo = ambient ? mLogoBurnIn : mLogo;
+                logo.setBounds(mSize / 2 - mSize / 10, mSize / 2 - mSize / 10,
+                        mSize / 2 + mSize / 10, mSize / 2 + mSize / 10);
+                logo.draw(canvas);
+                mQRCodeView.setImageBitmap(bmp);
 
-        } catch (WriterException e) {
-            e.printStackTrace();
+            } catch (WriterException e) {
+                e.printStackTrace();
+            }
         }
     }
 
