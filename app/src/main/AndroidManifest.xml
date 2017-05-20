@@ -30,7 +30,8 @@
         </activity>
         <activity
             android:name=".PlayNowActivity"
-            android:label="@string/app_name"></activity>
+            android:label="@string/app_name"
+            android:launchMode="singleTop"></activity>
     </application>
 
 </manifest>

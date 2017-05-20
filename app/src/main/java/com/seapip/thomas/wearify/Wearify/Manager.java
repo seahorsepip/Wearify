@@ -5,10 +5,10 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import java.io.IOException;
 import java.util.Calendar;
 
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -33,38 +33,54 @@ public class Manager {
 
     static public String getToken() {
         return mToken.access_token;
-        /*
+    }
+
+    static public void onToken(Runnable runnable) {
         if (mToken == null) {
             mToken = new Token();
             mToken.refresh_token = mPreferences.getString("refresh_token", null);
+            if (mToken.refresh_token == null) {
+                Log.d("WEARIFY", "Uhh ohh??!");
+                return;
+            }
         }
         if (mToken.date != null && Calendar.getInstance().before(mToken.date)) {
-            return mToken.access_token;
+            runnable.run();
+            return;
         }
-        refresh();
-        return getToken();
-        */
+        refresh(runnable);
     }
 
     static public void setToken(Token token) {
         mToken = token;
         mToken.date = Calendar.getInstance();
         mToken.date.add(Calendar.SECOND, mToken.expires_in);
-        mPreferences.edit().putString("refresh_token", mToken.refresh_token).apply();
+        mPreferences.edit().putString("refresh_token", mToken.refresh_token).commit();
     }
 
-    static private void refresh() {
+    static private void refresh(final Runnable runnable) {
         Call<Token> call = mService.getToken(mToken.refresh_token);
-        try {
-            Response<Token> response = call.execute();
-            if (response.isSuccessful()) {
-                setToken(response.body());
-            } else {
-                //Wait 5 seconds before trying again
-                Thread.sleep(5000);
-                Log.d("WEARIFY", "Failed to refresh token!");
+        call.enqueue(new Callback<Token>() {
+            @Override
+            public void onResponse(Call<Token> call, Response<Token> response) {
+                if (response.isSuccessful()) {
+                    Log.d("WEARIFY", "Maybe?");
+                    setToken(response.body());
+                    onToken(runnable);
+                } else {
+                    //Wait 5 seconds before trying again
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                    }
+                    Log.d("WEARIFY", "Failed to refresh token!");
+                }
             }
-        } catch (IOException | InterruptedException e) {
-        }
+
+            @Override
+            public void onFailure(Call<Token> call, Throwable t) {
+
+            }
+        });
     }
 }

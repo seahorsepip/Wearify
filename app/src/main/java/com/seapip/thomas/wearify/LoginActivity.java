@@ -57,6 +57,17 @@ public class LoginActivity extends WearableActivity {
         mLogo = getDrawable(R.drawable.ic_logo);
         mLogoBurnIn = getDrawable(R.drawable.ic_logo_burn_in);
         Manager.init(getApplicationContext());
+        Manager.onToken(new Runnable() {
+            @Override
+            public void run() {
+                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                v.vibrate(500);
+                Toast.makeText(getApplicationContext(), "Logged in!", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(LoginActivity.this, PlayNowActivity.class);
+                finish();
+                startActivity(intent);
+            }
+        });
         final Handler handler = new Handler();
         final Runnable qrCodeService = new Runnable() {
             @Override
