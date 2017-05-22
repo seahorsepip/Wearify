@@ -48,7 +48,7 @@ public class LoginActivity extends WearableActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setAmbientEnabled();
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_login);
         Display display = getWindowManager().getDefaultDisplay();
         final Point size = new Point();
         display.getSize(size);
@@ -57,17 +57,6 @@ public class LoginActivity extends WearableActivity {
         mLogo = getDrawable(R.drawable.ic_logo);
         mLogoBurnIn = getDrawable(R.drawable.ic_logo_burn_in);
         Manager.init(getApplicationContext());
-        Manager.onToken(new Runnable() {
-            @Override
-            public void run() {
-                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                v.vibrate(500);
-                Toast.makeText(getApplicationContext(), "Logged in!", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(LoginActivity.this, PlayNowActivity.class);
-                finish();
-                startActivity(intent);
-            }
-        });
         final Handler handler = new Handler();
         final Runnable qrCodeService = new Runnable() {
             @Override
@@ -95,7 +84,6 @@ public class LoginActivity extends WearableActivity {
                 handler.postDelayed(this, 600000);
             }
         };
-        qrCodeService.run();
         final Runnable loginService = new Runnable() {
             @Override
             public void run() {
@@ -111,7 +99,7 @@ public class LoginActivity extends WearableActivity {
                                 Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                                 v.vibrate(500);
                                 Toast.makeText(getApplicationContext(), "Logged in!", Toast.LENGTH_LONG).show();
-                                Intent intent = new Intent(LoginActivity.this, PlayNowActivity.class);
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 finish();
                                 startActivity(intent);
                             }
@@ -125,7 +113,23 @@ public class LoginActivity extends WearableActivity {
                 handler.postDelayed(this, 5000);
             }
         };
-        loginService.run();
+        Manager.getToken(new com.seapip.thomas.wearify.Wearify.Callback() {
+            @Override
+            public void onSuccess(Token token) {
+                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                v.vibrate(500);
+                Toast.makeText(getApplicationContext(), "Logged in!", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                finish();
+                startActivity(intent);
+            }
+
+            @Override
+            public void onError() {
+                qrCodeService.run();
+                loginService.run();
+            }
+        });
     }
 
     private void drawQRCode(boolean ambient) {

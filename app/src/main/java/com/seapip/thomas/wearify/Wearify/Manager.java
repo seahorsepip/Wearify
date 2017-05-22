@@ -8,7 +8,6 @@ import android.util.Log;
 import java.util.Calendar;
 
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -31,55 +30,47 @@ public class Manager {
         return mService;
     }
 
-    static public String getToken() {
-        return mToken.access_token;
-    }
-
-    static public void onToken(Runnable runnable) {
+    static public void getToken(Callback callback) {
         if (mToken == null) {
             mToken = new Token();
             mToken.refresh_token = mPreferences.getString("refresh_token", null);
             if (mToken.refresh_token == null) {
-                Log.d("WEARIFY", "Uhh ohh??!");
+                callback.onError();
                 return;
             }
         }
         if (mToken.date != null && Calendar.getInstance().before(mToken.date)) {
-            runnable.run();
+            callback.onSuccess(mToken);
             return;
         }
-        refresh(runnable);
+        refresh(callback);
     }
 
     static public void setToken(Token token) {
+        token.refresh_token = mToken.refresh_token;
         mToken = token;
         mToken.date = Calendar.getInstance();
         mToken.date.add(Calendar.SECOND, mToken.expires_in);
         mPreferences.edit().putString("refresh_token", mToken.refresh_token).commit();
     }
 
-    static private void refresh(final Runnable runnable) {
+    static private void refresh(final Callback callback) {
         Call<Token> call = mService.getToken(mToken.refresh_token);
-        call.enqueue(new Callback<Token>() {
+        call.enqueue(new retrofit2.Callback<Token>() {
             @Override
             public void onResponse(Call<Token> call, Response<Token> response) {
                 if (response.isSuccessful()) {
-                    Log.d("WEARIFY", "Maybe?");
                     setToken(response.body());
-                    onToken(runnable);
+                    Log.d("WEARIFY", mToken.refresh_token);
+                    callback.onSuccess(mToken);
                 } else {
-                    //Wait 5 seconds before trying again
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                    }
-                    Log.d("WEARIFY", "Failed to refresh token!");
+                    callback.onError();
                 }
             }
 
             @Override
             public void onFailure(Call<Token> call, Throwable t) {
-
+                callback.onError();
             }
         });
     }

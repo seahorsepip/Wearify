@@ -1,6 +1,6 @@
 package com.seapip.thomas.wearify.Spotify;
 
-import java.util.Dictionary;
+import java.util.Map;
 
 public class Track {
     public Album album;
@@ -9,8 +9,8 @@ public class Track {
     public int disc_number;
     public int duration_ms;
     public boolean explicit;
-    public ExternalIds external_ids;
-    public ExternalUrls external_urls;
+    public Map<String, String> external_ids;
+    public Map<String, String> external_urls;
     public String href;
     public String id;
     public boolean is_playable;

@@ -1,12 +1,14 @@
 package com.seapip.thomas.wearify.Spotify;
 
+import java.util.Map;
+
 public class Album {
     public String album_type;
     public Artist[] artists;
     public String[] available_markets;
     public Copyright[] copyrights;
-    public ExternalIds external_ids;
-    public ExternalUrls external_urls;
+    public Map<String, String> external_id;
+    public Map<String, String> external_urls;
     public String[] genres;
     public String href;
     public String id;

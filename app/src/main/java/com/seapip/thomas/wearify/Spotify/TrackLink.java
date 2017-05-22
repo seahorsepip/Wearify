@@ -1,7 +1,9 @@
 package com.seapip.thomas.wearify.Spotify;
 
+import java.util.Map;
+
 public class TrackLink {
-    public ExternalUrls external_urls;
+    public Map<String, String> external_urls;
     public String href;
     public String id;
     public String type;

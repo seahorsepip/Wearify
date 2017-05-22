@@ -9,7 +9,9 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.seapip.thomas.wearify.Wearify.Callback;
 import com.seapip.thomas.wearify.Wearify.Manager;
+import com.seapip.thomas.wearify.Wearify.Token;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Connectivity;
@@ -34,11 +36,15 @@ public class PlayNowActivity extends Activity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Manager.onToken(new Runnable() {
+        setContentView(R.layout.activity_login);
+        Manager.getToken(new Callback() {
             @Override
-            public void run() {
-                onAuthenticationComplete(Manager.getToken());
+            public void onSuccess(Token token) {
+                onAuthenticationComplete(token.access_token);
+            }
+
+            @Override
+            public void onError() {
             }
         });
     }

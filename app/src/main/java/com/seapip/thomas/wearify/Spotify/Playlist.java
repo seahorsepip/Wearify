@@ -1,17 +1,19 @@
 package com.seapip.thomas.wearify.Spotify;
 
-import java.util.Dictionary;
 import java.util.Map;
 
-public class Artist {
+public class Playlist {
+    public boolean collaborative;
+    public String description;
     public Map<String, String> external_urls;
     public Followers followers;
-    public String[] genres;
     public String href;
     public String id;
     public Image[] images;
     public String name;
-    public int popularity;
+    public User owner;
+    public String snapshot_id;
+    public Paging<Track> tracks;
     public String type;
     public String uri;
 }
