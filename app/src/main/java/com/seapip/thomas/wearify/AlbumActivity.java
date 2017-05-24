@@ -10,7 +10,7 @@ import android.support.wearable.view.drawer.WearableNavigationDrawer;
 import android.text.TextUtils;
 import android.widget.ImageView;
 
-import com.seapip.thomas.wearify.Browse.ActionButton;
+import com.seapip.thomas.wearify.Browse.ActionButtonSmall;
 import com.seapip.thomas.wearify.Browse.Activity;
 import com.seapip.thomas.wearify.Browse.Adapter;
 import com.seapip.thomas.wearify.Browse.Header;
@@ -47,7 +47,7 @@ public class AlbumActivity extends Activity {
         final ImageView backgroundImage = (ImageView) findViewById(R.id.background_image);
         final ArrayList<Item> items = new ArrayList<>();
         items.add(new Header(""));
-        ActionButton shuffle = new ActionButton();
+        ActionButtonSmall shuffle = new ActionButtonSmall();
         shuffle.icon = getDrawable(R.drawable.ic_shuffle_black_24dp);
         shuffle.iconColor = Color.argb(180, 0, 0, 0);
         shuffle.backgroundColor = Color.parseColor("#00ffe0");

@@ -1,24 +1,15 @@
 package com.seapip.thomas.wearify;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.LinearGradient;
-import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.PorterDuff;
-import android.graphics.Shader;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.wearable.view.WearableRecyclerView;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
-import android.view.Display;
 import android.widget.ImageView;
 
-import com.seapip.thomas.wearify.Browse.ActionButton;
+import com.seapip.thomas.wearify.Browse.ActionButtonSmall;
 import com.seapip.thomas.wearify.Browse.Activity;
 import com.seapip.thomas.wearify.Browse.Adapter;
 import com.seapip.thomas.wearify.Browse.Header;
@@ -55,7 +46,7 @@ public class PlaylistActivity extends Activity {
         final ImageView backgroundImage = (ImageView) findViewById(R.id.background_image);
         final ArrayList<Item> items = new ArrayList<>();
         items.add(new Header(""));
-        ActionButton shuffle = new ActionButton();
+        ActionButtonSmall shuffle = new ActionButtonSmall();
         shuffle.icon = getDrawable(R.drawable.ic_shuffle_black_24dp);
         shuffle.iconColor = Color.argb(180, 0, 0, 0);
         shuffle.backgroundColor = Color.parseColor("#00ffe0");

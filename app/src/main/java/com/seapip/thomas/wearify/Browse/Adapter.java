@@ -26,7 +26,8 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
     private final int ITEM = 0;
     private final int HEADER = 1;
     private final int ACTION_BUTTON = 2;
-    private final int LOADING = 3;
+    private final int ACTION_BUTTON_SMALL = 3;
+    private final int LOADING = 4;
 
     private android.content.Context mContext;
     private List<Item> mList;
@@ -58,6 +59,10 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
                 view = layoutInflater.inflate(R.layout.browse_action_button, viewGroup, false);
                 viewHolder = new ActionButtonViewHolder(view);
                 break;
+            case ACTION_BUTTON_SMALL:
+                view = layoutInflater.inflate(R.layout.browse_action_button_small, viewGroup, false);
+                viewHolder = new ActionButtonSmallViewHolder(view);
+                break;
             case LOADING:
                 view = layoutInflater.inflate(R.layout.browse_loading, viewGroup, false);
                 viewHolder = new LoadingViewHolder(view);
@@ -88,6 +93,7 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
                 configureViewHolder((HeaderViewHolder) viewHolder, position);
                 break;
             case ACTION_BUTTON:
+            case ACTION_BUTTON_SMALL:
                 configureViewHolder((ActionButtonViewHolder) viewHolder, position);
                 break;
             case LOADING:
@@ -176,6 +182,8 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
     public int getItemViewType(int position) {
         if (mList.get(position) instanceof Header) {
             return HEADER;
+        } else if (mList.get(position) instanceof ActionButtonSmall) {
+            return ACTION_BUTTON_SMALL;
         } else if (mList.get(position) instanceof ActionButton) {
             return ACTION_BUTTON;
         } else if (mList.get(position) instanceof Loading) {
@@ -226,6 +234,13 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
             super(view);
             image = (ImageView) view.findViewById(R.id.button_icon);
             text = (TextView) view.findViewById(R.id.button_text);
+        }
+    }
+
+    public static class ActionButtonSmallViewHolder extends ActionButtonViewHolder {
+
+        public ActionButtonSmallViewHolder(View view) {
+            super(view);
         }
     }
 
