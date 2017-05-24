@@ -1,5 +1,6 @@
 package com.seapip.thomas.wearify.Spotify;
 
+import java.util.Arrays;
 import java.util.Map;
 
 public class Track {

@@ -16,7 +16,9 @@ import android.os.Vibrator;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.Display;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
@@ -99,7 +101,7 @@ public class LoginActivity extends WearableActivity {
                                 Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                                 v.vibrate(500);
                                 Toast.makeText(getApplicationContext(), "Logged in!", Toast.LENGTH_LONG).show();
-                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                Intent intent = new Intent(LoginActivity.this, RecentPlayedActivity.class);
                                 finish();
                                 startActivity(intent);
                             }
@@ -113,19 +115,20 @@ public class LoginActivity extends WearableActivity {
                 handler.postDelayed(this, 5000);
             }
         };
+        final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        progressBar.getIndeterminateDrawable().setColorFilter(Color.parseColor("#00ffe0"),
+                PorterDuff.Mode.SRC_ATOP);
         Manager.getToken(new com.seapip.thomas.wearify.Wearify.Callback() {
             @Override
             public void onSuccess(Token token) {
-                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                v.vibrate(500);
-                Toast.makeText(getApplicationContext(), "Logged in!", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                Intent intent = new Intent(LoginActivity.this, RecentPlayedActivity.class);
                 finish();
                 startActivity(intent);
             }
 
             @Override
             public void onError() {
+                progressBar.setVisibility(View.GONE);
                 qrCodeService.run();
                 loginService.run();
             }

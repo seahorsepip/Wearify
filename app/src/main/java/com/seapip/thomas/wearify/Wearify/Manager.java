@@ -47,11 +47,13 @@ public class Manager {
     }
 
     static public void setToken(Token token) {
-        token.refresh_token = mToken.refresh_token;
+        if(token.refresh_token == null) {
+            token.refresh_token = mToken.refresh_token;
+        }
         mToken = token;
         mToken.date = Calendar.getInstance();
         mToken.date.add(Calendar.SECOND, mToken.expires_in);
-        mPreferences.edit().putString("refresh_token", mToken.refresh_token).commit();
+        mPreferences.edit().putString("refresh_token", mToken.refresh_token).apply();
     }
 
     static private void refresh(final Callback callback) {

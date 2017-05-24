@@ -7,7 +7,7 @@ import android.view.View;
 public class OffsettingHelper extends DefaultOffsettingHelper {
 
     /**
-     * How much should we scale the icon at most.
+     * How much should we scale_x the icon at most.
      */
     private static final float MAX_ICON_PROGRESS = 0.65f;
 
@@ -26,7 +26,7 @@ public class OffsettingHelper extends DefaultOffsettingHelper {
 
         // Normalize for center
         progressToCenter = Math.abs(0.5f - yRelativeToCenterOffset);
-        // Adjust to the maximum scale
+        // Adjust to the maximum scale_x
         progressToCenter = Math.min(progressToCenter, MAX_ICON_PROGRESS);
 
         child.setScaleX(1 - progressToCenter);

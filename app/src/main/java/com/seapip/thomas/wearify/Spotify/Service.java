@@ -9,12 +9,14 @@ public interface Service {
     @GET("me/player/recently-played")
     Call<CursorPaging<PlayHistory>> getRecentPlayed(@Query("limit") int limit);
 
-    @GET("me/player/recently-played")
-    Call<CursorPaging<PlayHistory>> getRecentPlayed(@Query("limit") int limit, @Query("after") String after);
-
     @GET("users/{user_id}/playlists/{playlist_id}")
-    Call<Playlist> getPlaylist(@Path("user_id") String userId, @Path("playlist_id") String playlistId);
+    Call<Playlist> getPlaylist(@Path("user_id") String userId,
+                               @Path("playlist_id") String playlistId,
+                               @Query("fields") String fields);
 
     @GET("users/{user_id}")
     Call<User> getUser(@Path("user_id") String userId);
+
+    @GET("albums/{id}")
+    Call<Album> getAlbum(@Path("id") String id);
 }

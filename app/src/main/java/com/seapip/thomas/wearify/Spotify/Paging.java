@@ -1,5 +1,7 @@
 package com.seapip.thomas.wearify.Spotify;
 
+import java.util.Arrays;
+
 public class Paging<I> {
     public String href;
     public I[] items;

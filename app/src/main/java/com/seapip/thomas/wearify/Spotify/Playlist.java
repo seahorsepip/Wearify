@@ -1,5 +1,6 @@
 package com.seapip.thomas.wearify.Spotify;
 
+import java.util.Arrays;
 import java.util.Map;
 
 public class Playlist {
@@ -13,7 +14,7 @@ public class Playlist {
     public String name;
     public User owner;
     public String snapshot_id;
-    public Paging<Track> tracks;
+    public Paging<PlaylistTrack> tracks;
     public String type;
     public String uri;
 }

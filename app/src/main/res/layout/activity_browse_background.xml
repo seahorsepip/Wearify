@@ -5,11 +5,20 @@
     android:layout_height="match_parent"
     android:background="#141414">
 
+    <ImageView
+        android:id="@+id/background_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    <ImageView
+        android:id="@+id/background_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <android.support.wearable.view.WearableRecyclerView
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="@dimen/list_padding"
+        android:paddingBottom="36dp"
         android:paddingTop="@dimen/list_padding"
         android:scrollbarStyle="outsideOverlay"
         android:scrollbars="vertical" />
@@ -18,6 +27,13 @@
         android:id="@+id/top_navigation_drawer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#444444" />
+        android:background="#222222" />
+
+    <android.support.wearable.view.drawer.WearableActionDrawer
+        android:id="@+id/bottom_action_drawer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#00ffe0" />
+
 
 </android.support.wearable.view.drawer.WearableDrawerLayout>

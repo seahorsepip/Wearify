@@ -1,50 +1,38 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="56dp"
-    android:background="?android:attr/selectableItemBackground"
-    android:clickable="true"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:paddingBottom="4dp"
     android:paddingEnd="@dimen/list_padding"
-    android:paddingStart="@dimen/list_padding">
-
-    <ImageView
-        android:id="@+id/image"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp"
-        android:layout_marginEnd="10dp" />
+    android:paddingStart="@dimen/list_padding"
+    android:paddingTop="4dp">
 
     <TextView
         android:id="@+id/sub_title"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_toEndOf="@id/image"
+        android:textAlignment="center"
         android:ellipsize="end"
         android:fontFamily="sans-serif-semi-bold"
         android:maxLines="1"
-        android:paddingBottom="8dp"
         android:textColor="#777777"
         android:textSize="13sp" />
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
         android:layout_above="@id/sub_title"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_toEndOf="@id/image"
         android:ellipsize="end"
         android:fontFamily="sans-serif-semi-bold"
         android:gravity="top"
         android:maxLines="1"
-        android:paddingTop="8dp"
         android:textColor="@color/white"
-        android:textSize="14sp" />
+        android:textSize="16sp" />
 
 </RelativeLayout>
