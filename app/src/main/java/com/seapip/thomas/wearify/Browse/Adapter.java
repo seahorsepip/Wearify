@@ -1,10 +1,14 @@
 package com.seapip.thomas.wearify.Browse;
 
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.widget.RecyclerView;
 import android.support.wearable.view.WearableRecyclerView;
 import android.view.Gravity;
@@ -17,6 +21,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.seapip.thomas.wearify.R;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -81,7 +86,7 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
     public void onClick(View v) {
         int position = mRecyclerView.getChildLayoutPosition(v);
         Item item = mList.get(position);
-        if(item.onClick != null) {
+        if (item.onClick != null) {
             item.onClick.run(mContext);
         }
     }
@@ -146,7 +151,7 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
         viewHolder.progressBar.getIndeterminateDrawable().setColorFilter(loading.color, PorterDuff.Mode.SRC_ATOP);
     }
 
-    private void configureViewHolder(ItemViewHolder viewHolder, int position) {
+    private void configureViewHolder(final ItemViewHolder viewHolder, int position) {
         Item item = mList.get(position);
         viewHolder.title.setText(item.title);
         if (item.subTitle != null) {
@@ -158,7 +163,20 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
             viewHolder.subTitle.setVisibility(View.GONE);
         }
         if (item.imageUrl != null) {
-            Picasso.with(mContext).load(item.imageUrl).fit().into(viewHolder.image);
+            Picasso.with(mContext).load(item.imageUrl).fit().into(viewHolder.image, new Callback() {
+                @Override
+                public void onSuccess() {
+                    Bitmap bitmap = ((BitmapDrawable) viewHolder.image.getDrawable()).getBitmap();
+                    RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(mContext.getResources(), bitmap);
+                    drawable.setCircular(true);
+                    drawable.setCornerRadius(Math.max(bitmap.getWidth(), bitmap.getHeight()) / 2.0f);
+                    viewHolder.image.setImageDrawable(drawable);
+                }
+
+                @Override
+                public void onError() {
+                }
+            });
             viewHolder.image.setVisibility(View.VISIBLE);
         } else if (item.image != null) {
             Drawable image = item.image.mutate();
@@ -170,7 +188,7 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
         } else {
             viewHolder.image.setVisibility(View.GONE);
         }
-        if(item.number > 0) {
+        if (item.number > 0) {
             viewHolder.number.setText(String.valueOf(item.number));
             viewHolder.number.setVisibility(View.VISIBLE);
         } else {

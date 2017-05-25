@@ -1,6 +1,7 @@
 package com.seapip.thomas.wearify.Spotify;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class CursorPaging<I> {
     public String href;

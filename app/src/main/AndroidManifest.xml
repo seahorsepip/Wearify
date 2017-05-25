@@ -29,11 +29,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PlayNowActivity"
+            android:name=".LibraryActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop" />
         <activity
-            android:name=".RecentPlayedActivity"
+            android:name=".PlaylistsActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop" />
         <activity
@@ -41,7 +41,15 @@
             android:label="@string/app_name"
             android:launchMode="singleTop" />
         <activity
+            android:name=".AlbumsActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop" />
+        <activity
             android:name=".AlbumActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop" />
+        <activity
+            android:name=".PlayNowActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop" />
 

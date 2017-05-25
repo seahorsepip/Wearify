@@ -101,7 +101,7 @@ public class LoginActivity extends WearableActivity {
                                 Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                                 v.vibrate(500);
                                 Toast.makeText(getApplicationContext(), "Logged in!", Toast.LENGTH_LONG).show();
-                                Intent intent = new Intent(LoginActivity.this, RecentPlayedActivity.class);
+                                Intent intent = new Intent(LoginActivity.this, LibraryActivity.class);
                                 finish();
                                 startActivity(intent);
                             }
@@ -121,7 +121,7 @@ public class LoginActivity extends WearableActivity {
         Manager.getToken(new com.seapip.thomas.wearify.Wearify.Callback() {
             @Override
             public void onSuccess(Token token) {
-                Intent intent = new Intent(LoginActivity.this, RecentPlayedActivity.class);
+                Intent intent = new Intent(LoginActivity.this, LibraryActivity.class);
                 finish();
                 startActivity(intent);
             }
