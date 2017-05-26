@@ -36,6 +36,15 @@
             android:label="@string/app_name"
             android:launchMode="singleTop" />
         <activity
+            android:name=".PlaylistsActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop" />
+        <activity
+            android:name=".PlaylistActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop" />
+
+        <activity
             android:name=".TracksActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop" />
@@ -48,14 +57,9 @@
             android:label="@string/app_name"
             android:launchMode="singleTop" />
         <activity
-            android:name=".PlaylistsActivity"
+            android:name=".ArtistsActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop" />
-        <activity
-            android:name=".PlaylistActivity"
-            android:label="@string/app_name"
-            android:launchMode="singleTop" />
-
     </application>
 
 </manifest>

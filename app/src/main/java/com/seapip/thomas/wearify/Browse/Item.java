@@ -8,6 +8,7 @@ import android.support.wearable.view.WearableRecyclerView;
 import com.seapip.thomas.wearify.AlbumActivity;
 import com.seapip.thomas.wearify.PlaylistActivity;
 import com.seapip.thomas.wearify.Spotify.Album;
+import com.seapip.thomas.wearify.Spotify.Artist;
 import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.Manager;
 import com.seapip.thomas.wearify.Spotify.Playlist;
@@ -21,6 +22,7 @@ import retrofit2.Response;
 
 import static com.seapip.thomas.wearify.Spotify.Util.names;
 import static com.seapip.thomas.wearify.Spotify.Util.smallestImageUrl;
+import static com.seapip.thomas.wearify.Spotify.Util.songCount;
 
 public class Item {
     public Drawable image;
@@ -36,17 +38,17 @@ public class Item {
     }
 
     public void setPlaylist(final Playlist playlist, final WearableRecyclerView recyclerView, final boolean songCount) {
+        uri = playlist.uri;
         title = playlist.name;
         subTitle = songCount ? Util.songCount(playlist.tracks.total) : "Playlist";
         imageUrl = smallestImageUrl(playlist.images);
         onClick = new OnClick() {
             @Override
             public void run(Context context) {
-                Intent intent = new Intent(context, PlaylistActivity.class).putExtra("uri", playlist.uri);
+                Intent intent = new Intent(context, PlaylistActivity.class).putExtra("uri", uri);
                 context.startActivity(intent);
             }
         };
-        recyclerView.getAdapter().notifyDataSetChanged();
         Manager.getService(new Callback() {
             @Override
             public void onSuccess(Service service) {
@@ -85,6 +87,7 @@ public class Item {
     }
 
     public void setAlbum(final Album album, boolean songCount) {
+        uri = album.uri;
         title = album.name;
         subTitle = "Album";
         if (songCount) {
@@ -103,16 +106,24 @@ public class Item {
         onClick = new OnClick() {
             @Override
             public void run(Context context) {
-                Intent intent = new Intent(context, AlbumActivity.class).putExtra("uri", album.uri);
+                Intent intent = new Intent(context, AlbumActivity.class).putExtra("uri", uri);
                 context.startActivity(intent);
             }
         };
     }
 
     public void setTrack(Track track) {
+        uri = track.uri;
         title = track.name;
         if (track.artists.length > 0) {
             subTitle = names(track.artists);
         }
+    }
+
+    public void setArtist(Artist artist, int songCount) {
+        uri = artist.uri;
+        title = artist.name;
+        subTitle = songCount(songCount);
+        imageUrl = smallestImageUrl(artist.images);
     }
 }

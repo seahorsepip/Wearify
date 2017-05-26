@@ -58,7 +58,6 @@ public class LibraryActivity extends Activity {
                         context.startActivity(new Intent(context, PlaylistsActivity.class));
                     }
                 }));
-        mItems.add(new Category("Stations", getDrawable(R.drawable.ic_radio_black_24dp), null));
         mItems.add(new Category("Songs", getDrawable(R.drawable.ic_song_black_24dp),
                 new OnClick() {
                     @Override
@@ -73,8 +72,13 @@ public class LibraryActivity extends Activity {
                         context.startActivity(new Intent(context, AlbumsActivity.class));
                     }
                 }));
-        mItems.add(new Category("Artists", getDrawable(R.drawable.ic_artist_black_24dp), null));
-        mItems.add(new Category("Podcasts", getDrawable(R.drawable.ic_podcast_black_24dp), null));
+        mItems.add(new Category("Artists", getDrawable(R.drawable.ic_artist_black_24dp),
+                new OnClick() {
+                    @Override
+                    public void run(Context context) {
+                        context.startActivity(new Intent(context, ArtistsActivity.class));
+                    }
+                }));
         mItems.add(new Header("Recently Played"));
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(new Adapter(this, mItems));
@@ -82,7 +86,8 @@ public class LibraryActivity extends Activity {
     }
 
     private void getRecentPlayed(final int limit) {
-        mItems.add(new Loading(Color.parseColor("#00ffe0")));
+        final Loading loading = new Loading(Color.parseColor("#00ffe0"));
+        mItems.add(loading);
         Manager.getService(new Callback() {
             @Override
             public void onSuccess(Service service) {
@@ -91,7 +96,7 @@ public class LibraryActivity extends Activity {
                     @Override
                     public void onResponse(Call<CursorPaging<PlayHistory>> call, Response<CursorPaging<PlayHistory>> response) {
                         if (response.isSuccessful()) {
-                            mItems.remove(8);
+                            mItems.remove(loading);
                             CursorPaging<PlayHistory> playHistories = response.body();
                             for (final PlayHistory playHistory : playHistories.items) {
                                 if (playHistory.context != null && !containsUri(playHistory.context.uri)) {

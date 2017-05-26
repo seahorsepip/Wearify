@@ -47,4 +47,7 @@ public interface Service {
 
     @GET("users/{user_id}")
     Call<User> getUser(@Path("user_id") String userId);
+
+    @GET("artists")
+    Call<Artists> getArtists(@Query("ids") String ids);
 }
