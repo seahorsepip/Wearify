@@ -1,6 +1,7 @@
 package com.seapip.thomas.wearify;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
 
@@ -15,19 +16,33 @@ public class NavigationDrawerAdapter extends WearableNavigationDrawer.WearableNa
     public String getItemText(int i) {
         switch (i) {
             case 0:
-                return "Test A";
+                return "Browse";
             case 1:
-                return "Test B";
+                return "Library";
             case 2:
-                return "Test C";
+                return "Settings";
         }
         return null;
     }
 
     @Override
     public Drawable getItemDrawable(int i) {
-        return mContext.getDrawable(R.drawable.ic_logo);
-        //return null;
+        int id;
+        switch (i) {
+            default:
+            case 0:
+                id = R.drawable.ic_browse_black_24dp;
+                break;
+            case 1:
+                id = R.drawable.ic_library_music_black_24dp;
+                break;
+            case 2:
+                id = R.drawable.ic_settings_black_24dp;
+                break;
+        }
+        Drawable drawable = mContext.getDrawable(id);
+        drawable.setTint(Color.WHITE);
+        return drawable;
     }
 
     @Override

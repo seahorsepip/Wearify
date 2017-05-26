@@ -7,8 +7,8 @@ android {
         applicationId "com.seapip.thomas.wearify"
         minSdkVersion 25
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "0.0.2"
     }
     buildTypes {
         release {
@@ -21,7 +21,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.google.android.support:wearable:2.0.2'
-    compile 'com.spotify.sdk:spotify-player-24-noconnect-2.20b@aar'
+    //compile 'com.spotify.sdk:spotify-player-24-noconnect-2.20b@aar'
     //compile 'com.spotify.sdk:spotify-player-beta22-noconnect-2.20b@aar'
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
     compile 'com.squareup.retrofit2:converter-gson:2.3.0'

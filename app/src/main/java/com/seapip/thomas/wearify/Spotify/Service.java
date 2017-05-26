@@ -9,13 +9,17 @@ public interface Service {
     @GET("me/player/recently-played")
     Call<CursorPaging<PlayHistory>> getRecentPlayed(@Query("limit") int limit);
 
-    @GET("me/playlists")
-    Call<Paging<Playlist>> getPlaylists(@Query("limit") int limit,
-                                        @Query("offset") int offset);
+    @GET("me/tracks")
+    Call<Paging<SavedTrack>> getTracks(@Query("limit") int limit,
+                                       @Query("offset") int offset,
+                                       @Query("market") String market);
     @GET("me/albums")
     Call<Paging<SavedAlbum>> getAlbums(@Query("limit") int limit,
                                        @Query("offset") int offset,
-                                     @Query("market") String market);
+                                       @Query("market") String market);
+    @GET("me/playlists")
+    Call<Paging<Playlist>> getPlaylists(@Query("limit") int limit,
+                                        @Query("offset") int offset);
 
     @GET("users/{user_id}/playlists/{playlist_id}")
     Call<Playlist> getPlaylist(@Path("user_id") String userId,
@@ -31,9 +35,6 @@ public interface Service {
                                                   @Query("offset") int offset,
                                                   @Query("market") String market);
 
-    @GET("users/{user_id}")
-    Call<User> getUser(@Path("user_id") String userId);
-
     @GET("albums/{id}")
     Call<Album> getAlbum(@Path("id") String id,
                          @Query("market") String market);
@@ -43,4 +44,7 @@ public interface Service {
                                        @Query("limit") int limit,
                                        @Query("offset") int offset,
                                        @Query("market") String market);
+
+    @GET("users/{user_id}")
+    Call<User> getUser(@Path("user_id") String userId);
 }

@@ -9,7 +9,6 @@ import android.support.wearable.view.WearableRecyclerView;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
-import android.util.Log;
 
 import com.seapip.thomas.wearify.Browse.ActionButton;
 import com.seapip.thomas.wearify.Browse.Activity;
@@ -60,7 +59,13 @@ public class LibraryActivity extends Activity {
                     }
                 }));
         mItems.add(new Category("Stations", getDrawable(R.drawable.ic_radio_black_24dp), null));
-        mItems.add(new Category("Songs", getDrawable(R.drawable.ic_song_black_24dp), null));
+        mItems.add(new Category("Songs", getDrawable(R.drawable.ic_song_black_24dp),
+                new OnClick() {
+                    @Override
+                    public void run(Context context) {
+                        context.startActivity(new Intent(context, TracksActivity.class));
+                    }
+                }));
         mItems.add(new Category("Albums", getDrawable(R.drawable.ic_album_black_24dp),
                 new OnClick() {
                     @Override

@@ -79,11 +79,10 @@ public class AlbumActivity extends Activity {
                             Album album = response.body();
                             mItems.remove(2);
                             mItems.get(0).title = album.name;
-                            mItems.get(0).subTitle = "";
+                            mItems.get(0).subTitle = songCount(album.tracks.total);
                             if (album.artists.length > 0) {
-                                mItems.get(0).subTitle += "by " + names(album.artists) + " • ";
+                                mItems.get(0).subTitle = names(album.artists) + " • " + mItems.get(0).subTitle;
                             }
-                            mItems.get(0).subTitle += songCount(album.tracks.total);
                             addTracks(album.tracks.items);
                             Picasso.with(getApplicationContext())
                                     .load(largestImageUrl(album.images))

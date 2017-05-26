@@ -81,13 +81,23 @@ public class Item {
     }
 
     public void setAlbum(final Album album) {
+        setAlbum(album, false);
+    }
+
+    public void setAlbum(final Album album, boolean songCount) {
         title = album.name;
         subTitle = "Album";
-        if (album.type != null) {
+        if (songCount) {
+            subTitle = Util.songCount(album.tracks.total);
+        } else if (album.type != null) {
             subTitle = album.type.substring(0, 1).toUpperCase() + album.type.substring(1);
         }
         if (album.artists != null && album.artists.length > 0) {
-            subTitle += " • by " + names(album.artists);
+            if (songCount) {
+                subTitle = names(album.artists) + " • " + subTitle;
+            } else {
+                subTitle += " • by " + names(album.artists);
+            }
         }
         imageUrl = smallestImageUrl(album.images);
         onClick = new OnClick() {

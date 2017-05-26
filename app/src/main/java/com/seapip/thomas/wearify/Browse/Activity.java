@@ -40,6 +40,7 @@ public class Activity extends WearableActivity {
 
         // Top Navigation Drawer
         navigationDrawer.setAdapter(new NavigationDrawerAdapter(this));
+        navigationDrawer.setCurrentItem(1, false);
 
         // Bottom Action Drawer
         Menu menu = actionDrawer.getMenu();
