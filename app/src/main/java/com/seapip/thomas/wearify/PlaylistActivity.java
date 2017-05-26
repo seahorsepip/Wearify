@@ -22,7 +22,6 @@ import com.seapip.thomas.wearify.Spotify.Playlist;
 import com.seapip.thomas.wearify.Spotify.PlaylistTrack;
 import com.seapip.thomas.wearify.Spotify.Service;
 import com.seapip.thomas.wearify.Spotify.User;
-import com.seapip.thomas.wearify.Spotify.Util;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -60,10 +59,12 @@ public class PlaylistActivity extends Activity {
         shuffle.backgroundColor = Color.parseColor("#00ffe0");
         shuffle.text = "Shuffle Play";
         mItems.add(shuffle);
-        mItems.add(new Loading(Color.parseColor("#00ffe0")));
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(new Adapter(this, mItems));
         mUri = getIntent().getStringExtra("uri");
+        final Loading loading = new Loading(Color.parseColor("#00ffe0"));
+        mItems.add(loading);
+        mRecyclerView.getAdapter().notifyDataSetChanged();
         Manager.getService(new Callback() {
             @Override
             public void onSuccess(Service service) {
@@ -75,7 +76,7 @@ public class PlaylistActivity extends Activity {
                     public void onResponse(Call<Playlist> call, Response<Playlist> response) {
                         if (response.isSuccessful()) {
                             final Playlist playlist = response.body();
-                            mItems.remove(2);
+                            mItems.remove(loading);
                             mItems.get(0).title = playlist.name;
                             mItems.get(0).subTitle = "Playlist";
                             Manager.getService(new Callback() {
@@ -126,6 +127,8 @@ public class PlaylistActivity extends Activity {
     }
 
     private void getTracks(final int limit, final int offset, final boolean charts) {
+        final Loading loading = new Loading(Color.parseColor("#00ffe0"));
+        mItems.add(loading);
         Manager.getService(new Callback() {
             @Override
             public void onSuccess(Service service) {
@@ -137,12 +140,11 @@ public class PlaylistActivity extends Activity {
                     @Override
                     public void onResponse(Call<Paging<PlaylistTrack>> call, Response<Paging<PlaylistTrack>> response) {
                         if (response.isSuccessful()) {
+                            mItems.remove(loading);
                             Paging<PlaylistTrack> playlistTracks = response.body();
-                            if (playlistTracks.items != null) {
-                                addTracks(playlistTracks.items, offset, charts);
-                                if (playlistTracks.total > playlistTracks.offset + limit) {
-                                    getTracks(limit, playlistTracks.offset + limit, charts);
-                                }
+                            addTracks(playlistTracks.items, offset, charts);
+                            if (playlistTracks.total > playlistTracks.offset + limit) {
+                                getTracks(limit, playlistTracks.offset + limit, charts);
                             }
                         }
                     }

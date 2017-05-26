@@ -53,6 +53,7 @@ public class ArtistsActivity extends Activity {
     private void getTracks(final int limit, final int offset) {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
+        mRecyclerView.getAdapter().notifyDataSetChanged();
         Manager.getService(new Callback() {
             @Override
             public void onSuccess(Service service) {

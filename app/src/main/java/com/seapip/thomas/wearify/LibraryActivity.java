@@ -88,6 +88,7 @@ public class LibraryActivity extends Activity {
     private void getRecentPlayed(final int limit) {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
+        mRecyclerView.getAdapter().notifyDataSetChanged();
         Manager.getService(new Callback() {
             @Override
             public void onSuccess(Service service) {

@@ -47,7 +47,9 @@ public class PlaylistsActivity extends Activity {
     }
 
     private void getPlaylists(final int limit, final int offset) {
-        mItems.add(new Loading(Color.parseColor("#00ffe0")));
+        final Loading loading = new Loading(Color.parseColor("#00ffe0"));
+        mItems.add(loading);
+        mRecyclerView.getAdapter().notifyDataSetChanged();
         Manager.getService(new Callback() {
             @Override
             public void onSuccess(Service service) {
@@ -56,7 +58,7 @@ public class PlaylistsActivity extends Activity {
                     @Override
                     public void onResponse(Call<Paging<Playlist>> call, Response<Paging<Playlist>> response) {
                         if (response.isSuccessful()) {
-                            mItems.remove(offset + 1);
+                            mItems.remove(loading);
                             Paging<Playlist> playlists = response.body();
                             for (Playlist playlist : playlists.items) {
                                 Item item = new Item();

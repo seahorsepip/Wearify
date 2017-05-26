@@ -54,7 +54,9 @@ public class TracksActivity extends Activity {
     }
 
     private void getTracks(final int limit, final int offset) {
-        mItems.add(new Loading(Color.parseColor("#00ffe0")));
+        final Loading loading = new Loading(Color.parseColor("#00ffe0"));
+        mItems.add(loading);
+        mRecyclerView.getAdapter().notifyDataSetChanged();
         Manager.getService(new Callback() {
             @Override
             public void onSuccess(Service service) {
@@ -63,7 +65,7 @@ public class TracksActivity extends Activity {
                     @Override
                     public void onResponse(Call<Paging<SavedTrack>> call, Response<Paging<SavedTrack>> response) {
                         if (response.isSuccessful()) {
-                            mItems.remove(offset + 2);
+                            mItems.remove(loading);
                             Paging<SavedTrack> savedTracks = response.body();
                             for (SavedTrack savedTrack : savedTracks.items) {
                                 Item item = new Item();

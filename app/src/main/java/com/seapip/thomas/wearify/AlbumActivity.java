@@ -63,11 +63,13 @@ public class AlbumActivity extends Activity {
         shuffle.backgroundColor = Color.parseColor("#00ffe0");
         shuffle.text = "Shuffle Play";
         mItems.add(shuffle);
-        mItems.add(new Loading(Color.parseColor("#00ffe0")));
         Adapter adapter = new Adapter(AlbumActivity.this, mItems);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(AlbumActivity.this));
         mRecyclerView.setAdapter(adapter);
         mUri = getIntent().getStringExtra("uri");
+        final Loading loading = new Loading(Color.parseColor("#00ffe0"));
+        mItems.add(loading);
+        mRecyclerView.getAdapter().notifyDataSetChanged();
         Manager.getService(new Callback() {
             @Override
             public void onSuccess(Service service) {
@@ -77,7 +79,7 @@ public class AlbumActivity extends Activity {
                     public void onResponse(Call<Album> call, Response<Album> response) {
                         if (response.isSuccessful()) {
                             Album album = response.body();
-                            mItems.remove(2);
+                            mItems.remove(loading);
                             mItems.get(0).title = album.name;
                             mItems.get(0).subTitle = songCount(album.tracks.total);
                             if (album.artists.length > 0) {
@@ -103,6 +105,9 @@ public class AlbumActivity extends Activity {
     }
 
     private void getTracks(final int limit, final int offset) {
+        final Loading loading = new Loading(Color.parseColor("#00ffe0"));
+        mItems.add(loading);
+        mRecyclerView.getAdapter().notifyDataSetChanged();
         Manager.getService(new Callback() {
             @Override
             public void onSuccess(Service service) {
@@ -112,6 +117,7 @@ public class AlbumActivity extends Activity {
                     @Override
                     public void onResponse(Call<Paging<Track>> call, Response<Paging<Track>> response) {
                         if(response.isSuccessful()) {
+                            mItems.remove(loading);
                             Paging<Track> albumTracks = response.body();
                             addTracks(albumTracks.items);
                             if (albumTracks.total > albumTracks.offset + limit) {
