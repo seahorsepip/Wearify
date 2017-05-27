@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
@@ -207,6 +208,14 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
         } else {
             viewHolder.number.setVisibility(View.GONE);
         }
+        RelativeLayout view = (RelativeLayout) viewHolder.view;
+        if (item.disabled) {
+            view.setClickable(false);
+            view.setForeground(new ColorDrawable(Color.argb(172, 20, 20, 20)));
+        } else {
+            view.setClickable(true);
+            view.setForeground(new ColorDrawable(Color.TRANSPARENT));
+        }
     }
 
     @Override
@@ -236,6 +245,7 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
         private final TextView subTitle;
         private final ImageView image;
         private final TextView number;
+        private final View view;
 
         public ItemViewHolder(View view) {
             super(view);
@@ -243,6 +253,7 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
             subTitle = (TextView) view.findViewById(R.id.sub_title);
             image = (ImageView) view.findViewById(R.id.image);
             number = (TextView) view.findViewById(R.id.number);
+            this.view = view;
         }
     }
 

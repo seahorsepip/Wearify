@@ -64,6 +64,10 @@
             android:name=".ArtistActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop" />
+        <activity
+            android:name=".NowPlayingActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop" />
     </application>
 
 </manifest>

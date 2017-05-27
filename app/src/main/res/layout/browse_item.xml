@@ -6,7 +6,8 @@
     android:paddingBottom="6dp"
     android:paddingEnd="@dimen/list_padding"
     android:paddingStart="@dimen/list_padding"
-    android:paddingTop="6dp">
+    android:paddingTop="6dp"
+    android:id="@+id/wrapper">
 
 
     <RelativeLayout

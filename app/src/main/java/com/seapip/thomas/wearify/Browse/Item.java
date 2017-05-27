@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.support.wearable.view.WearableRecyclerView;
+import android.util.Log;
 
 import com.seapip.thomas.wearify.AlbumActivity;
 import com.seapip.thomas.wearify.ArtistActivity;
@@ -33,6 +34,7 @@ public class Item {
     public String uri;
     public OnClick onClick;
     public int number;
+    public boolean disabled;
 
     public void setPlaylist(final Playlist playlist, WearableRecyclerView recyclerView) {
         setPlaylist(playlist, recyclerView, false);
@@ -118,6 +120,9 @@ public class Item {
         title = track.name;
         if (track.artists.length > 0) {
             subTitle = names(track.artists);
+        }
+        if(track.is_playable != null) {
+            disabled = !track.is_playable;
         }
     }
 

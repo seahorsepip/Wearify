@@ -14,7 +14,7 @@ public class Track {
     public Map<String, String> external_urls;
     public String href;
     public String id;
-    public boolean is_playable;
+    public Boolean is_playable;
     public TrackLink linked_from;
     public String name;
     public int popularity;

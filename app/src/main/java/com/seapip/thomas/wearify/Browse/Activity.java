@@ -1,5 +1,6 @@
 package com.seapip.thomas.wearify.Browse;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -19,10 +20,13 @@ import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.seapip.thomas.wearify.AlbumActivity;
 import com.seapip.thomas.wearify.NavigationDrawerAdapter;
+import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.R;
 
 public class Activity extends WearableActivity {
@@ -39,21 +43,31 @@ public class Activity extends WearableActivity {
         layout.peekDrawer(Gravity.BOTTOM);
 
         // Top Navigation Drawer
-        navigationDrawer.setAdapter(new NavigationDrawerAdapter(this));
-        navigationDrawer.setCurrentItem(1, false);
+        if(navigationDrawer != null) {
+            navigationDrawer.setAdapter(new NavigationDrawerAdapter(this));
+            navigationDrawer.setCurrentItem(1, false);
+        }
 
         // Bottom Action Drawer
-        Menu menu = actionDrawer.getMenu();
-        final AnimatedVectorDrawable drawable = (AnimatedVectorDrawable) getDrawable(R.drawable.ic_audio_waves_animated);
-        menu.add("Now Playing").setIcon(null);
-        LayoutInflater layoutInflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        final LinearLayout view = (LinearLayout) layoutInflater.inflate(R.layout.action_drawer_view, null);
-        actionDrawer.setPeekContent(view);
-        final ImageView actionImage = (ImageView) view.findViewById(R.id.action_image);
-        drawable.setTint(Color.BLACK);
-        drawable.setAlpha(180);
-        actionImage.setImageDrawable(drawable);
-        drawable.start();
+        if(actionDrawer != null) {
+            Menu menu = actionDrawer.getMenu();
+            final AnimatedVectorDrawable drawable = (AnimatedVectorDrawable) getDrawable(R.drawable.ic_audio_waves_animated);
+            menu.add("Now Playing").setIcon(null);
+            LayoutInflater layoutInflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+            final LinearLayout view = (LinearLayout) layoutInflater.inflate(R.layout.action_drawer_view, null);
+            actionDrawer.setPeekContent(view);
+            final ImageView actionImage = (ImageView) view.findViewById(R.id.action_image);
+            drawable.setTint(Color.argb(180, 0, 0, 0));
+            actionImage.setImageDrawable(drawable);
+            drawable.start();
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(Activity.this, NowPlayingActivity.class).putExtra("uri", "empty");
+                    startActivity(intent);
+                }
+            });
+        }
     }
 
     public void setGradientOverlay(RecyclerView recyclerView, final ImageView imageView) {

@@ -69,7 +69,7 @@ public class PlaylistActivity extends Activity {
             @Override
             public void onSuccess(Service service) {
                 Call<Playlist> call = service.getPlaylist(mUri.split(":")[2], mUri.split(":")[4],
-                        "name,images,uri,owner.id,tracks.items(track.artists(name),track.name,track.uri),tracks.total,tracks.offset",
+                        "name,images,uri,owner.id,tracks.items(track.artists(name),track.name,track.uri,track.is_playable),tracks.total,tracks.offset",
                         "from_token");
                 call.enqueue(new retrofit2.Callback<Playlist>() {
                     @Override
@@ -134,7 +134,7 @@ public class PlaylistActivity extends Activity {
             public void onSuccess(Service service) {
                 Call<Paging<PlaylistTrack>> call = service.getPlaylistTracks(mUri.split(":")[2],
                         mUri.split(":")[4],
-                        "items(track.artists(name),track.name,track.uri),total,offset", limit,
+                        "items(track.artists(name),track.name,track.uri,track.is_playable),total,offset", limit,
                         offset, "from_token");
                 call.enqueue(new retrofit2.Callback<Paging<PlaylistTrack>>() {
                     @Override
