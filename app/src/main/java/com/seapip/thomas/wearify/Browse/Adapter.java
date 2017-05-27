@@ -30,9 +30,10 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
 
     private final int ITEM = 0;
     private final int HEADER = 1;
-    private final int ACTION_BUTTON = 2;
-    private final int ACTION_BUTTON_SMALL = 3;
-    private final int LOADING = 4;
+    private final int LETTER_GROUP_HEADER = 2;
+    private final int ACTION_BUTTON = 3;
+    private final int ACTION_BUTTON_SMALL = 4;
+    private final int LOADING = 5;
 
     private android.content.Context mContext;
     private List<Item> mList;
@@ -59,6 +60,10 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
             case HEADER:
                 view = layoutInflater.inflate(R.layout.browse_header, viewGroup, false);
                 viewHolder = new HeaderViewHolder(view);
+                break;
+            case LETTER_GROUP_HEADER:
+                view = layoutInflater.inflate(R.layout.browse_letter_group_header, viewGroup, false);
+                viewHolder = new LetterGroupHeaderViewHolder(view);
                 break;
             case ACTION_BUTTON:
                 view = layoutInflater.inflate(R.layout.browse_action_button, viewGroup, false);
@@ -97,6 +102,9 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
             case HEADER:
                 configureViewHolder((HeaderViewHolder) viewHolder, position);
                 break;
+            case LETTER_GROUP_HEADER:
+                configureViewHolder((LetterGroupHeaderViewHolder) viewHolder, position);
+                break;
             case ACTION_BUTTON:
             case ACTION_BUTTON_SMALL:
                 configureViewHolder((ActionButtonViewHolder) viewHolder, position);
@@ -121,6 +129,11 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
             viewHolder.title.setGravity(Gravity.CENTER);
             viewHolder.subTitle.setVisibility(View.GONE);
         }
+    }
+
+    private void configureViewHolder(LetterGroupHeaderViewHolder viewHolder, int position) {
+        LetterGroupHeader header = (LetterGroupHeader) mList.get(position);
+        viewHolder.letter.setText(header.letter);
     }
 
     private void configureViewHolder(ActionButtonViewHolder viewHolder, int position) {
@@ -200,6 +213,8 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
     public int getItemViewType(int position) {
         if (mList.get(position) instanceof Header) {
             return HEADER;
+        } else if (mList.get(position) instanceof LetterGroupHeader) {
+            return LETTER_GROUP_HEADER;
         } else if (mList.get(position) instanceof ActionButtonSmall) {
             return ACTION_BUTTON_SMALL;
         } else if (mList.get(position) instanceof ActionButton) {
@@ -269,6 +284,16 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
         public LoadingViewHolder(View view) {
             super(view);
             progressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
+        }
+    }
+
+    public static class LetterGroupHeaderViewHolder extends WearableRecyclerView.ViewHolder {
+
+        private final TextView letter;
+
+        public LetterGroupHeaderViewHolder(View view) {
+            super(view);
+            letter = (TextView) view.findViewById(R.id.letter);
         }
     }
 }

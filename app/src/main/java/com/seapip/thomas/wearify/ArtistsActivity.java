@@ -13,6 +13,7 @@ import com.seapip.thomas.wearify.Browse.Activity;
 import com.seapip.thomas.wearify.Browse.Adapter;
 import com.seapip.thomas.wearify.Browse.Header;
 import com.seapip.thomas.wearify.Browse.Item;
+import com.seapip.thomas.wearify.Browse.LetterGroupHeader;
 import com.seapip.thomas.wearify.Browse.Loading;
 import com.seapip.thomas.wearify.Spotify.Artist;
 import com.seapip.thomas.wearify.Spotify.Artists;
@@ -24,6 +25,8 @@ import com.seapip.thomas.wearify.Spotify.Service;
 import com.seapip.thomas.wearify.Spotify.Util;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -71,7 +74,6 @@ public class ArtistsActivity extends Activity {
                                         item.setArtist(savedTrack.track.artists[0], 1);
                                         item.image = getDrawable(R.drawable.ic_artist_black_24dp);
                                         mItems.add(item);
-
                                     } else {
                                         for (Item item : mItems) {
                                             if (item.uri != null && item.uri.equals(savedTrack.track.artists[0].uri)) {
@@ -83,11 +85,13 @@ public class ArtistsActivity extends Activity {
                                 }
 
                             }
+                            groupByLetter();
                             mRecyclerView.getAdapter().notifyDataSetChanged();
+                            mRecyclerView.scrollToPosition(0);
                             if (savedTracks.total > savedTracks.offset + limit) {
                                 getTracks(limit, savedTracks.offset + limit);
                             } else {
-                                final ArrayList<String> artistIds = new ArrayList<String>();
+                                final ArrayList<String> artistIds = new ArrayList<>();
                                 for (Item item : mItems) {
                                     if (item.uri != null) {
                                         artistIds.add(item.uri.split(":")[2]);
@@ -143,5 +147,34 @@ public class ArtistsActivity extends Activity {
             }
         }
         return false;
+    }
+
+    private void groupByLetter() {
+        for (int i = 0; i < mItems.size(); i++) {
+            if (mItems.get(i) instanceof LetterGroupHeader) {
+                mItems.remove(i);
+            }
+        }
+        Collections.sort(mItems.subList(1, mItems.size()), new Comparator<Item>() {
+            @Override
+            public int compare(Item o1, Item o2) {
+                return o1.title.trim().replaceFirst("^(?i)The ", "").compareTo(o2.title.trim().replaceFirst("^(?i)The ", ""));
+            }
+        });
+        String letter = null;
+        for (int i = 0; i < mItems.size(); i++) {
+            if (mItems.get(i).uri != null) {
+                String currentLetter = mItems.get(i).title
+                        .trim()
+                        .toUpperCase()
+                        .replaceFirst("THE ", "")
+                        .replaceFirst("\\d", "#")
+                        .substring(0, 1);
+                if (!currentLetter.equals(letter)) {
+                    mItems.add(i, new LetterGroupHeader(currentLetter));
+                    letter = currentLetter;
+                }
+            }
+        }
     }
 }
