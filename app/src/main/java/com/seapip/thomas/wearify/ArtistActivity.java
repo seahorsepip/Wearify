@@ -9,7 +9,9 @@ import android.support.wearable.view.WearableRecyclerView;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
+import android.widget.ImageView;
 
+import com.seapip.thomas.wearify.Browse.ActionButtonSmall;
 import com.seapip.thomas.wearify.Browse.Activity;
 import com.seapip.thomas.wearify.Browse.Adapter;
 import com.seapip.thomas.wearify.Browse.Header;
@@ -17,12 +19,15 @@ import com.seapip.thomas.wearify.Browse.Item;
 import com.seapip.thomas.wearify.Browse.LetterGroupHeader;
 import com.seapip.thomas.wearify.Browse.Loading;
 import com.seapip.thomas.wearify.Browse.OnClick;
+import com.seapip.thomas.wearify.Spotify.Artist;
+import com.seapip.thomas.wearify.Spotify.Artists;
 import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.Manager;
 import com.seapip.thomas.wearify.Spotify.Paging;
 import com.seapip.thomas.wearify.Spotify.SavedTrack;
 import com.seapip.thomas.wearify.Spotify.Service;
 import com.seapip.thomas.wearify.Spotify.Util;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,25 +36,63 @@ import java.util.Comparator;
 import retrofit2.Call;
 import retrofit2.Response;
 
-public class AlbumsActivity extends Activity {
+import static com.seapip.thomas.wearify.Spotify.Util.largestImageUrl;
+
+public class ArtistActivity extends Activity {
 
     private WearableRecyclerView mRecyclerView;
     private ArrayList<Item> mItems;
+    private String mUri;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_browse);
+        setContentView(R.layout.activity_browse_background);
 
         setDrawers((WearableDrawerLayout) findViewById(R.id.drawer_layout),
                 (WearableNavigationDrawer) findViewById(R.id.top_navigation_drawer),
                 (WearableActionDrawer) findViewById(R.id.bottom_action_drawer));
 
         mRecyclerView = (WearableRecyclerView) findViewById(R.id.content);
+        setGradientOverlay(mRecyclerView, (ImageView) findViewById(R.id.background_overlay));
+
+        final ImageView backgroundImage = (ImageView) findViewById(R.id.background_image);
         mItems = new ArrayList<>();
-        mItems.add(new Header("Albums"));
+        mItems.add(new Header("Artists"));
+        ActionButtonSmall shuffle = new ActionButtonSmall();
+        shuffle.icon = getDrawable(R.drawable.ic_shuffle_black_24dp);
+        shuffle.iconColor = Color.argb(180, 0, 0, 0);
+        shuffle.backgroundColor = Color.parseColor("#00ffe0");
+        shuffle.text = "Shuffle Play";
+        mItems.add(shuffle);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(new Adapter(this, mItems));
+        mUri = getIntent().getStringExtra("uri");
+        Manager.getService(new Callback() {
+            @Override
+            public void onSuccess(Service service) {
+                Call<Artists> call = service.getArtists(mUri.split(":")[2]);
+                call.enqueue(new retrofit2.Callback<Artists>() {
+                    @Override
+                    public void onResponse(Call<Artists> call, Response<Artists> response) {
+                        if (response.isSuccessful()) {
+                            Artist artist = response.body().artists[0];
+                            mItems.get(0).title = artist.name;
+                            mItems.get(0).subTitle = "Artist";
+                            mRecyclerView.getAdapter().notifyDataSetChanged();
+                            Picasso.with(getApplicationContext())
+                                    .load(largestImageUrl(artist.images))
+                                    .fit().into(backgroundImage);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Artists> call, Throwable t) {
+
+                    }
+                });
+            }
+        });
         getTracks(50, 0);
     }
 
@@ -68,7 +111,7 @@ public class AlbumsActivity extends Activity {
                             mItems.remove(loading);
                             Paging<SavedTrack> savedTracks = response.body();
                             for (final SavedTrack savedTrack : savedTracks.items) {
-                                if (savedTrack.track.artists != null) {
+                                if (savedTrack.track.artists != null && savedTrack.track.artists[0].uri.equals(mUri)) {
                                     if (!containsUri(savedTrack.track.album.uri)) {
                                         Item item = new Item();
                                         item.uri = savedTrack.track.album.uri;
@@ -85,10 +128,12 @@ public class AlbumsActivity extends Activity {
                                         };
                                         mItems.add(item);
                                     }
+                                    Item item = new Item();
+                                    item.setTrack(savedTrack.track);
+                                    mItems.add(item);
                                 }
 
                             }
-                            groupByLetter();
                             mRecyclerView.getAdapter().notifyDataSetChanged();
                             if (savedTracks.total > savedTracks.offset + limit) {
                                 getTracks(limit, savedTracks.offset + limit);
@@ -112,35 +157,5 @@ public class AlbumsActivity extends Activity {
             }
         }
         return false;
-    }
-
-    private void groupByLetter() {
-        for (int i = 0; i < mItems.size(); i++) {
-            if (mItems.get(i) instanceof LetterGroupHeader) {
-                mItems.remove(i);
-            }
-        }
-        Collections.sort(mItems.subList(1, mItems.size()), new Comparator<Item>() {
-            @Override
-            public int compare(Item o1, Item o2) {
-                return o1.subTitle.trim().replaceFirst("^(?i)The ", "")
-                        .compareTo(o2.subTitle.trim().replaceFirst("^(?i)The ", ""));
-            }
-        });
-        String letter = null;
-        for (int i = 0; i < mItems.size(); i++) {
-            if (mItems.get(i).uri != null) {
-                String currentLetter = mItems.get(i).subTitle
-                        .trim()
-                        .toUpperCase()
-                        .replaceFirst("THE ", "")
-                        .replaceFirst("\\d", "#")
-                        .substring(0, 1);
-                if (!currentLetter.equals(letter)) {
-                    mItems.add(i, new LetterGroupHeader(currentLetter));
-                    letter = currentLetter;
-                }
-            }
-        }
     }
 }

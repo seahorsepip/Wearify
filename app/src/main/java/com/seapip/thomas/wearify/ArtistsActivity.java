@@ -87,7 +87,6 @@ public class ArtistsActivity extends Activity {
                             }
                             groupByLetter();
                             mRecyclerView.getAdapter().notifyDataSetChanged();
-                            mRecyclerView.scrollToPosition(0);
                             if (savedTracks.total > savedTracks.offset + limit) {
                                 getTracks(limit, savedTracks.offset + limit);
                             } else {

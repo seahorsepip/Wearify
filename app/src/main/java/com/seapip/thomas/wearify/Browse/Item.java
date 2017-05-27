@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.support.wearable.view.WearableRecyclerView;
 
 import com.seapip.thomas.wearify.AlbumActivity;
+import com.seapip.thomas.wearify.ArtistActivity;
 import com.seapip.thomas.wearify.PlaylistActivity;
 import com.seapip.thomas.wearify.Spotify.Album;
 import com.seapip.thomas.wearify.Spotify.Artist;
@@ -125,5 +126,12 @@ public class Item {
         title = artist.name;
         subTitle = songCount(songCount);
         imageUrl = smallestImageUrl(artist.images);
+        onClick = new OnClick() {
+            @Override
+            public void run(Context context) {
+                Intent intent = new Intent(context, ArtistActivity.class).putExtra("uri", uri);
+                context.startActivity(intent);
+            }
+        };
     }
 }
