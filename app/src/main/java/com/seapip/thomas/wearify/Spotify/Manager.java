@@ -19,6 +19,11 @@ public class Manager {
     static private Token mToken;
     static private Retrofit.Builder mBuilder;
     static private Service mService;
+    static private Controller mController;
+
+    final static public int CONNECT_CONTROLLER = 0;
+    final static public int BLUETOOTH_CONTROLLER = 1;
+    final static public int NATIVE_CONTROLLER = 2;
 
     public static void getService(final Callback<Service> callback) {
         com.seapip.thomas.wearify.Wearify.Manager.getToken(new com.seapip.thomas.wearify.Wearify.Callback() {
@@ -59,59 +64,23 @@ public class Manager {
         });
     }
 
-    public static void play(final String deviceId, final String uris, final String contextUri, final int position, final Callback<Void> callback) {
-        getService(new Callback<Service>() {
-            @Override
-            public void onSuccess(final Service service) {
-                Play play = new Play();
-                play.device_id = deviceId;
-                play.uris = uris;
-                play.context_uri = contextUri;
-                if (position > -1) {
-                    play.offset = new Offset();
-                    play.offset.position = position;
-                }
-                Call<Void> call = service.play(play);
-                call.enqueue(new retrofit2.Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
-                        if (response.isSuccessful()) {
-                            if (callback != null) {
-                                callback.onSuccess(null);
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-
-                    }
-                });
-            }
-        });
+    public static void setController(int controller) {
+        switch (controller) {
+            case CONNECT_CONTROLLER:
+                mController = new ConnectController();
+                break;
+            case BLUETOOTH_CONTROLLER:
+                break;
+            case NATIVE_CONTROLLER:
+                break;
+        }
     }
 
-    public static void shuffle(final String deviceId, final boolean state, final Callback<Void> callback) {
-        getService(new Callback<Service>() {
-            @Override
-            public void onSuccess(Service service) {
-                Call<Void> call = service.shuffle(state, deviceId);
-                call.enqueue(new retrofit2.Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
-                        if (response.isSuccessful()) {
-                            if (callback != null) {
-                                callback.onSuccess(null);
-                            }
-                        }
-                    }
+    public static void play(String deviceId, String uris, String contextUri, int position, Callback<Void> callback) {
+        mController.play(deviceId, uris, contextUri, position, callback);
+    }
 
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-
-                    }
-                });
-            }
-        });
+    public static void shuffle(String deviceId, boolean state, Callback<Void> callback) {
+        mController.shuffle(deviceId, state, callback);
     }
 }
