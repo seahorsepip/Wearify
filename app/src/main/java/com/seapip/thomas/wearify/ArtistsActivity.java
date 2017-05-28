@@ -57,7 +57,7 @@ public class ArtistsActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(new Callback() {
+        Manager.getService(new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Paging<SavedTrack>> call = service.getTracks(limit, offset, "from_token");
@@ -96,7 +96,7 @@ public class ArtistsActivity extends Activity {
                                         artistIds.add(item.uri.split(":")[2]);
                                     }
                                 }
-                                Manager.getService(new Callback() {
+                                Manager.getService(new Callback<Service>() {
                                     @Override
                                     public void onSuccess(Service service) {
                                         Call<Artists> call = service.getArtists(TextUtils.join(",", artistIds));

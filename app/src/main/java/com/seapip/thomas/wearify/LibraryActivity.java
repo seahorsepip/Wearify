@@ -89,7 +89,7 @@ public class LibraryActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(new Callback() {
+        Manager.getService(new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<CursorPaging<PlayHistory>> call = service.getRecentPlayed(limit);
@@ -105,7 +105,7 @@ public class LibraryActivity extends Activity {
                                     item.uri = playHistory.context.uri;
                                     switch (playHistory.context.type) {
                                         case "playlist":
-                                            Manager.getService(new Callback() {
+                                            Manager.getService(new Callback<Service>() {
                                                 @Override
                                                 public void onSuccess(Service service) {
                                                     Call<Playlist> call = service.getPlaylist(

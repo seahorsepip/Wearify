@@ -1,5 +1,6 @@
 package com.seapip.thomas.wearify;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,6 +17,7 @@ import com.seapip.thomas.wearify.Browse.Adapter;
 import com.seapip.thomas.wearify.Browse.Header;
 import com.seapip.thomas.wearify.Browse.Item;
 import com.seapip.thomas.wearify.Browse.Loading;
+import com.seapip.thomas.wearify.Browse.OnClick;
 import com.seapip.thomas.wearify.Spotify.Album;
 import com.seapip.thomas.wearify.Spotify.Artist;
 import com.seapip.thomas.wearify.Spotify.Callback;
@@ -41,11 +43,14 @@ public class AlbumActivity extends Activity {
     private WearableRecyclerView mRecyclerView;
     private ArrayList<Item> mItems;
     private String mUri;
+    private int mPosition;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_browse_background);
+
+        mUri = getIntent().getStringExtra("uri");
 
         setDrawers((WearableDrawerLayout) findViewById(R.id.drawer_layout),
                 (WearableNavigationDrawer) findViewById(R.id.top_navigation_drawer),
@@ -62,15 +67,25 @@ public class AlbumActivity extends Activity {
         shuffle.iconColor = Color.argb(180, 0, 0, 0);
         shuffle.backgroundColor = Color.parseColor("#00ffe0");
         shuffle.text = "Shuffle Play";
+        shuffle.onClick = new OnClick() {
+            @Override
+            public void run(Context context) {
+                Manager.shuffle(null,true, new Callback<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Manager.play(null, null, mUri, -1, null);
+                    }
+                });
+            }
+        };
         mItems.add(shuffle);
         Adapter adapter = new Adapter(AlbumActivity.this, mItems);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(AlbumActivity.this));
         mRecyclerView.setAdapter(adapter);
-        mUri = getIntent().getStringExtra("uri");
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(new Callback() {
+        Manager.getService(new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Album> call = service.getAlbum(mUri.split(":")[2], "from_token");
@@ -108,7 +123,7 @@ public class AlbumActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(new Callback() {
+        Manager.getService(new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Paging<Track>> call = service.getAlbumTracks(mUri.split(":")[2], limit, offset,
@@ -139,6 +154,8 @@ public class AlbumActivity extends Activity {
         for (Track track : tracks) {
             Item item = new Item();
             item.setTrack(track);
+            item.contextUri = mUri;
+            item.position = mPosition++;
             mItems.add(item);
         }
         mRecyclerView.getAdapter().notifyDataSetChanged();

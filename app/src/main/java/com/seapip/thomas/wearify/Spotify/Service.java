@@ -1,7 +1,9 @@
 package com.seapip.thomas.wearify.Spotify;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -13,10 +15,12 @@ public interface Service {
     Call<Paging<SavedTrack>> getTracks(@Query("limit") int limit,
                                        @Query("offset") int offset,
                                        @Query("market") String market);
+
     @GET("me/albums")
     Call<Paging<SavedAlbum>> getAlbums(@Query("limit") int limit,
                                        @Query("offset") int offset,
                                        @Query("market") String market);
+
     @GET("me/playlists")
     Call<Paging<Playlist>> getPlaylists(@Query("limit") int limit,
                                         @Query("offset") int offset);
@@ -50,4 +54,11 @@ public interface Service {
 
     @GET("artists")
     Call<Artists> getArtists(@Query("ids") String ids);
+
+    @PUT("me/player/play")
+    Call<Void> play(@Body Play play);
+
+    @PUT("me/player/shuffle")
+    Call<Void> shuffle(@Query("state") boolean state,
+                       @Query("device_id") String device_id);
 }

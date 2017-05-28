@@ -57,7 +57,7 @@ public class AlbumsActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(new Callback() {
+        Manager.getService(new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Paging<SavedTrack>> call = service.getTracks(limit, offset, "from_token");

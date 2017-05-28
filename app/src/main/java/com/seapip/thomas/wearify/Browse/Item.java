@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.support.wearable.view.WearableRecyclerView;
-import android.util.Log;
 
 import com.seapip.thomas.wearify.AlbumActivity;
 import com.seapip.thomas.wearify.ArtistActivity;
@@ -32,6 +31,8 @@ public class Item {
     public String title;
     public String subTitle;
     public String uri;
+    public String contextUri;
+    public int position;
     public OnClick onClick;
     public int number;
     public boolean disabled;
@@ -52,7 +53,7 @@ public class Item {
                 context.startActivity(intent);
             }
         };
-        Manager.getService(new Callback() {
+        Manager.getService(new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<User> call = service.getUser(playlist.owner.id);
@@ -121,9 +122,20 @@ public class Item {
         if (track.artists.length > 0) {
             subTitle = names(track.artists);
         }
-        if(track.is_playable != null) {
+        if (track.is_playable != null) {
             disabled = !track.is_playable;
         }
+        onClick = new OnClick() {
+            @Override
+            public void run(Context context) {
+                Manager.shuffle(null,false, new Callback<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Manager.play(null, null, contextUri, position, null);
+                    }
+                });
+            }
+        };
     }
 
     public void setArtist(Artist artist, int songCount) {

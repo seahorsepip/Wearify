@@ -64,7 +64,7 @@ public class NowPlayingActivity extends Activity {
         pauseIcon.setTint(Color.argb(180, 0, 0, 0));
         layerDrawable.setDrawableByLayerId(R.id.nested_icon, pauseIcon);
         playButton.setImageDrawable(layerDrawable);
-        Manager.getService(new Callback() {
+        Manager.getService(new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Playlist> call = service.getPlaylist("spotify", "37i9dQZF1DXd28jAsVoMbV",

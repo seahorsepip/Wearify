@@ -20,7 +20,7 @@
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="36dp"
+        android:paddingBottom="40dp"
         android:paddingTop="@dimen/list_padding"
         android:scrollbarStyle="outsideOverlay"
         android:scrollbars="vertical" />
