@@ -16,11 +16,12 @@
         android:paddingStart="@dimen/list_padding"
         android:paddingTop="8dp">
 
-        <ImageView
+        <com.seapip.thomas.wearify.RoundImageButtonView
             android:id="@+id/button_icon"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:layout_centerVertical="true" />
+            android:layout_centerInParent="true"
+            android:clickable="false" />
 
         <TextView
             android:id="@+id/button_text"
@@ -30,11 +31,11 @@
             android:layout_centerVertical="true"
             android:layout_toEndOf="@+id/button_icon"
             android:ellipsize="end"
+            android:fontFamily="sans-serif-semi-bold"
             android:maxLines="1"
             android:paddingStart="10dp"
             android:textColor="@color/white"
             android:textSize="16sp"
-            android:fontFamily="sans-serif-semi-bold"
             android:visibility="gone" />
     </RelativeLayout>
 

@@ -40,6 +40,7 @@ public class CircularProgressView extends ImageView {
 
     public void setProgress(float progress) {
         mProgress = progress;
+        invalidate();
     }
 
     @Override

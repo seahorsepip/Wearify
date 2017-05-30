@@ -3,6 +3,7 @@ package com.seapip.thomas.wearify.Spotify;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -56,9 +57,32 @@ public interface Service {
     Call<Artists> getArtists(@Query("ids") String ids);
 
     @PUT("me/player/play")
-    Call<Void> play(@Body Play play);
+    Call<Void> play(@Query("device_id") String deviceId, 
+                    @Body Play play);
+
+    @PUT("me/player/play")
+    Call<Void> resume(@Query("device_id") String deviceId);
+
+    @PUT("me/player/pause")
+    Call<Void> pause(@Query("device_id") String deviceId);
+
+    @POST("me/player/previous")
+    Call<Void> prev(@Query("device_id") String deviceId);
+
+    @POST("me/player/next")
+    Call<Void> next(@Query("device_id") String deviceId);
 
     @PUT("me/player/shuffle")
     Call<Void> shuffle(@Query("state") boolean state,
-                       @Query("device_id") String device_id);
+                       @Query("device_id") String deviceId);
+
+    @PUT("me/player/repeat")
+    Call<Void> repeat(@Query("state") String state,
+                       @Query("device_id") String deviceId);
+    @PUT("me/player/volume")
+    Call<Void> volume(@Query("volume_percent") int volumePercent,
+                       @Query("device_id") String deviceId);
+
+    @GET("me/player")
+    Call<CurrentlyPlaying> playback(@Query("market") String market);
 }

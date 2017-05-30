@@ -68,10 +68,10 @@ public class PlaylistActivity extends Activity {
         shuffle.onClick = new OnClick() {
             @Override
             public void run(Context context) {
-                Manager.shuffle(null,true, new Callback<Void>() {
+                Manager.shuffle(true, new Callback<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Manager.play(null, null, mUri, -1, null);
+                        Manager.play( null, mUri, -1, null);
                     }
                 });
             }

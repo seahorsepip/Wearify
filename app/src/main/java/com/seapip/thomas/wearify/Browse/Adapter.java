@@ -22,6 +22,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.seapip.thomas.wearify.R;
+import com.seapip.thomas.wearify.RoundImageButtonView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -72,7 +73,7 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
                 break;
             case ACTION_BUTTON_SMALL:
                 view = layoutInflater.inflate(R.layout.browse_action_button_small, viewGroup, false);
-                viewHolder = new ActionButtonSmallViewHolder(view);
+                viewHolder = new ActionButtonViewHolder(view);
                 break;
             case LOADING:
                 view = layoutInflater.inflate(R.layout.browse_loading, viewGroup, false);
@@ -139,22 +140,17 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
 
     private void configureViewHolder(ActionButtonViewHolder viewHolder, int position) {
         ActionButton actionButton = (ActionButton) mList.get(position);
-        Drawable icon = actionButton.icon.mutate();
-        LayerDrawable layerDrawable = (LayerDrawable) mContext.getDrawable(R.drawable.nested_icon).mutate();
-        GradientDrawable background = (GradientDrawable) layerDrawable.findDrawableByLayerId(R.id.nested_background);
-        background.setTint(actionButton.backgroundColor);
-        icon.setTint(actionButton.iconColor);
-        layerDrawable.setDrawableByLayerId(R.id.nested_icon, icon);
-        viewHolder.image.setImageDrawable(layerDrawable);
-        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) viewHolder.image.getLayoutParams();
-
+        viewHolder.button.setImageDrawable(actionButton.icon);
+        viewHolder.button.setBackgroundColor(actionButton.backgroundColor);
+        viewHolder.button.setTint(actionButton.iconColor);
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) viewHolder.button.getLayoutParams();
         if (actionButton.text == null) {
             layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-            viewHolder.image.setLayoutParams(layoutParams);
+            viewHolder.button.setLayoutParams(layoutParams);
             viewHolder.text.setVisibility(View.GONE);
         } else {
             layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, 0);
-            viewHolder.image.setLayoutParams(layoutParams);
+            viewHolder.button.setLayoutParams(layoutParams);
             viewHolder.text.setVisibility(View.VISIBLE);
             viewHolder.text.setText(actionButton.text);
         }
@@ -271,20 +267,13 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
 
     public static class ActionButtonViewHolder extends WearableRecyclerView.ViewHolder {
 
-        private final ImageView image;
+        private final RoundImageButtonView button;
         private final TextView text;
 
         public ActionButtonViewHolder(View view) {
             super(view);
-            image = (ImageView) view.findViewById(R.id.button_icon);
+            button = (RoundImageButtonView) view.findViewById(R.id.button_icon);
             text = (TextView) view.findViewById(R.id.button_text);
-        }
-    }
-
-    public static class ActionButtonSmallViewHolder extends ActionButtonViewHolder {
-
-        public ActionButtonSmallViewHolder(View view) {
-            super(view);
         }
     }
 

@@ -128,10 +128,10 @@ public class Item {
         onClick = new OnClick() {
             @Override
             public void run(Context context) {
-                Manager.shuffle(null,false, new Callback<Void>() {
+                Manager.shuffle(false, new Callback<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Manager.play(null, null, contextUri, position, null);
+                        Manager.play(null, contextUri, position, null);
                     }
                 });
             }
