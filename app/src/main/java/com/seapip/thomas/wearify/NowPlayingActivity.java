@@ -1,8 +1,13 @@
 package com.seapip.thomas.wearify;
 
+import android.app.Dialog;
+import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.wearable.view.WearableRecyclerView;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
@@ -10,14 +15,28 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.seapip.thomas.wearify.Browse.Activity;
+import com.seapip.thomas.wearify.Browse.Adapter;
+import com.seapip.thomas.wearify.Browse.Header;
+import com.seapip.thomas.wearify.Browse.Item;
+import com.seapip.thomas.wearify.Browse.OnClick;
 import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.CurrentlyPlaying;
+import com.seapip.thomas.wearify.Spotify.Device;
+import com.seapip.thomas.wearify.Spotify.Devices;
 import com.seapip.thomas.wearify.Spotify.Manager;
+import com.seapip.thomas.wearify.Spotify.Service;
+import com.seapip.thomas.wearify.Spotify.Transfer;
 import com.seapip.thomas.wearify.Spotify.Util;
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Response;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -28,6 +47,7 @@ public class NowPlayingActivity extends Activity {
     private boolean mAmbient;
     private WearableDrawerLayout mDrawerLayout;
     private ImageView mBackgroundImage;
+    private ProgressBar mProgressBar;
     private RoundImageButtonView mPlay;
     private RoundImageButtonView mPrev;
     private RoundImageButtonView mNext;
@@ -43,7 +63,7 @@ public class NowPlayingActivity extends Activity {
     private MenuItem mRepeatMenuItem;
     private MenuItem mDeviceMenuItem;
     private Callback<CurrentlyPlaying> mPlaybackCallback;
-    private long mIgnoreCallbacks;
+    private Runnable mRunnable;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -56,6 +76,9 @@ public class NowPlayingActivity extends Activity {
 
         mDrawerLayout = (WearableDrawerLayout) findViewById(R.id.drawer_layout);
         mBackgroundImage = (ImageView) findViewById(R.id.background_image);
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        mProgressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+        mProgressBar.setVisibility(GONE);
         mPlay = (RoundImageButtonView) findViewById(R.id.button_play);
         mPrev = (RoundImageButtonView) findViewById(R.id.button_prev);
         mNext = (RoundImageButtonView) findViewById(R.id.button_next);
@@ -69,7 +92,7 @@ public class NowPlayingActivity extends Activity {
         mPlaybackCallback = new Callback<CurrentlyPlaying>() {
             @Override
             public void onSuccess(final CurrentlyPlaying currentlyPlaying) {
-                if(currentlyPlaying.item != null && System.currentTimeMillis() > mIgnoreCallbacks) {
+                if (currentlyPlaying != null && currentlyPlaying.item != null) {
                     if (mCurrentlyPlaying == null || !mCurrentlyPlaying.item.id.equals(currentlyPlaying.item.id)) {
                         if (!mAmbient) {
                             mBackgroundImage.setVisibility(VISIBLE);
@@ -79,7 +102,11 @@ public class NowPlayingActivity extends Activity {
                                 .fit().into(mBackgroundImage);
                         mTitle.setText(currentlyPlaying.item.name);
                         mSubTitle.setText(Util.names(currentlyPlaying.item.artists));
-                    } else if(mCurrentlyPlaying.device.id.equals(currentlyPlaying.device.id)) {
+                        if(!mAmbient) {
+                            mProgress.setVisibility(VISIBLE);
+                        }
+                        mProgressBar.setVisibility(GONE);
+                    } else if (mCurrentlyPlaying.device.id.equals(currentlyPlaying.device.id)) {
                         //These kind of fixes make me cry...
                         currentlyPlaying.device.volume_percent = mCurrentlyPlaying.device.volume_percent;
                     }
@@ -100,19 +127,19 @@ public class NowPlayingActivity extends Activity {
                             break;
                     }
                     mDeviceMenuItem.setTitle(currentlyPlaying.device.name);
+                    if (currentlyPlaying.device == null || !currentlyPlaying.device.is_active) {
+                        deviceDialog();
+                    }
                 }
             }
         };
-
-        Manager.onPlayback(mPlaybackCallback);
-        onProgress();
 
         mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mCurrentlyPlaying != null) {
                     mCurrentlyPlaying.is_playing = !mCurrentlyPlaying.is_playing;
-                    if(mCurrentlyPlaying.is_playing) {
+                    if (mCurrentlyPlaying.is_playing) {
                         Manager.resume(null);
                     } else {
                         Manager.pause(null);
@@ -148,7 +175,7 @@ public class NowPlayingActivity extends Activity {
         mVolDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mCurrentlyPlaying != null) {
+                if (mCurrentlyPlaying != null) {
                     mCurrentlyPlaying.device.volume_percent = Math.min(100, mCurrentlyPlaying.device.volume_percent - 10);
                     Manager.volume(mCurrentlyPlaying.device.volume_percent, null);
                 }
@@ -159,7 +186,7 @@ public class NowPlayingActivity extends Activity {
         mVolUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mCurrentlyPlaying != null) {
+                if (mCurrentlyPlaying != null) {
                     mCurrentlyPlaying.device.volume_percent = Math.max(0, mCurrentlyPlaying.device.volume_percent + 10);
                     Manager.volume(mCurrentlyPlaying.device.volume_percent, null);
                 }
@@ -204,12 +231,107 @@ public class NowPlayingActivity extends Activity {
             }
         });
         mDeviceMenuItem = menu.add("Devices").setIcon(getDrawable(R.drawable.ic_devices_other_black_24dp));
+        mDeviceMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(final MenuItem item) {
+                deviceDialog();
+                return false;
+            }
+        });
+
+        mRunnable = Manager.onPlayback(mPlaybackCallback);
+        onProgress();
+    }
+
+    private void deviceDialog() {
+        final Dialog dialog = new Dialog(NowPlayingActivity.this);
+        dialog.setContentView(R.layout.dialog_device);
+        final ProgressBar progressBar = (ProgressBar) dialog.findViewById(R.id.progress_bar);
+        progressBar.getIndeterminateDrawable().setColorFilter(Color.parseColor("#00ffe0"), PorterDuff.Mode.SRC_ATOP);
+        final WearableRecyclerView recyclerView = (WearableRecyclerView) dialog.findViewById(R.id.content);
+        final ArrayList<Item> items = new ArrayList<>();
+        items.add(new Header("Devices"));
+        Adapter adapter = new Adapter(NowPlayingActivity.this, items);
+        recyclerView.setLayoutManager(new LinearLayoutManager(NowPlayingActivity.this));
+        recyclerView.setAdapter(adapter);
+        dialog.setCancelable(true);
+        dialog.show();
+        Manager.getService(new Callback<Service>() {
+            @Override
+            public void onSuccess(Service service) {
+                Call<Devices> call = service.devices();
+                call.enqueue(new retrofit2.Callback<Devices>() {
+                    @Override
+                    public void onResponse(Call<Devices> call, Response<Devices> response) {
+                        if (response.isSuccessful()) {
+                            Devices devices = response.body();
+                            progressBar.setVisibility(GONE);
+                            for (final Device device : devices.devices) {
+                                if (!device.is_restricted) {
+                                    Item item = new Item();
+                                    item.title = device.name;
+                                    switch (device.type) {
+                                        case "Smartphone":
+                                            item.subTitle = "Phone";
+                                            item.image = getDrawable(R.drawable.ic_smartphone_black_24dp);
+                                            break;
+                                        case "Tablet":
+                                            item.subTitle = "Tablet";
+                                            item.image = getDrawable(R.drawable.ic_tablet_black_24dp);
+                                            break;
+                                        default:
+                                        case "Computer":
+                                            item.subTitle = "Computer";
+                                            item.image = getDrawable(R.drawable.ic_computer_black_24dp);
+                                            break;
+                                    }
+                                    item.onClick = new OnClick() {
+                                        @Override
+                                        public void run(Context context) {
+                                            Manager.getService(new Callback<Service>() {
+                                                @Override
+                                                public void onSuccess(Service service) {
+                                                    Transfer transfer = new Transfer();
+                                                    transfer.device_ids = new String[1];
+                                                    transfer.device_ids[0] = device.id;
+                                                    Call<Void> call = service.transfer(transfer);
+                                                    call.enqueue(new retrofit2.Callback<Void>() {
+                                                        @Override
+                                                        public void onResponse(Call<Void> call, Response<Void> response) {
+                                                            dialog.dismiss();
+                                                        }
+
+                                                        @Override
+                                                        public void onFailure(Call<Void> call, Throwable t) {
+
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    };
+                                    items.add(item);
+                                }
+                            }
+                            recyclerView.getAdapter().notifyDataSetChanged();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Devices> call, Throwable t) {
+
+                    }
+                });
+            }
+        });
     }
 
     private void setLoading() {
         mBackgroundImage.setVisibility(GONE);
         mTitle.setText("");
         mSubTitle.setText("");
+        mProgress.setVisibility(GONE);
+        mProgressBar.setVisibility(VISIBLE);
     }
 
     private void setPlayIcon() {
@@ -229,16 +351,18 @@ public class NowPlayingActivity extends Activity {
     }
 
     private void setRepeatIcon() {
-        switch (mCurrentlyPlaying.repeat_state) {
-            case "off":
-                mRepeatMenuItem.setIcon(R.drawable.ic_repeat_disabled_black_24px);
-                break;
-            case "context":
-                mRepeatMenuItem.setIcon(R.drawable.ic_repeat_black_24dp);
-                break;
-            case "track":
-                mRepeatMenuItem.setIcon(R.drawable.ic_repeat_one_black_24dp);
-                break;
+        if(mCurrentlyPlaying.repeat_state != null) {
+            switch (mCurrentlyPlaying.repeat_state) {
+                case "off":
+                    mRepeatMenuItem.setIcon(R.drawable.ic_repeat_disabled_black_24px);
+                    break;
+                case "context":
+                    mRepeatMenuItem.setIcon(R.drawable.ic_repeat_black_24dp);
+                    break;
+                case "track":
+                    mRepeatMenuItem.setIcon(R.drawable.ic_repeat_one_black_24dp);
+                    break;
+            }
         }
     }
 
@@ -259,21 +383,25 @@ public class NowPlayingActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        Manager.onPlayback(mPlaybackCallback);
+        mRunnable = Manager.onPlayback(mPlaybackCallback);
         onProgress();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Manager.offPlayback();
+        if(mRunnable != null) {
+            Manager.offPlayback(mRunnable);
+        }
         mProgressHandler.removeCallbacksAndMessages(null);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Manager.offPlayback();
+        if(mRunnable != null) {
+            Manager.offPlayback(mRunnable);
+        }
         mProgressHandler.removeCallbacksAndMessages(null);
     }
 
@@ -281,7 +409,9 @@ public class NowPlayingActivity extends Activity {
     public void onEnterAmbient(Bundle ambientDetails) {
         super.onEnterAmbient(ambientDetails);
         mAmbient = true;
-        Manager.offPlayback();
+        if(mRunnable != null) {
+            Manager.offPlayback(mRunnable);
+        }
         mProgressHandler.removeCallbacksAndMessages(null);
         mDrawerLayout.setBackgroundColor(Color.BLACK);
         mBackgroundImage.setVisibility(GONE);
@@ -300,7 +430,7 @@ public class NowPlayingActivity extends Activity {
     public void onExitAmbient() {
         super.onExitAmbient();
         mAmbient = false;
-        Manager.onPlayback(mPlaybackCallback);
+        mRunnable = Manager.onPlayback(mPlaybackCallback);
         onProgress();
         mDrawerLayout.setBackgroundColor(Color.parseColor("#141414"));
         mBackgroundImage.setVisibility(VISIBLE);

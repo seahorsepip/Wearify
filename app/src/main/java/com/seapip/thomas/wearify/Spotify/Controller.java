@@ -14,9 +14,9 @@ public interface Controller {
 
     void getPlayback(Callback<CurrentlyPlaying> callback);
 
-    void onPlayback(Callback<CurrentlyPlaying> callback);
+    Runnable onPlayback(Callback<CurrentlyPlaying> callback);
 
-    void offPlayback();
+    void offPlayback(Runnable runnable);
 
     void prev(Callback<Void> callback);
 

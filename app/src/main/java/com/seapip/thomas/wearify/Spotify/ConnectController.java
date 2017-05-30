@@ -1,9 +1,7 @@
 package com.seapip.thomas.wearify.Spotify;
 
 import android.os.Handler;
-import android.util.Log;
 
-import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -116,9 +114,6 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            if (mOnPlaybackCallback != null) {
-                                getPlayback(mOnPlaybackCallback);
-                            }
                             if (callback != null) {
                                 callback.onSuccess(null);
                             }
@@ -145,9 +140,6 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            if (mOnPlaybackCallback != null) {
-                                getPlayback(mOnPlaybackCallback);
-                            }
                             if (callback != null) {
                                 callback.onSuccess(null);
                             }
@@ -192,22 +184,25 @@ public class ConnectController implements Controller {
     }
 
     @Override
-    public void onPlayback(final Callback<CurrentlyPlaying> callback) {
-        mOnPlaybackCallback = callback;
+    public Runnable onPlayback(final Callback<CurrentlyPlaying> callback) {
         mPlaybackHandler.removeCallbacksAndMessages(null);
-        (new Runnable() {
+        if(mCurrentlyPlaying != null) {
+            callback.onSuccess(mCurrentlyPlaying);
+        }
+        Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 getPlayback(callback);
                 mPlaybackHandler.postDelayed(this, 3000);
             }
-        }).run();
+        };
+        runnable.run();
+        return runnable;
     }
 
     @Override
-    public void offPlayback() {
-        mOnPlaybackCallback = null;
-        mPlaybackHandler.removeCallbacksAndMessages(null);
+    public void offPlayback(Runnable runnable) {
+        mPlaybackHandler.removeCallbacks(runnable);
     }
 
     @Override

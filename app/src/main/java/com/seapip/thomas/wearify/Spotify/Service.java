@@ -57,7 +57,7 @@ public interface Service {
     Call<Artists> getArtists(@Query("ids") String ids);
 
     @PUT("me/player/play")
-    Call<Void> play(@Query("device_id") String deviceId, 
+    Call<Void> play(@Query("device_id") String deviceId,
                     @Body Play play);
 
     @PUT("me/player/play")
@@ -78,11 +78,18 @@ public interface Service {
 
     @PUT("me/player/repeat")
     Call<Void> repeat(@Query("state") String state,
-                       @Query("device_id") String deviceId);
+                      @Query("device_id") String deviceId);
+
     @PUT("me/player/volume")
     Call<Void> volume(@Query("volume_percent") int volumePercent,
-                       @Query("device_id") String deviceId);
+                      @Query("device_id") String deviceId);
 
     @GET("me/player")
     Call<CurrentlyPlaying> playback(@Query("market") String market);
+
+    @GET("me/player/devices")
+    Call<Devices> devices();
+
+    @PUT("me/player")
+    Call<Void> transfer(@Body Transfer transfer);
 }

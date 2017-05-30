@@ -46,10 +46,9 @@ public class Manager {
                                     .build());
                         }
                     });
-                    /*
                     HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
                     interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-                    httpClient.addInterceptor(interceptor);*/
+                    httpClient.addInterceptor(interceptor);
                     mDispatcher = new Dispatcher();
                     mDispatcher.setMaxRequests(10);
                     httpClient.dispatcher(mDispatcher);
@@ -106,12 +105,12 @@ public class Manager {
         mController.getPlayback(callback);
     }
 
-    public static void onPlayback(Callback<CurrentlyPlaying> callback) {
-        mController.onPlayback(callback);
+    public static Runnable onPlayback(Callback<CurrentlyPlaying> callback) {
+        return mController.onPlayback(callback);
     }
 
-    public static void offPlayback() {
-        mController.offPlayback();
+    public static void offPlayback(Runnable runnable) {
+        mController.offPlayback(runnable);
     }
 
     public static void prev(Callback<Void> callback) {
