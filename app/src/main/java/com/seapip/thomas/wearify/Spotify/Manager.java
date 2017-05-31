@@ -84,6 +84,10 @@ public class Manager {
         }
     }
 
+    public static String deviceId() {
+        return mController.deviceId();
+    }
+
     public static void play(String uris, String contextUri, int position, Callback<Void> callback) {
         mController.play(uris, contextUri, position, callback);
     }
@@ -126,5 +130,9 @@ public class Manager {
 
     public static void volume(int volume, Callback<Void> callback) {
         mController.volume(volume, callback);
+    }
+
+    public static void destroy() {
+        mController.destroy();
     }
 }

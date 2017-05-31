@@ -18,6 +18,11 @@ public class ConnectController implements Controller {
     }
 
     @Override
+    public String deviceId() {
+        return mDeviceId;
+    }
+
+    @Override
     public void play(final String uris, final String contextUri,
                      final int position, final Callback<Void> callback) {
         getService(new Callback<Service>() {

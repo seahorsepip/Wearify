@@ -110,6 +110,7 @@ public class LoginActivity extends WearableActivity {
 
                     @Override
                     public void onFailure(Call<Token> call, Throwable t) {
+
                     }
                 });
                 handler.postDelayed(this, 5000);
@@ -128,6 +129,7 @@ public class LoginActivity extends WearableActivity {
 
             @Override
             public void onError() {
+                Log.e("FAIL???", "UHM???");
                 progressBar.setVisibility(View.GONE);
                 qrCodeService.run();
                 loginService.run();

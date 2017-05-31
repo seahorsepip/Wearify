@@ -95,7 +95,7 @@ public class NowPlayingActivity extends Activity {
             @Override
             public void onSuccess(final CurrentlyPlaying currentlyPlaying) {
                 if (currentlyPlaying != null && currentlyPlaying.item != null) {
-                    if (mCurrentlyPlaying == null || !mCurrentlyPlaying.item.id.equals(currentlyPlaying.item.id)) {
+                    if (mCurrentlyPlaying == null || !mCurrentlyPlaying.item.uri.equals(currentlyPlaying.item.uri)) {
                         if (!mAmbient) {
                             mBackgroundImage.setVisibility(VISIBLE);
                         }
@@ -272,9 +272,34 @@ public class NowPlayingActivity extends Activity {
                             watch.title = Build.MODEL;
                             watch.subTitle = "Watch";
                             watch.image = getDrawable(R.drawable.ic_watch_black_24dp);
+                            watch.onClick = new OnClick() {
+                                @Override
+                                public void run(Context context) {
+                                    Manager.getService(new Callback<Service>() {
+                                        @Override
+                                        public void onSuccess(Service service) {
+                                            Transfer transfer = new Transfer();
+                                            transfer.device_ids = new String[1];
+                                            transfer.device_ids[0] = Manager.deviceId();
+                                            Call<Void> call = service.transfer(transfer);
+                                            call.enqueue(new retrofit2.Callback<Void>() {
+                                                @Override
+                                                public void onResponse(Call<Void> call, Response<Void> response) {
+                                                    dialog.dismiss();
+                                                }
+
+                                                @Override
+                                                public void onFailure(Call<Void> call, Throwable t) {
+
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            };
                             items.add(watch);
                             for (final Device device : devices.devices) {
-                                if (!device.is_restricted) {
+                                //if (!device.is_restricted) {
                                     Item item = new Item();
                                     item.title = device.name;
                                     switch (device.type) {
@@ -318,11 +343,12 @@ public class NowPlayingActivity extends Activity {
                                         }
                                     };
                                     items.add(item);
-                                }
+                                //}
                             }
-                            recyclerView.getAdapter().notifyDataSetChanged();
                         }
+                        recyclerView.getAdapter().notifyDataSetChanged();
                     }
+
 
                     @Override
                     public void onFailure(Call<Devices> call, Throwable t) {
@@ -433,6 +459,7 @@ public class NowPlayingActivity extends Activity {
         mPrev.setImageDrawable(getDrawable(R.drawable.ic_skip_previous_black_burn_in_24dp));
         mVolDown.setImageDrawable(getDrawable(R.drawable.ic_volume_down_black_burn_in_24dp));
         mVolUp.setImageDrawable(getDrawable(R.drawable.ic_volume_up_black_burn_in_24dp));
+        //Manager.destroy();
     }
 
     @Override
@@ -460,5 +487,11 @@ public class NowPlayingActivity extends Activity {
     public void onUpdateAmbient() {
         super.onUpdateAmbient();
         Manager.getPlayback(mPlaybackCallback);
+    }
+
+    @Override
+    protected void onDestroy() {
+        //Manager.destroy();
+        super.onDestroy();
     }
 }
