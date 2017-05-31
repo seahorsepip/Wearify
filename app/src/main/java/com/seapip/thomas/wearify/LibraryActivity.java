@@ -40,11 +40,12 @@ public class LibraryActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_browse);
 
-        Manager.setController(Manager.CONNECT_CONTROLLER);
+        //Manager.setController(Manager.CONNECT_CONTROLLER, null);
+        Manager.setController(Manager.NATIVE_CONTROLLER, getApplicationContext());
 
         setDrawers((WearableDrawerLayout) findViewById(R.id.drawer_layout),
                 (WearableNavigationDrawer) findViewById(R.id.top_navigation_drawer),
-                (WearableActionDrawer) findViewById(R.id.bottom_action_drawer));
+                (WearableActionDrawer) findViewById(R.id.bottom_action_drawer), 1);
 
         mRecyclerView = (WearableRecyclerView) findViewById(R.id.content);
         mItems = new ArrayList<>();

@@ -1,5 +1,7 @@
 package com.seapip.thomas.wearify.Spotify;
 
+import android.content.*;
+
 import com.seapip.thomas.wearify.Wearify.Token;
 
 import java.io.IOException;
@@ -69,7 +71,7 @@ public class Manager {
         mDispatcher.cancelAll();
     }
 
-    public static void setController(int controller) {
+    public static void setController(int controller, android.content.Context context) {
         switch (controller) {
             case CONNECT_CONTROLLER:
                 mController = new ConnectController();
@@ -77,6 +79,7 @@ public class Manager {
             case BLUETOOTH_CONTROLLER:
                 break;
             case NATIVE_CONTROLLER:
+                mController = new NativeController(context);
                 break;
         }
     }

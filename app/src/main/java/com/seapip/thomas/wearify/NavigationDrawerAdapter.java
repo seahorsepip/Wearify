@@ -1,12 +1,14 @@
 package com.seapip.thomas.wearify;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
 
 public class NavigationDrawerAdapter extends WearableNavigationDrawer.WearableNavigationDrawerAdapter {
     private Context mContext;
+    private boolean mSelect;
 
     public NavigationDrawerAdapter(Context context) {
         mContext = context;
@@ -47,11 +49,32 @@ public class NavigationDrawerAdapter extends WearableNavigationDrawer.WearableNa
 
     @Override
     public void onItemSelected(int i) {
+        Intent intent;
+        switch (i) {
+            default:
+            case 0:
+                intent = new Intent(mContext, LibraryActivity.class);
+                break;
+            case 1:
+                intent = new Intent(mContext, LibraryActivity.class);
+                break;
+            case 2:
+                intent = new Intent(mContext, LibraryActivity.class);
+                break;
+        }
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        if(mSelect) {
+            mContext.startActivity(intent);
+        }
 
     }
 
     @Override
     public int getCount() {
         return 3;
+    }
+
+    public void enabledSelect() {
+        mSelect = true;
     }
 }

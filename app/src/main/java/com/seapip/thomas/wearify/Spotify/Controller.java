@@ -23,4 +23,6 @@ public interface Controller {
     void next(Callback<Void> callback);
 
     void volume(int volume, Callback<Void> callback);
+
+    void destroy();
 }

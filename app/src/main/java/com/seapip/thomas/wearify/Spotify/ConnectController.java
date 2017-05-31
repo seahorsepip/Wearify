@@ -11,7 +11,6 @@ public class ConnectController implements Controller {
 
     private String mDeviceId;
     private Handler mPlaybackHandler;
-    private Callback<CurrentlyPlaying> mOnPlaybackCallback;
     private CurrentlyPlaying mCurrentlyPlaying;
 
     public ConnectController() {
@@ -282,5 +281,10 @@ public class ConnectController implements Controller {
                 });
             }
         });
+    }
+
+    @Override
+    public void destroy() {
+
     }
 }

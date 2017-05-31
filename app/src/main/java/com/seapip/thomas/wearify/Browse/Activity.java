@@ -48,14 +48,19 @@ public class Activity extends WearableActivity {
 
     public void setDrawers(WearableDrawerLayout layout,
                            WearableNavigationDrawer navigationDrawer,
-                           final WearableActionDrawer actionDrawer) {
+                           final WearableActionDrawer actionDrawer,
+                           int position) {
         // Main Wearable Drawer Layout that wraps all content
         layout.peekDrawer(Gravity.BOTTOM);
 
         // Top Navigation Drawer
         if (navigationDrawer != null) {
-            navigationDrawer.setAdapter(new NavigationDrawerAdapter(this));
-            navigationDrawer.setCurrentItem(1, false);
+            NavigationDrawerAdapter adapter = new NavigationDrawerAdapter(this);
+            navigationDrawer.setAdapter(adapter);
+            if (position > 0) {
+                navigationDrawer.setCurrentItem(1, false);
+            }
+            adapter.enabledSelect();
         }
 
         // Bottom Action Drawer
@@ -140,7 +145,7 @@ public class Activity extends WearableActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(mPlaybackCallback != null) {
+        if (mPlaybackCallback != null) {
             mRunnable = Manager.onPlayback(mPlaybackCallback);
         }
     }
@@ -148,7 +153,7 @@ public class Activity extends WearableActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if(mRunnable != null) {
+        if (mRunnable != null) {
             Manager.offPlayback(mRunnable);
         }
     }
@@ -156,7 +161,7 @@ public class Activity extends WearableActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if(mRunnable != null) {
+        if (mRunnable != null) {
             Manager.offPlayback(mRunnable);
         }
     }

@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
@@ -46,6 +47,7 @@ public class NowPlayingActivity extends Activity {
 
     private boolean mAmbient;
     private WearableDrawerLayout mDrawerLayout;
+    private WearableNavigationDrawer mNavigationDrawer;
     private ImageView mBackgroundImage;
     private ProgressBar mProgressBar;
     private RoundImageButtonView mPlay;
@@ -71,9 +73,7 @@ public class NowPlayingActivity extends Activity {
         setAmbientEnabled();
         setContentView(R.layout.activity_now_playing);
 
-        setDrawers((WearableDrawerLayout) findViewById(R.id.drawer_layout),
-                (WearableNavigationDrawer) findViewById(R.id.top_navigation_drawer), null);
-
+        mNavigationDrawer = (WearableNavigationDrawer) findViewById(R.id.top_navigation_drawer);
         mDrawerLayout = (WearableDrawerLayout) findViewById(R.id.drawer_layout);
         mBackgroundImage = (ImageView) findViewById(R.id.background_image);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
@@ -89,6 +89,8 @@ public class NowPlayingActivity extends Activity {
         mProgress = (CircularProgressView) findViewById(R.id.circle_progress);
         mProgressHandler = new Handler();
 
+        setDrawers(mDrawerLayout, mNavigationDrawer, null, 1);
+
         mPlaybackCallback = new Callback<CurrentlyPlaying>() {
             @Override
             public void onSuccess(final CurrentlyPlaying currentlyPlaying) {
@@ -102,7 +104,7 @@ public class NowPlayingActivity extends Activity {
                                 .fit().into(mBackgroundImage);
                         mTitle.setText(currentlyPlaying.item.name);
                         mSubTitle.setText(Util.names(currentlyPlaying.item.artists));
-                        if(!mAmbient) {
+                        if (!mAmbient) {
                             mProgress.setVisibility(VISIBLE);
                         }
                         mProgressBar.setVisibility(GONE);
@@ -266,6 +268,11 @@ public class NowPlayingActivity extends Activity {
                         if (response.isSuccessful()) {
                             Devices devices = response.body();
                             progressBar.setVisibility(GONE);
+                            Item watch = new Item();
+                            watch.title = Build.MODEL;
+                            watch.subTitle = "Watch";
+                            watch.image = getDrawable(R.drawable.ic_watch_black_24dp);
+                            items.add(watch);
                             for (final Device device : devices.devices) {
                                 if (!device.is_restricted) {
                                     Item item = new Item();
@@ -351,7 +358,7 @@ public class NowPlayingActivity extends Activity {
     }
 
     private void setRepeatIcon() {
-        if(mCurrentlyPlaying.repeat_state != null) {
+        if (mCurrentlyPlaying.repeat_state != null) {
             switch (mCurrentlyPlaying.repeat_state) {
                 case "off":
                     mRepeatMenuItem.setIcon(R.drawable.ic_repeat_disabled_black_24px);
@@ -390,7 +397,7 @@ public class NowPlayingActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        if(mRunnable != null) {
+        if (mRunnable != null) {
             Manager.offPlayback(mRunnable);
         }
         mProgressHandler.removeCallbacksAndMessages(null);
@@ -399,7 +406,7 @@ public class NowPlayingActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        if(mRunnable != null) {
+        if (mRunnable != null) {
             Manager.offPlayback(mRunnable);
         }
         mProgressHandler.removeCallbacksAndMessages(null);
@@ -409,17 +416,19 @@ public class NowPlayingActivity extends Activity {
     public void onEnterAmbient(Bundle ambientDetails) {
         super.onEnterAmbient(ambientDetails);
         mAmbient = true;
-        if(mRunnable != null) {
+        if (mRunnable != null) {
             Manager.offPlayback(mRunnable);
         }
         mProgressHandler.removeCallbacksAndMessages(null);
         mDrawerLayout.setBackgroundColor(Color.BLACK);
+        mNavigationDrawer.setVisibility(GONE);
         mBackgroundImage.setVisibility(GONE);
         mProgress.setVisibility(GONE);
         mActionDrawer.setVisibility(GONE);
         setPlayIcon();
         mPlay.setBackgroundColor(Color.TRANSPARENT);
         mPlay.setTint(Color.WHITE);
+        mPlay.setBorder(Color.parseColor("#777777"));
         mNext.setImageDrawable(getDrawable(R.drawable.ic_skip_next_black_burn_in_24dp));
         mPrev.setImageDrawable(getDrawable(R.drawable.ic_skip_previous_black_burn_in_24dp));
         mVolDown.setImageDrawable(getDrawable(R.drawable.ic_volume_down_black_burn_in_24dp));
@@ -433,12 +442,14 @@ public class NowPlayingActivity extends Activity {
         mRunnable = Manager.onPlayback(mPlaybackCallback);
         onProgress();
         mDrawerLayout.setBackgroundColor(Color.parseColor("#141414"));
+        mNavigationDrawer.setVisibility(VISIBLE);
         mBackgroundImage.setVisibility(VISIBLE);
         mProgress.setVisibility(VISIBLE);
         mActionDrawer.setVisibility(VISIBLE);
         setPlayIcon();
         mPlay.setBackgroundColor(Color.parseColor("#00ffe0"));
         mPlay.setTint(Color.argb(180, 0, 0, 0));
+        mPlay.setBorder(Color.TRANSPARENT);
         mNext.setImageDrawable(getDrawable(R.drawable.ic_skip_next_black_24dp));
         mPrev.setImageDrawable(getDrawable(R.drawable.ic_skip_previous_black_24dp));
         mVolDown.setImageDrawable(getDrawable(R.drawable.ic_volume_down_black_24dp));
