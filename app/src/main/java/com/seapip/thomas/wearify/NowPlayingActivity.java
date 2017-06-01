@@ -117,6 +117,9 @@ public class NowPlayingActivity extends Activity {
                     setShuffleIcon();
                     setRepeatIcon();
                     switch (currentlyPlaying.device.type) {
+                        case "Watch":
+                            mDeviceMenuItem.setIcon(R.drawable.ic_watch_black_24dp);
+                            break;
                         case "Smartphone":
                             mDeviceMenuItem.setIcon(R.drawable.ic_smartphone_black_24dp);
                             break;
@@ -178,7 +181,7 @@ public class NowPlayingActivity extends Activity {
             @Override
             public void onClick(View v) {
                 if (mCurrentlyPlaying != null) {
-                    mCurrentlyPlaying.device.volume_percent = Math.min(100, mCurrentlyPlaying.device.volume_percent - 10);
+                    mCurrentlyPlaying.device.volume_percent = Math.max(0, mCurrentlyPlaying.device.volume_percent - 5);
                     Manager.volume(mCurrentlyPlaying.device.volume_percent, null);
                 }
             }
@@ -189,7 +192,7 @@ public class NowPlayingActivity extends Activity {
             @Override
             public void onClick(View v) {
                 if (mCurrentlyPlaying != null) {
-                    mCurrentlyPlaying.device.volume_percent = Math.max(0, mCurrentlyPlaying.device.volume_percent + 10);
+                    mCurrentlyPlaying.device.volume_percent = Math.min(100, mCurrentlyPlaying.device.volume_percent + 5);
                     Manager.volume(mCurrentlyPlaying.device.volume_percent, null);
                 }
             }

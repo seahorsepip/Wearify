@@ -63,8 +63,6 @@
         android:layout_width="76dp"
         android:layout_height="76dp"
         android:layout_gravity="center"
-        android:layout_marginRight="0.5dp"
-        android:layout_marginBottom="0.5dp"
         android:indeterminate="true" />
 
     <com.seapip.thomas.wearify.RoundImageButtonView
