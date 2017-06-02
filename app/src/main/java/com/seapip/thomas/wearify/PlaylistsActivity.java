@@ -1,5 +1,7 @@
 package com.seapip.thomas.wearify;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,11 +15,13 @@ import com.seapip.thomas.wearify.Browse.Adapter;
 import com.seapip.thomas.wearify.Browse.Header;
 import com.seapip.thomas.wearify.Browse.Item;
 import com.seapip.thomas.wearify.Browse.Loading;
+import com.seapip.thomas.wearify.Browse.OnClick;
 import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.Manager;
 import com.seapip.thomas.wearify.Spotify.Paging;
 import com.seapip.thomas.wearify.Spotify.Playlist;
 import com.seapip.thomas.wearify.Spotify.Service;
+import com.seapip.thomas.wearify.Spotify.User;
 
 import java.util.ArrayList;
 
@@ -50,7 +54,7 @@ public class PlaylistsActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(new Callback<Service>() {
+        Manager.getService(this, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Paging<Playlist>> call = service.getPlaylists(limit, offset);
@@ -60,13 +64,47 @@ public class PlaylistsActivity extends Activity {
                         if (response.isSuccessful()) {
                             mItems.remove(loading);
                             Paging<Playlist> playlists = response.body();
-                            for (Playlist playlist : playlists.items) {
-                                Item item = new Item();
+                            for (final Playlist playlist : playlists.items) {
+                                final Item item = new Item();
                                 item.setPlaylist(playlist, mRecyclerView, true);
                                 if (item.imageUrl == null) {
                                     item.image = getDrawable(R.drawable.ic_playlist_black_24px);
                                 }
+                                item.onClick = new OnClick() {
+                                    @Override
+                                    public void run(Context context) {
+                                        Intent intent = new Intent(context, PlaylistActivity.class).putExtra("uri", playlist.uri);
+                                        context.startActivity(intent);
+                                    }
+                                };
                                 mItems.add(item);
+                                Manager.getService(PlaylistsActivity.this, new Callback<Service>() {
+                                    @Override
+                                    public void onSuccess(Service service) {
+                                        Call<User> call = service.getUser(playlist.owner.id);
+                                        call.enqueue(new retrofit2.Callback<User>() {
+                                            @Override
+                                            public void onResponse(Call<User> call, Response<User> response) {
+                                                if (response.isSuccessful()) {
+                                                    User user = response.body();
+                                                    String name = "by ";
+                                                    if (user.display_name != null) {
+                                                        name += user.display_name;
+                                                    } else {
+                                                        name += user.id;
+                                                    }
+                                                    item.subTitle = name + " • " + item.subTitle;
+                                                    mRecyclerView.getAdapter().notifyDataSetChanged();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onFailure(Call<User> call, Throwable t) {
+
+                                            }
+                                        });
+                                    }
+                                });
                             }
                             mRecyclerView.getAdapter().notifyDataSetChanged();
                             if (playlists.total > playlists.offset + limit) {

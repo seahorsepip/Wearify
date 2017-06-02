@@ -1,5 +1,7 @@
 package com.seapip.thomas.wearify;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,6 +17,7 @@ import com.seapip.thomas.wearify.Browse.Header;
 import com.seapip.thomas.wearify.Browse.Item;
 import com.seapip.thomas.wearify.Browse.LetterGroupHeader;
 import com.seapip.thomas.wearify.Browse.Loading;
+import com.seapip.thomas.wearify.Browse.OnClick;
 import com.seapip.thomas.wearify.Spotify.Artist;
 import com.seapip.thomas.wearify.Spotify.Artists;
 import com.seapip.thomas.wearify.Spotify.Callback;
@@ -57,7 +60,7 @@ public class ArtistsActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(new Callback<Service>() {
+        Manager.getService(this, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Paging<SavedTrack>> call = service.getTracks(limit, offset, "from_token");
@@ -70,9 +73,16 @@ public class ArtistsActivity extends Activity {
                             for (SavedTrack savedTrack : savedTracks.items) {
                                 if (savedTrack.track.artists != null) {
                                     if (!containsUri(savedTrack.track.artists[0].uri)) {
-                                        Item item = new Item();
+                                        final Item item = new Item();
                                         item.setArtist(savedTrack.track.artists[0], 1);
                                         item.image = getDrawable(R.drawable.ic_artist_black_24dp);
+                                        item.onClick = new OnClick() {
+                                            @Override
+                                            public void run(Context context) {
+                                                Intent intent = new Intent(context, ArtistActivity.class).putExtra("uri", item.uri);
+                                                context.startActivity(intent);
+                                            }
+                                        };
                                         mItems.add(item);
                                     } else {
                                         for (Item item : mItems) {
@@ -96,7 +106,7 @@ public class ArtistsActivity extends Activity {
                                         artistIds.add(item.uri.split(":")[2]);
                                     }
                                 }
-                                Manager.getService(new Callback<Service>() {
+                                Manager.getService(ArtistsActivity.this, new Callback<Service>() {
                                     @Override
                                     public void onSuccess(Service service) {
                                         Call<Artists> call = service.getArtists(TextUtils.join(",", artistIds));

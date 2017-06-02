@@ -8,7 +8,6 @@ import android.support.wearable.view.WearableRecyclerView;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
-import android.text.TextUtils;
 import android.widget.ImageView;
 
 import com.seapip.thomas.wearify.Browse.ActionButtonSmall;
@@ -19,12 +18,9 @@ import com.seapip.thomas.wearify.Browse.Item;
 import com.seapip.thomas.wearify.Browse.Loading;
 import com.seapip.thomas.wearify.Browse.OnClick;
 import com.seapip.thomas.wearify.Spotify.Album;
-import com.seapip.thomas.wearify.Spotify.Artist;
 import com.seapip.thomas.wearify.Spotify.Callback;
-import com.seapip.thomas.wearify.Spotify.Paging;
-import com.seapip.thomas.wearify.Spotify.PlaylistTrack;
-import com.seapip.thomas.wearify.Spotify.Util;
 import com.seapip.thomas.wearify.Spotify.Manager;
+import com.seapip.thomas.wearify.Spotify.Paging;
 import com.seapip.thomas.wearify.Spotify.Service;
 import com.seapip.thomas.wearify.Spotify.Track;
 import com.squareup.picasso.Picasso;
@@ -85,7 +81,7 @@ public class AlbumActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(new Callback<Service>() {
+        Manager.getService(this, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Album> call = service.getAlbum(mUri.split(":")[2], "from_token");
@@ -123,7 +119,7 @@ public class AlbumActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(new Callback<Service>() {
+        Manager.getService(this, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Paging<Track>> call = service.getAlbumTracks(mUri.split(":")[2], limit, offset,
@@ -131,7 +127,7 @@ public class AlbumActivity extends Activity {
                 call.enqueue(new retrofit2.Callback<Paging<Track>>() {
                     @Override
                     public void onResponse(Call<Paging<Track>> call, Response<Paging<Track>> response) {
-                        if(response.isSuccessful()) {
+                        if (response.isSuccessful()) {
                             mItems.remove(loading);
                             Paging<Track> albumTracks = response.body();
                             addTracks(albumTracks.items);
@@ -155,7 +151,18 @@ public class AlbumActivity extends Activity {
             Item item = new Item();
             item.setTrack(track);
             item.contextUri = mUri;
-            item.position = mPosition++;
+            final int position = mPosition++;
+            item.onClick = new OnClick() {
+                @Override
+                public void run(Context context) {
+                    Manager.shuffle(false, new Callback<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Manager.play(null, mUri, position, null);
+                        }
+                    });
+                }
+            };
             mItems.add(item);
         }
         mRecyclerView.getAdapter().notifyDataSetChanged();

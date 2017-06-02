@@ -58,7 +58,6 @@ public class LoginActivity extends WearableActivity {
         mQRCodeView = (ImageView) findViewById(R.id.QRCode);
         mLogo = getDrawable(R.drawable.ic_logo);
         mLogoBurnIn = getDrawable(R.drawable.ic_logo_burn_in);
-        Manager.init(getApplicationContext());
         final Handler handler = new Handler();
         final Runnable qrCodeService = new Runnable() {
             @Override
@@ -97,7 +96,7 @@ public class LoginActivity extends WearableActivity {
                             Token token = response.body();
                             if (token != null && token.access_token != null) {
                                 handler.removeCallbacksAndMessages(null);
-                                Manager.setToken(token);
+                                Manager.setToken(LoginActivity.this, token);
                                 Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                                 v.vibrate(500);
                                 Toast.makeText(getApplicationContext(), "Logged in!", Toast.LENGTH_LONG).show();
@@ -119,7 +118,7 @@ public class LoginActivity extends WearableActivity {
         final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.parseColor("#00ffe0"),
                 PorterDuff.Mode.SRC_ATOP);
-        Manager.getToken(new com.seapip.thomas.wearify.Wearify.Callback() {
+        Manager.getToken(this, new com.seapip.thomas.wearify.Wearify.Callback() {
             @Override
             public void onSuccess(Token token) {
                 Intent intent = new Intent(LoginActivity.this, LibraryActivity.class);

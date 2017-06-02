@@ -261,7 +261,7 @@ public class NowPlayingActivity extends Activity {
         recyclerView.setAdapter(adapter);
         dialog.setCancelable(true);
         dialog.show();
-        Manager.getService(new Callback<Service>() {
+        Manager.getService(this, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Devices> call = service.devices();
@@ -278,12 +278,12 @@ public class NowPlayingActivity extends Activity {
                             watch.onClick = new OnClick() {
                                 @Override
                                 public void run(Context context) {
-                                    Manager.getService(new Callback<Service>() {
+                                    Manager.getService(NowPlayingActivity.this, new Callback<Service>() {
                                         @Override
                                         public void onSuccess(Service service) {
                                             Transfer transfer = new Transfer();
                                             transfer.device_ids = new String[1];
-                                            transfer.device_ids[0] = Manager.deviceId();
+                                            transfer.device_ids[0] = "native_playback";
                                             Call<Void> call = service.transfer(transfer);
                                             call.enqueue(new retrofit2.Callback<Void>() {
                                                 @Override
@@ -303,49 +303,49 @@ public class NowPlayingActivity extends Activity {
                             items.add(watch);
                             for (final Device device : devices.devices) {
                                 //if (!device.is_restricted) {
-                                    Item item = new Item();
-                                    item.title = device.name;
-                                    switch (device.type) {
-                                        case "Smartphone":
-                                            item.subTitle = "Phone";
-                                            item.image = getDrawable(R.drawable.ic_smartphone_black_24dp);
-                                            break;
-                                        case "Tablet":
-                                            item.subTitle = "Tablet";
-                                            item.image = getDrawable(R.drawable.ic_tablet_black_24dp);
-                                            break;
-                                        default:
-                                        case "Computer":
-                                            item.subTitle = "Computer";
-                                            item.image = getDrawable(R.drawable.ic_computer_black_24dp);
-                                            break;
+                                Item item = new Item();
+                                item.title = device.name;
+                                switch (device.type) {
+                                    case "Smartphone":
+                                        item.subTitle = "Phone";
+                                        item.image = getDrawable(R.drawable.ic_smartphone_black_24dp);
+                                        break;
+                                    case "Tablet":
+                                        item.subTitle = "Tablet";
+                                        item.image = getDrawable(R.drawable.ic_tablet_black_24dp);
+                                        break;
+                                    default:
+                                    case "Computer":
+                                        item.subTitle = "Computer";
+                                        item.image = getDrawable(R.drawable.ic_computer_black_24dp);
+                                        break;
+                                }
+                                item.onClick = new OnClick() {
+                                    @Override
+                                    public void run(Context context) {
+                                        Manager.getService(NowPlayingActivity.this, new Callback<Service>() {
+                                            @Override
+                                            public void onSuccess(Service service) {
+                                                Transfer transfer = new Transfer();
+                                                transfer.device_ids = new String[1];
+                                                transfer.device_ids[0] = device.id;
+                                                Call<Void> call = service.transfer(transfer);
+                                                call.enqueue(new retrofit2.Callback<Void>() {
+                                                    @Override
+                                                    public void onResponse(Call<Void> call, Response<Void> response) {
+                                                        dialog.dismiss();
+                                                    }
+
+                                                    @Override
+                                                    public void onFailure(Call<Void> call, Throwable t) {
+
+                                                    }
+                                                });
+                                            }
+                                        });
                                     }
-                                    item.onClick = new OnClick() {
-                                        @Override
-                                        public void run(Context context) {
-                                            Manager.getService(new Callback<Service>() {
-                                                @Override
-                                                public void onSuccess(Service service) {
-                                                    Transfer transfer = new Transfer();
-                                                    transfer.device_ids = new String[1];
-                                                    transfer.device_ids[0] = device.id;
-                                                    Call<Void> call = service.transfer(transfer);
-                                                    call.enqueue(new retrofit2.Callback<Void>() {
-                                                        @Override
-                                                        public void onResponse(Call<Void> call, Response<Void> response) {
-                                                            dialog.dismiss();
-                                                        }
-
-                                                        @Override
-                                                        public void onFailure(Call<Void> call, Throwable t) {
-
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        }
-                                    };
-                                    items.add(item);
+                                };
+                                items.add(item);
                                 //}
                             }
                         }

@@ -16,7 +16,6 @@ import com.seapip.thomas.wearify.Browse.Activity;
 import com.seapip.thomas.wearify.Browse.Adapter;
 import com.seapip.thomas.wearify.Browse.Header;
 import com.seapip.thomas.wearify.Browse.Item;
-import com.seapip.thomas.wearify.Browse.LetterGroupHeader;
 import com.seapip.thomas.wearify.Browse.Loading;
 import com.seapip.thomas.wearify.Browse.OnClick;
 import com.seapip.thomas.wearify.Spotify.Artist;
@@ -30,8 +29,6 @@ import com.seapip.thomas.wearify.Spotify.Util;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -68,7 +65,7 @@ public class ArtistActivity extends Activity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(new Adapter(this, mItems));
         mUri = getIntent().getStringExtra("uri");
-        Manager.getService(new Callback<Service>() {
+        Manager.getService(this, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Artists> call = service.getArtists(mUri.split(":")[2]);
@@ -100,7 +97,7 @@ public class ArtistActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(new Callback<Service>() {
+        Manager.getService(this, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Paging<SavedTrack>> call = service.getTracks(limit, offset, "from_token");
@@ -130,6 +127,17 @@ public class ArtistActivity extends Activity {
                                     }
                                     Item item = new Item();
                                     item.setTrack(savedTrack.track);
+                                    item.onClick = new OnClick() {
+                                        @Override
+                                        public void run(Context context) {
+                                            Manager.shuffle(false, new Callback<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    //Manager.play(null, contextUri, position, null);
+                                                }
+                                            });
+                                        }
+                                    };
                                     mItems.add(item);
                                 }
 

@@ -1,5 +1,6 @@
 package com.seapip.thomas.wearify.Spotify;
 
+import android.content.Context;
 import android.os.Handler;
 
 import retrofit2.Call;
@@ -10,22 +11,19 @@ import static com.seapip.thomas.wearify.Spotify.Manager.getService;
 public class ConnectController implements Controller {
 
     private String mDeviceId;
+    private Context mContext;
     private Handler mPlaybackHandler;
     private CurrentlyPlaying mCurrentlyPlaying;
 
-    public ConnectController() {
+    public ConnectController(Context context) {
+        mContext = context;
         mPlaybackHandler = new Handler();
-    }
-
-    @Override
-    public String deviceId() {
-        return mDeviceId;
     }
 
     @Override
     public void play(final String uris, final String contextUri,
                      final int position, final Callback<Void> callback) {
-        getService(new Callback<Service>() {
+        getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Play play = new Play();
@@ -58,7 +56,7 @@ public class ConnectController implements Controller {
     @Override
     public void pause(final Callback<Void> callback) {
         Manager.cancelAll();
-        getService(new Callback<Service>() {
+        getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Void> call = service.pause(mDeviceId);
@@ -84,7 +82,7 @@ public class ConnectController implements Controller {
     @Override
     public void resume(final Callback<Void> callback) {
         Manager.cancelAll();
-        getService(new Callback<Service>() {
+        getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Void> call = service.resume(mDeviceId);
@@ -110,7 +108,7 @@ public class ConnectController implements Controller {
     @Override
     public void shuffle(final boolean state, final Callback<Void> callback) {
         Manager.cancelAll();
-        getService(new Callback<Service>() {
+        getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Void> call = service.shuffle(state, mDeviceId);
@@ -136,7 +134,7 @@ public class ConnectController implements Controller {
     @Override
     public void repeat(final String state, final Callback<Void> callback) {
         Manager.cancelAll();
-        getService(new Callback<Service>() {
+        getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Void> call = service.repeat(state, mDeviceId);
@@ -161,7 +159,7 @@ public class ConnectController implements Controller {
 
     @Override
     public void getPlayback(final Callback<CurrentlyPlaying> callback) {
-        getService(new Callback<Service>() {
+        getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<CurrentlyPlaying> call = service.playback("from_token");
@@ -190,7 +188,7 @@ public class ConnectController implements Controller {
     @Override
     public Runnable onPlayback(final Callback<CurrentlyPlaying> callback) {
         mPlaybackHandler.removeCallbacksAndMessages(null);
-        if(mCurrentlyPlaying != null) {
+        if (mCurrentlyPlaying != null) {
             callback.onSuccess(mCurrentlyPlaying);
         }
         Runnable runnable = new Runnable() {
@@ -212,7 +210,7 @@ public class ConnectController implements Controller {
     @Override
     public void prev(final Callback<Void> callback) {
         Manager.cancelAll();
-        getService(new Callback<Service>() {
+        getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Void> call = service.prev(mDeviceId);
@@ -238,7 +236,7 @@ public class ConnectController implements Controller {
     @Override
     public void next(final Callback<Void> callback) {
         Manager.cancelAll();
-        getService(new Callback<Service>() {
+        getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Void> call = service.next(mDeviceId);
@@ -264,7 +262,7 @@ public class ConnectController implements Controller {
 
     public void volume(final int volume, final Callback<Void> callback) {
         Manager.cancelAll();
-        getService(new Callback<Service>() {
+        getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Void> call = service.volume(volume, mDeviceId);

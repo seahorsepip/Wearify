@@ -1,5 +1,6 @@
 package com.seapip.thomas.wearify;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,6 +15,7 @@ import com.seapip.thomas.wearify.Browse.Adapter;
 import com.seapip.thomas.wearify.Browse.Header;
 import com.seapip.thomas.wearify.Browse.Item;
 import com.seapip.thomas.wearify.Browse.Loading;
+import com.seapip.thomas.wearify.Browse.OnClick;
 import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.Manager;
 import com.seapip.thomas.wearify.Spotify.Paging;
@@ -57,7 +59,7 @@ public class TracksActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(new Callback<Service>() {
+        Manager.getService(this, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Paging<SavedTrack>> call = service.getTracks(limit, offset, "from_token");
@@ -70,6 +72,17 @@ public class TracksActivity extends Activity {
                             for (SavedTrack savedTrack : savedTracks.items) {
                                 Item item = new Item();
                                 item.setTrack(savedTrack.track);
+                                item.onClick = new OnClick() {
+                                    @Override
+                                    public void run(Context context) {
+                                        Manager.shuffle(false, new Callback<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                //Manager.play(null, contextUri, position, null);
+                                            }
+                                        });
+                                    }
+                                };
                                 mItems.add(item);
                             }
                             mRecyclerView.getAdapter().notifyDataSetChanged();

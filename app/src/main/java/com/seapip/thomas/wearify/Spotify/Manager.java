@@ -14,6 +14,7 @@ import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import android.content.Context;
 
 public class Manager {
     final static public int CONNECT_CONTROLLER = 0;
@@ -25,8 +26,8 @@ public class Manager {
     static private Service mService;
     static private Controller mController;
 
-    public static void getService(final Callback<Service> callback) {
-        com.seapip.thomas.wearify.Wearify.Manager.getToken(new com.seapip.thomas.wearify.Wearify.Callback() {
+    public static void getService(Context context, final Callback<Service> callback) {
+        com.seapip.thomas.wearify.Wearify.Manager.getToken(context, new com.seapip.thomas.wearify.Wearify.Callback() {
             @Override
             public void onSuccess(final Token token) {
                 if (token != mToken) {
@@ -74,18 +75,16 @@ public class Manager {
     public static void setController(int controller, android.content.Context context) {
         switch (controller) {
             case CONNECT_CONTROLLER:
-                mController = new ConnectController();
+                mController = new ConnectController(context);
                 break;
             case BLUETOOTH_CONTROLLER:
                 break;
             case NATIVE_CONTROLLER:
-                mController = new NativeController(context);
+                if (mController == null) {
+                    mController = new NativeController(context);
+                }
                 break;
         }
-    }
-
-    public static String deviceId() {
-        return mController.deviceId();
     }
 
     public static void play(String uris, String contextUri, int position, Callback<Void> callback) {

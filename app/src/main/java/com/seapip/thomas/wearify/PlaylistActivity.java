@@ -8,7 +8,6 @@ import android.support.wearable.view.WearableRecyclerView;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
-import android.util.Log;
 import android.widget.ImageView;
 
 import com.seapip.thomas.wearify.Browse.ActionButtonSmall;
@@ -21,7 +20,6 @@ import com.seapip.thomas.wearify.Browse.OnClick;
 import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.Manager;
 import com.seapip.thomas.wearify.Spotify.Paging;
-import com.seapip.thomas.wearify.Spotify.Play;
 import com.seapip.thomas.wearify.Spotify.Playlist;
 import com.seapip.thomas.wearify.Spotify.PlaylistTrack;
 import com.seapip.thomas.wearify.Spotify.Service;
@@ -71,7 +69,7 @@ public class PlaylistActivity extends Activity {
                 Manager.shuffle(true, new Callback<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Manager.play( null, mUri, -1, null);
+                        Manager.play(null, mUri, -1, null);
                     }
                 });
             }
@@ -82,7 +80,7 @@ public class PlaylistActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(new Callback<Service>() {
+        Manager.getService(this, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Playlist> call = service.getPlaylist(mUri.split(":")[2], mUri.split(":")[4],
@@ -96,7 +94,7 @@ public class PlaylistActivity extends Activity {
                             mItems.remove(loading);
                             mItems.get(0).title = playlist.name;
                             mItems.get(0).subTitle = "Playlist";
-                            Manager.getService(new Callback<Service>() {
+                            Manager.getService(PlaylistActivity.this, new Callback<Service>() {
                                 @Override
                                 public void onSuccess(Service service) {
                                     Call<User> call = service.getUser(playlist.owner.id);
@@ -147,7 +145,7 @@ public class PlaylistActivity extends Activity {
     private void getTracks(final int limit, final int offset, final boolean charts) {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
-        Manager.getService(new Callback<Service>() {
+        Manager.getService(this, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
                 Call<Paging<PlaylistTrack>> call = service.getPlaylistTracks(mUri.split(":")[2],
@@ -181,11 +179,22 @@ public class PlaylistActivity extends Activity {
             Item item = new Item();
             item.setTrack(playlistTrack.track);
             item.contextUri = mUri;
-            item.position = mPosition++;
             if (charts) {
                 offset++;
                 item.number = offset;
             }
+            final int position = mPosition++;
+            item.onClick = new OnClick() {
+                @Override
+                public void run(Context context) {
+                    Manager.shuffle(false, new Callback<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Manager.play(null, mUri, position, null);
+                        }
+                    });
+                }
+            };
             mItems.add(item);
         }
         mRecyclerView.getAdapter().notifyDataSetChanged();
