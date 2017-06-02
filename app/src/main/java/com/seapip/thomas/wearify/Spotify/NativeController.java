@@ -145,12 +145,14 @@ public class NativeController implements Controller, Player.NotificationCallback
             @Override
             public void onAvailable(final Network network) {
                 mNetworkHandler.removeCallbacksAndMessages(null);
-                callback.onSuccess(null);
+                if(callback != null) {
+                    callback.onSuccess(null);
+                }
             }
 
             @Override
             public void onLost(Network network) {
-                requestHighBandwidthNetwork(callback);
+                requestHighBandwidthNetwork(null);
             }
         };
 
