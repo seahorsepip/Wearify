@@ -316,6 +316,7 @@ public class NativeController implements Controller, Player.NotificationCallback
 
     }
 
+    @Override
     public void getPlayback(Callback<CurrentlyPlaying> callback) {
         CurrentlyPlaying currentlyPlaying = new CurrentlyPlaying();
         if (mMetadata != null && mMetadata.currentTrack != null && mCurrentPlaybackState != null) {
