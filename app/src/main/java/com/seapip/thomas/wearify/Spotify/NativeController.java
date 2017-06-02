@@ -10,6 +10,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Build;
 import android.os.Handler;
+import android.widget.Toast;
 
 import com.seapip.thomas.wearify.Wearify.Token;
 import com.spotify.sdk.android.player.Config;
@@ -152,7 +153,17 @@ public class NativeController implements Controller, Player.NotificationCallback
 
             @Override
             public void onLost(Network network) {
-                requestHighBandwidthNetwork(null);
+                Callback<Void> resumeCallback = null;
+                if(mCurrentPlaybackState != null && mCurrentPlaybackState.isPlaying) {
+                    resumeCallback = new Callback<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            mPlayer.resume(null);
+                        }
+                    };
+                    mPlayer.pause(null);
+                }
+                requestHighBandwidthNetwork(resumeCallback);
             }
         };
 
@@ -209,7 +220,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                     Manager.getService(mContext, new Callback<Service>() {
                         @Override
                         public void onSuccess(Service service) {
-                            if (contextUri.split(":")[3].equals("playlist")) {
+                            if (contextUri.contains(":playlist:")) {
                                 Call<Playlist> call = service.getPlaylist(contextUri.split(":")[2],
                                         contextUri.split(":")[4], "tracks.total", "from_token");
                                 call.enqueue(new retrofit2.Callback<Playlist>() {
@@ -224,6 +235,23 @@ public class NativeController implements Controller, Player.NotificationCallback
 
                                     @Override
                                     public void onFailure(Call<Playlist> call, Throwable t) {
+
+                                    }
+                                });
+                            } else if(contextUri.contains(":album:")) {
+                                Call<Album> call = service.getAlbum(contextUri.split(":")[2], "from_token");
+                                call.enqueue(new retrofit2.Callback<Album>() {
+                                    @Override
+                                    public void onResponse(Call<Album> call, Response<Album> response) {
+                                        if(response.isSuccessful()) {
+                                            Album album = response.body();
+                                            int position = ThreadLocalRandom.current().nextInt(0, album.tracks.total);
+                                            play(contextUri, position, callback);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<Album> call, Throwable t) {
 
                                     }
                                 });
