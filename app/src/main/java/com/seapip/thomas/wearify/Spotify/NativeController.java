@@ -162,6 +162,8 @@ public class NativeController implements Controller, Player.NotificationCallback
                         }
                     };
                     mPlayer.pause(null);
+                } else {
+                    Toast.makeText(mContext, "Reconnecting...", Toast.LENGTH_LONG).show();
                 }
                 requestHighBandwidthNetwork(resumeCallback);
             }
@@ -314,7 +316,6 @@ public class NativeController implements Controller, Player.NotificationCallback
 
     }
 
-    @Override
     public void getPlayback(Callback<CurrentlyPlaying> callback) {
         CurrentlyPlaying currentlyPlaying = new CurrentlyPlaying();
         if (mMetadata != null && mMetadata.currentTrack != null && mCurrentPlaybackState != null) {
