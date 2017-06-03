@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#141414">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/list_padding"
+        android:layout_marginRight="@dimen/list_padding"
+        android:layout_marginTop="@dimen/list_padding"
+        android:paddingTop="20dp"
+        android:textColor="#dddddd"
+        android:text="No high-bandwidth network is available. You must add a Wi-Fi network to continue."
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:id="@+id/button_add_wifi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
+        android:clickable="true"
+        android:paddingBottom="8dp"
+        android:paddingLeft="@dimen/list_padding"
+        android:paddingRight="@dimen/list_padding"
+        android:layout_marginTop="10dp"
+        android:paddingTop="8dp">
+
+        <com.seapip.thomas.wearify.RoundImageButtonView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="#00ffe0"
+            android:clickable="false"
+            android:src="@drawable/ic_wifi_black_24dp"
+            android:tint="#b4000000" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-semi-bold"
+            android:maxLines="1"
+            android:paddingStart="10dp"
+            android:text="Add Wi-Fi network"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+
+</LinearLayout>

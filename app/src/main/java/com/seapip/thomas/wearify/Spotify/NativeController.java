@@ -1,6 +1,5 @@
 package com.seapip.thomas.wearify.Spotify;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -12,6 +11,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.widget.Toast;
 
+import com.seapip.thomas.wearify.AddWifiActivity;
 import com.seapip.thomas.wearify.Wearify.Token;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
@@ -34,7 +34,8 @@ import retrofit2.Response;
 public class NativeController implements Controller, Player.NotificationCallback, ConnectionStateCallback {
 
     private static final String CLIENT_ID = "59fb3493386b4a6f8db44f3df59e5a34";
-    private static final long NETWORK_CONNECTIVITY_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(10);
+    private static final long NETWORK_CONNECTIVITY_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(3);
+    private static final long NETWORK_CONNECTIVITY_RELEASE_MS = TimeUnit.SECONDS.toMillis(100);
     private static final int MIN_NETWORK_BANDWIDTH_KBPS = 3000;
 
     private Context mContext;
@@ -145,7 +146,7 @@ public class NativeController implements Controller, Player.NotificationCallback
             @Override
             public void onAvailable(final Network network) {
                 mNetworkHandler.removeCallbacksAndMessages(null);
-                if(callback != null) {
+                if (callback != null) {
                     callback.onSuccess(null);
                 }
             }
@@ -153,7 +154,7 @@ public class NativeController implements Controller, Player.NotificationCallback
             @Override
             public void onLost(Network network) {
                 Callback<Void> resumeCallback = null;
-                if(mCurrentPlaybackState != null && mCurrentPlaybackState.isPlaying) {
+                if (mCurrentPlaybackState != null && mCurrentPlaybackState.isPlaying) {
                     resumeCallback = new Callback<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
@@ -173,6 +174,7 @@ public class NativeController implements Controller, Player.NotificationCallback
         mNetworkHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                mPlayer.pause(null);
                 addWifiNetwork();
                 unregisterNetworkCallback();
             }
@@ -186,11 +188,11 @@ public class NativeController implements Controller, Player.NotificationCallback
                 mConnectivityManager.bindProcessToNetwork(null);
                 unregisterNetworkCallback();
             }
-        }, NETWORK_CONNECTIVITY_TIMEOUT_MS);
+        }, NETWORK_CONNECTIVITY_RELEASE_MS);
     }
 
     private void addWifiNetwork() {
-        mContext.startActivity(new Intent("com.google.android.clockwork.settings.connectivity.wifi.ADD_NETWORK_SETTINGS"));
+        mContext.startActivity(new Intent(mContext, AddWifiActivity.class));
     }
 
 
@@ -220,7 +222,10 @@ public class NativeController implements Controller, Player.NotificationCallback
                     Manager.getService(mContext, new Callback<Service>() {
                         @Override
                         public void onSuccess(Service service) {
-                            if (contextUri.contains(":playlist:")) {
+                            if (contextUri == null) {
+                                resume(null);
+                                return;
+                            } else if (contextUri.contains(":playlist:")) {
                                 Call<Playlist> call = service.getPlaylist(contextUri.split(":")[2],
                                         contextUri.split(":")[4], "tracks.total", "from_token");
                                 call.enqueue(new retrofit2.Callback<Playlist>() {
@@ -238,12 +243,12 @@ public class NativeController implements Controller, Player.NotificationCallback
 
                                     }
                                 });
-                            } else if(contextUri.contains(":album:")) {
+                            } else if (contextUri.contains(":album:")) {
                                 Call<Album> call = service.getAlbum(contextUri.split(":")[2], "from_token");
                                 call.enqueue(new retrofit2.Callback<Album>() {
                                     @Override
                                     public void onResponse(Call<Album> call, Response<Album> response) {
-                                        if(response.isSuccessful()) {
+                                        if (response.isSuccessful()) {
                                             Album album = response.body();
                                             int position = ThreadLocalRandom.current().nextInt(0, album.tracks.total);
                                             play(contextUri, position, callback);
@@ -317,6 +322,7 @@ public class NativeController implements Controller, Player.NotificationCallback
     @Override
     public void getPlayback(Callback<CurrentlyPlaying> callback) {
         CurrentlyPlaying currentlyPlaying = new CurrentlyPlaying();
+        mCurrentPlaybackState = mPlayer.getPlaybackState();
         if (mMetadata != null && mMetadata.currentTrack != null && mCurrentPlaybackState != null) {
             currentlyPlaying.item = new Track();
             currentlyPlaying.item.uri = mMetadata.currentTrack.uri;
@@ -338,6 +344,8 @@ public class NativeController implements Controller, Player.NotificationCallback
             currentlyPlaying.device.volume_percent = mVolume;
             currentlyPlaying.is_playing = mCurrentPlaybackState.isPlaying;
             currentlyPlaying.shuffle_state = mShuffle;
+            currentlyPlaying.progress_ms = (int) mCurrentPlaybackState.positionMs;
+            currentlyPlaying.item.duration_ms = (int) mMetadata.currentTrack.durationMs;
         }
         callback.onSuccess(currentlyPlaying);
     }
@@ -366,7 +374,7 @@ public class NativeController implements Controller, Player.NotificationCallback
             @Override
             public void onSuccess(Void aVoid) {
                 mPlayer.skipToPrevious(null);
-                if(callback != null) {
+                if (callback != null) {
                     callback.onSuccess(null);
                 }
             }
@@ -379,7 +387,7 @@ public class NativeController implements Controller, Player.NotificationCallback
             @Override
             public void onSuccess(Void aVoid) {
                 mPlayer.skipToNext(null);
-                if(callback != null) {
+                if (callback != null) {
                     callback.onSuccess(null);
                 }
             }
@@ -393,6 +401,14 @@ public class NativeController implements Controller, Player.NotificationCallback
         mVolume = volume;
         updatePlayback();
         if (callback != null) {
+            callback.onSuccess(null);
+        }
+    }
+
+    @Override
+    public void seek(int positionMs, Callback<Void> callback) {
+        mPlayer.seekToPosition(null, positionMs);
+        if(callback != null) {
             callback.onSuccess(null);
         }
     }

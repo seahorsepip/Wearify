@@ -7,11 +7,13 @@ import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.wearable.view.WearableRecyclerView;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -74,6 +76,7 @@ public class NowPlayingActivity extends Activity {
         setContentView(R.layout.activity_now_playing);
 
         mNavigationDrawer = (WearableNavigationDrawer) findViewById(R.id.top_navigation_drawer);
+        mActionDrawer = (WearableActionDrawer) findViewById(R.id.bottom_action_drawer);
         mDrawerLayout = (WearableDrawerLayout) findViewById(R.id.drawer_layout);
         mBackgroundImage = (ImageView) findViewById(R.id.background_image);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
@@ -108,6 +111,7 @@ public class NowPlayingActivity extends Activity {
                             mProgress.setVisibility(VISIBLE);
                         }
                         mProgressBar.setVisibility(GONE);
+                        currentlyPlaying.timestamp = 0;
                     } else if (mCurrentlyPlaying.device.id.equals(currentlyPlaying.device.id)) {
                         //These kind of fixes make me cry...
                         currentlyPlaying.device.volume_percent = mCurrentlyPlaying.device.volume_percent;
@@ -133,7 +137,7 @@ public class NowPlayingActivity extends Activity {
                     }
                     mDeviceMenuItem.setTitle(currentlyPlaying.device.name);
                     if (currentlyPlaying.device == null || !currentlyPlaying.device.is_active) {
-                        deviceDialog();
+                        finish();
                     }
                 }
             }
@@ -150,6 +154,7 @@ public class NowPlayingActivity extends Activity {
                         Manager.getController(NowPlayingActivity.this).pause(null);
                     }
                     setPlayIcon();
+                    mCurrentlyPlaying.timestamp = System.currentTimeMillis();
                 }
             }
         });
@@ -248,9 +253,10 @@ public class NowPlayingActivity extends Activity {
         mDeviceRunnable = Manager.onDevice(new Callback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
+                Log.e("WEARIFY", "DEVICE CHANGED!!!");
                 if (mPlaybackCallback != null) {
                     mPlaybackRunnable = Manager.onPlayback(NowPlayingActivity.this, mPlaybackCallback);
-                    Manager.getController(NowPlayingActivity.this).getPlayback(mPlaybackCallback);
+                    recreate();
                 }
             }
         });
@@ -288,6 +294,8 @@ public class NowPlayingActivity extends Activity {
                                 @Override
                                 public void run(Context context) {
                                     Manager.transferController(context, Manager.NATIVE_CONTROLLER, null);
+                                    dialog.dismiss();
+                                    mActionDrawer.closeDrawer();
                                 }
                             };
                             items.add(watch);
@@ -316,6 +324,8 @@ public class NowPlayingActivity extends Activity {
                                             Manager.transferController(context,
                                                     Manager.CONNECT_CONTROLLER, device.id);
                                             dialog.dismiss();
+                                            mActionDrawer.closeDrawer();
+                                            setLoading();
                                         }
                                     };
                                     items.add(item);
@@ -379,8 +389,8 @@ public class NowPlayingActivity extends Activity {
         (new Runnable() {
             @Override
             public void run() {
-                if (mCurrentlyPlaying != null && mCurrentlyPlaying.item.duration_ms > 0) {
-                    mProgress.setProgress((float) (System.currentTimeMillis() - mCurrentlyPlaying.timestamp)
+                if (mCurrentlyPlaying != null && mCurrentlyPlaying.item.duration_ms > 0 && mCurrentlyPlaying.is_playing) {
+                    mProgress.setProgress((float) mCurrentlyPlaying.progress_ms
                             / (float) mCurrentlyPlaying.item.duration_ms * 100f);
                     mBackgroundImage.invalidate();
                 }

@@ -24,5 +24,7 @@ public interface Controller {
 
     void volume(int volume, Callback<Void> callback);
 
+    void seek(int positionMs, Callback<Void> callback);
+
     void destroy();
 }

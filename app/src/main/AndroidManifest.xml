@@ -71,6 +71,9 @@
             android:name=".NowPlayingActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop" />
+        <activity
+            android:name=".AddWifiActivity"
+            android:label="@string/app_name" />
     </application>
 
 </manifest>

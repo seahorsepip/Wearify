@@ -30,7 +30,7 @@ public class Manager {
     static private Controller mCurrentController;
     static private HashMap<Integer, Callback<Void>> mDeviceCallbacks;
     static private Runnable mConnectRunnable;
-    static private boolean transferring;
+    static private long mTransferring;
 
     public static void getService(Context context, final Callback<Service> callback) {
         com.seapip.thomas.wearify.Wearify.Manager.getToken(context, new com.seapip.thomas.wearify.Wearify.Callback() {
@@ -95,15 +95,17 @@ public class Manager {
                                           final String deviceId) {
         if (mCurrentController != null) {
             if (controller == NATIVE_CONTROLLER && mCurrentController instanceof NativeController) {
+                updateDevice();
                 return;
             } else if (controller == CONNECT_CONTROLLER && mCurrentController instanceof ConnectController) {
                 setDevice(context, deviceId, null);
+                updateDevice();
                 return;
             }
             mCurrentController.getPlayback(new Callback<CurrentlyPlaying>() {
                 @Override
                 public void onSuccess(final CurrentlyPlaying currentlyPlaying) {
-                    transferring = true;
+                    mTransferring = System.currentTimeMillis() + 3000;
                     mCurrentController.pause(new Callback<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
@@ -116,13 +118,22 @@ public class Manager {
                                                 new Callback<Void>() {
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
-                                                        mCurrentController.play(currentlyPlaying.item.uri,
-                                                                null, 0, new Callback<Void>() {
-                                                                    @Override
-                                                                    public void onSuccess(Void aVoid) {
-                                                                        updateDevice();
-                                                                    }
-                                                                });
+                                                        if (currentlyPlaying.item != null) {
+                                                            mCurrentController.play(currentlyPlaying.item.uri,
+                                                                    null, 0, new Callback<Void>() {
+                                                                        @Override
+                                                                        public void onSuccess(Void aVoid) {
+                                                                            mCurrentController.seek(
+                                                                                    currentlyPlaying.progress_ms,
+                                                                                    new Callback<Void>() {
+                                                                                        @Override
+                                                                                        public void onSuccess(Void aVoid) {
+                                                                                            updateDevice();
+                                                                                        }
+                                                                                    });
+                                                                        }
+                                                                    });
+                                                        }
                                                     }
                                                 });
                                     } else if (currentlyPlaying.context.uri.contains(":playlist:")) {
@@ -140,7 +151,14 @@ public class Manager {
                                                                                 position, new Callback<Void>() {
                                                                                     @Override
                                                                                     public void onSuccess(Void aVoid) {
-                                                                                        updateDevice();
+                                                                                        mCurrentController.seek(
+                                                                                                currentlyPlaying.progress_ms,
+                                                                                                new Callback<Void>() {
+                                                                                                    @Override
+                                                                                                    public void onSuccess(Void aVoid) {
+                                                                                                        updateDevice();
+                                                                                                    }
+                                                                                                });
                                                                                     }
                                                                                 });
                                                                     }
@@ -150,7 +168,6 @@ public class Manager {
                                     } else if (currentlyPlaying.context.uri.contains(":album:")) {
 
                                     }
-                                    transferring = false;
                                 }
                             };
                             switch (controller) {
@@ -173,14 +190,15 @@ public class Manager {
     }
 
     public static Runnable onPlayback(Context context, Callback<CurrentlyPlaying> callback) {
-        if(mConnectRunnable == null) {
-            if(mConnectController == null) {
-                mConnectController = new ConnectController(context);
-            }
+        if (mConnectRunnable == null) {
+            getController(context);
             mConnectRunnable = mConnectController.onPlayback(new Callback<CurrentlyPlaying>() {
                 @Override
-                public void onSuccess(CurrentlyPlaying currentlyPlaying) {
-                    if(currentlyPlaying.is_playing && mConnectController != mCurrentController && !transferring) {
+                public void onSuccess(final CurrentlyPlaying currentlyConnectPlaying) {
+                    if (currentlyConnectPlaying.device.is_active
+                            && currentlyConnectPlaying.is_playing
+                            && mConnectController != mCurrentController
+                            && mTransferring < System.currentTimeMillis()) {
                         mCurrentController = mConnectController;
                         updateDevice();
                     }
@@ -191,7 +209,7 @@ public class Manager {
     }
 
     public static void offPlayback(Context context, Runnable runnable) {
-        if(mConnectRunnable != null) {
+        if (mConnectRunnable != null) {
             mConnectController.offPlayback(mConnectRunnable);
             mConnectRunnable = null;
         }
@@ -219,7 +237,7 @@ public class Manager {
     }
 
     private static void updateDevice() {
-        if(mDeviceCallbacks != null) {
+        if (mDeviceCallbacks != null) {
             for (Callback<Void> callback : mDeviceCallbacks.values()) {
                 callback.onSuccess(null);
             }

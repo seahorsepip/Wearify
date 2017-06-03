@@ -291,6 +291,31 @@ public class ConnectController implements Controller {
     }
 
     @Override
+    public void seek(final int positionMs, final Callback<Void> callback) {
+        getService(mContext, new Callback<Service>() {
+            @Override
+            public void onSuccess(Service service) {
+                Call<Void> call = service.seek(positionMs, mDeviceId);
+                call.enqueue(new retrofit2.Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            if (callback != null) {
+                                callback.onSuccess(null);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
     public void destroy() {
 
     }

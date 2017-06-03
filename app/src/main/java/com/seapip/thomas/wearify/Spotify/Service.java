@@ -84,6 +84,10 @@ public interface Service {
     Call<Void> volume(@Query("volume_percent") int volumePercent,
                       @Query("device_id") String deviceId);
 
+    @PUT("me/player/seek")
+    Call<Void> seek(@Query("position_ms") int positionMs,
+                      @Query("device_id") String deviceId);
+
     @GET("me/player")
     Call<CurrentlyPlaying> playback(@Query("market") String market);
 
