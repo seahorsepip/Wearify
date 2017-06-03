@@ -65,11 +65,11 @@ public class AlbumActivity extends Activity {
         shuffle.text = "Shuffle Play";
         shuffle.onClick = new OnClick() {
             @Override
-            public void run(Context context) {
-                Manager.shuffle(true, new Callback<Void>() {
+            public void run(final Context context) {
+                Manager.getController(context).shuffle(true, new Callback<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Manager.play(null, mUri, -1, null);
+                        Manager.getController(context).play(null, mUri, -1, null);
                     }
                 });
             }
@@ -154,11 +154,11 @@ public class AlbumActivity extends Activity {
             final int position = mPosition++;
             item.onClick = new OnClick() {
                 @Override
-                public void run(Context context) {
-                    Manager.shuffle(false, new Callback<Void>() {
+                public void run(final Context context) {
+                    Manager.getController(context).shuffle(false, new Callback<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            Manager.play(null, mUri, position, null);
+                            Manager.getController(context).play(null, mUri, position, null);
                         }
                     });
                 }

@@ -41,7 +41,6 @@ public class NativeController implements Controller, Player.NotificationCallback
     private SpotifyPlayer mPlayer;
     private PlaybackState mCurrentPlaybackState;
     private Metadata mMetadata;
-    private BroadcastReceiver mNetworkStateReceiver;
     private HashMap<Integer, Callback<CurrentlyPlaying>> mPlaybackCallbacks;
     private boolean mShuffle;
     private AudioManager mAudioManager;
@@ -169,7 +168,6 @@ public class NativeController implements Controller, Player.NotificationCallback
             }
         };
 
-        // requires android.permission.CHANGE_NETWORK_STATE
         mConnectivityManager.requestNetwork(request, mNetworkCallback);
 
         mNetworkHandler.postDelayed(new Runnable() {
@@ -330,6 +328,8 @@ public class NativeController implements Controller, Player.NotificationCallback
             currentlyPlaying.item.album.images = new Image[1];
             currentlyPlaying.item.album.images[0] = new Image();
             currentlyPlaying.item.album.images[0].url = mMetadata.currentTrack.albumCoverWebUrl;
+            currentlyPlaying.context = new com.seapip.thomas.wearify.Spotify.Context();
+            currentlyPlaying.context.uri = mMetadata.contextUri;
             currentlyPlaying.device = new Device();
             currentlyPlaying.device.is_active = true;
             currentlyPlaying.device.id = "native_playback";
@@ -412,7 +412,6 @@ public class NativeController implements Controller, Player.NotificationCallback
     @Override
     public void onLoggedOut() {
         destroy();
-        //Manager.setController(Manager.NATIVE_CONTROLLER, mContext);
     }
 
     @Override

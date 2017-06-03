@@ -68,7 +68,6 @@ public class LoginActivity extends WearableActivity {
                     public void onResponse(Call<Token> call, Response<Token> response) {
                         if (response.isSuccessful()) {
                             Token token = response.body();
-                            Log.d("WEARIFY", token.toString());
                             if (token != null) {
                                 mToken = token.token;
                                 mKey = token.key;
@@ -128,7 +127,6 @@ public class LoginActivity extends WearableActivity {
 
             @Override
             public void onError() {
-                Log.e("FAIL???", "UHM???");
                 progressBar.setVisibility(View.GONE);
                 qrCodeService.run();
                 loginService.run();

@@ -30,7 +30,6 @@ import com.seapip.thomas.wearify.Spotify.Device;
 import com.seapip.thomas.wearify.Spotify.Devices;
 import com.seapip.thomas.wearify.Spotify.Manager;
 import com.seapip.thomas.wearify.Spotify.Service;
-import com.seapip.thomas.wearify.Spotify.Transfer;
 import com.seapip.thomas.wearify.Spotify.Util;
 import com.squareup.picasso.Picasso;
 
@@ -65,7 +64,8 @@ public class NowPlayingActivity extends Activity {
     private MenuItem mRepeatMenuItem;
     private MenuItem mDeviceMenuItem;
     private Callback<CurrentlyPlaying> mPlaybackCallback;
-    private Runnable mRunnable;
+    private Runnable mPlaybackRunnable;
+    private Runnable mDeviceRunnable;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -145,9 +145,9 @@ public class NowPlayingActivity extends Activity {
                 if (mCurrentlyPlaying != null) {
                     mCurrentlyPlaying.is_playing = !mCurrentlyPlaying.is_playing;
                     if (mCurrentlyPlaying.is_playing) {
-                        Manager.resume(null);
+                        Manager.getController(NowPlayingActivity.this).resume(null);
                     } else {
-                        Manager.pause(null);
+                        Manager.getController(NowPlayingActivity.this).pause(null);
                     }
                     setPlayIcon();
                 }
@@ -159,7 +159,7 @@ public class NowPlayingActivity extends Activity {
             @Override
             public void onClick(View v) {
                 if (mBackgroundImage.getVisibility() == VISIBLE) {
-                    Manager.prev(null);
+                    Manager.getController(NowPlayingActivity.this).prev(null);
                     setLoading();
                 }
             }
@@ -170,7 +170,7 @@ public class NowPlayingActivity extends Activity {
             @Override
             public void onClick(View v) {
                 if (mBackgroundImage.getVisibility() == VISIBLE) {
-                    Manager.next(null);
+                    Manager.getController(NowPlayingActivity.this).next(null);
                     setLoading();
                 }
             }
@@ -182,7 +182,7 @@ public class NowPlayingActivity extends Activity {
             public void onClick(View v) {
                 if (mCurrentlyPlaying != null) {
                     mCurrentlyPlaying.device.volume_percent = Math.max(0, mCurrentlyPlaying.device.volume_percent - 5);
-                    Manager.volume(mCurrentlyPlaying.device.volume_percent, null);
+                    Manager.getController(NowPlayingActivity.this).volume(mCurrentlyPlaying.device.volume_percent, null);
                 }
             }
         });
@@ -193,7 +193,7 @@ public class NowPlayingActivity extends Activity {
             public void onClick(View v) {
                 if (mCurrentlyPlaying != null) {
                     mCurrentlyPlaying.device.volume_percent = Math.min(100, mCurrentlyPlaying.device.volume_percent + 5);
-                    Manager.volume(mCurrentlyPlaying.device.volume_percent, null);
+                    Manager.getController(NowPlayingActivity.this).volume(mCurrentlyPlaying.device.volume_percent, null);
                 }
             }
         });
@@ -208,7 +208,7 @@ public class NowPlayingActivity extends Activity {
                 if (mCurrentlyPlaying != null) {
                     mCurrentlyPlaying.shuffle_state = !mCurrentlyPlaying.shuffle_state;
                     setShuffleIcon();
-                    Manager.shuffle(mCurrentlyPlaying.shuffle_state, null);
+                    Manager.getController(NowPlayingActivity.this).shuffle(mCurrentlyPlaying.shuffle_state, null);
                 }
                 return false;
             }
@@ -230,7 +230,7 @@ public class NowPlayingActivity extends Activity {
                             break;
                     }
                     setRepeatIcon();
-                    Manager.repeat(mCurrentlyPlaying.repeat_state, null);
+                    Manager.getController(NowPlayingActivity.this).repeat(mCurrentlyPlaying.repeat_state, null);
                 }
                 return false;
             }
@@ -244,7 +244,15 @@ public class NowPlayingActivity extends Activity {
             }
         });
 
-        mRunnable = Manager.onPlayback(mPlaybackCallback);
+        mPlaybackRunnable = Manager.getController(this).onPlayback(mPlaybackCallback);
+        mDeviceRunnable = Manager.onDevice(new Callback<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                if (mPlaybackCallback != null) {
+                    mPlaybackRunnable = Manager.getController(NowPlayingActivity.this).onPlayback(mPlaybackCallback);
+                }
+            }
+        });
         onProgress();
     }
 
@@ -278,75 +286,39 @@ public class NowPlayingActivity extends Activity {
                             watch.onClick = new OnClick() {
                                 @Override
                                 public void run(Context context) {
-                                    Manager.getService(NowPlayingActivity.this, new Callback<Service>() {
-                                        @Override
-                                        public void onSuccess(Service service) {
-                                            Transfer transfer = new Transfer();
-                                            transfer.device_ids = new String[1];
-                                            transfer.device_ids[0] = "native_playback";
-                                            Call<Void> call = service.transfer(transfer);
-                                            call.enqueue(new retrofit2.Callback<Void>() {
-                                                @Override
-                                                public void onResponse(Call<Void> call, Response<Void> response) {
-                                                    dialog.dismiss();
-                                                }
-
-                                                @Override
-                                                public void onFailure(Call<Void> call, Throwable t) {
-
-                                                }
-                                            });
-                                        }
-                                    });
+                                    Manager.transferController(context, Manager.NATIVE_CONTROLLER, null);
                                 }
                             };
                             items.add(watch);
                             for (final Device device : devices.devices) {
-                                //if (!device.is_restricted) {
-                                Item item = new Item();
-                                item.title = device.name;
-                                switch (device.type) {
-                                    case "Smartphone":
-                                        item.subTitle = "Phone";
-                                        item.image = getDrawable(R.drawable.ic_smartphone_black_24dp);
-                                        break;
-                                    case "Tablet":
-                                        item.subTitle = "Tablet";
-                                        item.image = getDrawable(R.drawable.ic_tablet_black_24dp);
-                                        break;
-                                    default:
-                                    case "Computer":
-                                        item.subTitle = "Computer";
-                                        item.image = getDrawable(R.drawable.ic_computer_black_24dp);
-                                        break;
-                                }
-                                item.onClick = new OnClick() {
-                                    @Override
-                                    public void run(Context context) {
-                                        Manager.getService(NowPlayingActivity.this, new Callback<Service>() {
-                                            @Override
-                                            public void onSuccess(Service service) {
-                                                Transfer transfer = new Transfer();
-                                                transfer.device_ids = new String[1];
-                                                transfer.device_ids[0] = device.id;
-                                                Call<Void> call = service.transfer(transfer);
-                                                call.enqueue(new retrofit2.Callback<Void>() {
-                                                    @Override
-                                                    public void onResponse(Call<Void> call, Response<Void> response) {
-                                                        dialog.dismiss();
-                                                    }
-
-                                                    @Override
-                                                    public void onFailure(Call<Void> call, Throwable t) {
-
-                                                    }
-                                                });
-                                            }
-                                        });
+                                if (!device.is_restricted) {
+                                    Item item = new Item();
+                                    item.title = device.name;
+                                    switch (device.type) {
+                                        case "Smartphone":
+                                            item.subTitle = "Phone";
+                                            item.image = getDrawable(R.drawable.ic_smartphone_black_24dp);
+                                            break;
+                                        case "Tablet":
+                                            item.subTitle = "Tablet";
+                                            item.image = getDrawable(R.drawable.ic_tablet_black_24dp);
+                                            break;
+                                        default:
+                                        case "Computer":
+                                            item.subTitle = "Computer";
+                                            item.image = getDrawable(R.drawable.ic_computer_black_24dp);
+                                            break;
                                     }
-                                };
-                                items.add(item);
-                                //}
+                                    item.onClick = new OnClick() {
+                                        @Override
+                                        public void run(Context context) {
+                                            Manager.transferController(context,
+                                                    Manager.CONNECT_CONTROLLER, device.id);
+                                            dialog.dismiss();
+                                        }
+                                    };
+                                    items.add(item);
+                                }
                             }
                         }
                         recyclerView.getAdapter().notifyDataSetChanged();
@@ -419,15 +391,18 @@ public class NowPlayingActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        mRunnable = Manager.onPlayback(mPlaybackCallback);
+        mPlaybackRunnable = Manager.getController(this).onPlayback(mPlaybackCallback);
         onProgress();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (mRunnable != null) {
-            Manager.offPlayback(mRunnable);
+        if (mPlaybackRunnable != null) {
+            Manager.getController(this).offPlayback(mPlaybackRunnable);
+        }
+        if(mDeviceRunnable != null) {
+            Manager.offDevice(mDeviceRunnable);
         }
         mProgressHandler.removeCallbacksAndMessages(null);
     }
@@ -435,8 +410,8 @@ public class NowPlayingActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (mRunnable != null) {
-            Manager.offPlayback(mRunnable);
+        if (mPlaybackRunnable != null) {
+            Manager.getController(this).offPlayback(mPlaybackRunnable);
         }
         mProgressHandler.removeCallbacksAndMessages(null);
     }
@@ -445,8 +420,8 @@ public class NowPlayingActivity extends Activity {
     public void onEnterAmbient(Bundle ambientDetails) {
         super.onEnterAmbient(ambientDetails);
         mAmbient = true;
-        if (mRunnable != null) {
-            Manager.offPlayback(mRunnable);
+        if (mPlaybackRunnable != null) {
+            Manager.getController(this).offPlayback(mPlaybackRunnable);
         }
         mProgressHandler.removeCallbacksAndMessages(null);
         mDrawerLayout.setBackgroundColor(Color.BLACK);
@@ -469,7 +444,7 @@ public class NowPlayingActivity extends Activity {
     public void onExitAmbient() {
         super.onExitAmbient();
         mAmbient = false;
-        mRunnable = Manager.onPlayback(mPlaybackCallback);
+        mPlaybackRunnable = Manager.getController(this).onPlayback(mPlaybackCallback);
         onProgress();
         mDrawerLayout.setBackgroundColor(Color.parseColor("#141414"));
         mNavigationDrawer.setVisibility(VISIBLE);
@@ -489,7 +464,7 @@ public class NowPlayingActivity extends Activity {
     @Override
     public void onUpdateAmbient() {
         super.onUpdateAmbient();
-        Manager.getPlayback(mPlaybackCallback);
+        Manager.getController(this).getPlayback(mPlaybackCallback);
     }
 
     @Override

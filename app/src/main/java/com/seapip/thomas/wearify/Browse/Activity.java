@@ -39,7 +39,8 @@ import static android.view.View.VISIBLE;
 public class Activity extends WearableActivity {
 
     private Callback<CurrentlyPlaying> mPlaybackCallback;
-    private Runnable mRunnable;
+    private Runnable mPlaybackRunnable;
+    private Runnable mDeviceRunnable;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -107,7 +108,15 @@ public class Activity extends WearableActivity {
                 }
             };
 
-            mRunnable = Manager.onPlayback(mPlaybackCallback);
+            mPlaybackRunnable = Manager.getController(this).onPlayback(mPlaybackCallback);
+            mDeviceRunnable = Manager.onDevice(new Callback<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    if (mPlaybackCallback != null) {
+                        mPlaybackRunnable = Manager.getController(Activity.this).onPlayback(mPlaybackCallback);
+                    }
+                }
+            });
         }
     }
 
@@ -146,23 +155,26 @@ public class Activity extends WearableActivity {
     protected void onResume() {
         super.onResume();
         if (mPlaybackCallback != null) {
-            mRunnable = Manager.onPlayback(mPlaybackCallback);
+            mPlaybackRunnable = Manager.getController(this).onPlayback(mPlaybackCallback);
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (mRunnable != null) {
-            Manager.offPlayback(mRunnable);
+        if (mPlaybackRunnable != null) {
+            Manager.getController(this).offPlayback(mPlaybackRunnable);
+        }
+        if(mDeviceRunnable != null) {
+            Manager.offDevice(mDeviceRunnable);
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mRunnable != null) {
-            Manager.offPlayback(mRunnable);
+        if (mPlaybackRunnable != null) {
+            Manager.getController(this).offPlayback(mPlaybackRunnable);
         }
     }
 }

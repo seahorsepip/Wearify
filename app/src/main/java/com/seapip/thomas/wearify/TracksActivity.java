@@ -75,7 +75,7 @@ public class TracksActivity extends Activity {
                                 item.onClick = new OnClick() {
                                     @Override
                                     public void run(Context context) {
-                                        Manager.shuffle(false, new Callback<Void>() {
+                                        Manager.getController(context).shuffle(false, new Callback<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
                                                 //Manager.play(null, contextUri, position, null);
