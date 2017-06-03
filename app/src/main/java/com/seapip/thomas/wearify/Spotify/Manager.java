@@ -2,7 +2,6 @@ package com.seapip.thomas.wearify.Spotify;
 
 import android.content.Context;
 
-import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.Wearify.Token;
 
 import java.io.IOException;
@@ -30,6 +29,8 @@ public class Manager {
     static private ConnectController mConnectController;
     static private Controller mCurrentController;
     static private HashMap<Integer, Callback<Void>> mDeviceCallbacks;
+    static private Runnable mConnectRunnable;
+    static private boolean transferring;
 
     public static void getService(Context context, final Callback<Service> callback) {
         com.seapip.thomas.wearify.Wearify.Manager.getToken(context, new com.seapip.thomas.wearify.Wearify.Callback() {
@@ -102,13 +103,29 @@ public class Manager {
             mCurrentController.getPlayback(new Callback<CurrentlyPlaying>() {
                 @Override
                 public void onSuccess(final CurrentlyPlaying currentlyPlaying) {
+                    transferring = true;
                     mCurrentController.pause(new Callback<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
                             Callback<Void> transferCallback = new Callback<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
-                                    if (currentlyPlaying.context.uri.contains(":playlist:")) {
+                                    if (currentlyPlaying.context == null) {
+                                        //Workaround: https://github.com/spotify/web-api/issues/565
+                                        mCurrentController.shuffle(currentlyPlaying.shuffle_state,
+                                                new Callback<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        mCurrentController.play(currentlyPlaying.item.uri,
+                                                                null, 0, new Callback<Void>() {
+                                                                    @Override
+                                                                    public void onSuccess(Void aVoid) {
+                                                                        updateDevice();
+                                                                    }
+                                                                });
+                                                    }
+                                                });
+                                    } else if (currentlyPlaying.context.uri.contains(":playlist:")) {
                                         getPlaylistTrackNumber(context, currentlyPlaying.context.uri,
                                                 currentlyPlaying.item.uri, 50, 0, new Callback<Integer>() {
                                                     @Override
@@ -120,7 +137,12 @@ public class Manager {
                                                                     public void onSuccess(Void aVoid) {
                                                                         mCurrentController.play(null,
                                                                                 currentlyPlaying.context.uri,
-                                                                                position, null);
+                                                                                position, new Callback<Void>() {
+                                                                                    @Override
+                                                                                    public void onSuccess(Void aVoid) {
+                                                                                        updateDevice();
+                                                                                    }
+                                                                                });
                                                                     }
                                                                 });
                                                     }
@@ -128,9 +150,7 @@ public class Manager {
                                     } else if (currentlyPlaying.context.uri.contains(":album:")) {
 
                                     }
-                                    for (Callback<Void> callback : mDeviceCallbacks.values()) {
-                                        callback.onSuccess(null);
-                                    }
+                                    transferring = false;
                                 }
                             };
                             switch (controller) {
@@ -152,6 +172,32 @@ public class Manager {
         }
     }
 
+    public static Runnable onPlayback(Context context, Callback<CurrentlyPlaying> callback) {
+        if(mConnectRunnable == null) {
+            if(mConnectController == null) {
+                mConnectController = new ConnectController(context);
+            }
+            mConnectRunnable = mConnectController.onPlayback(new Callback<CurrentlyPlaying>() {
+                @Override
+                public void onSuccess(CurrentlyPlaying currentlyPlaying) {
+                    if(currentlyPlaying.is_playing && mConnectController != mCurrentController && !transferring) {
+                        mCurrentController = mConnectController;
+                        updateDevice();
+                    }
+                }
+            });
+        }
+        return getController(context).onPlayback(callback);
+    }
+
+    public static void offPlayback(Context context, Runnable runnable) {
+        if(mConnectRunnable != null) {
+            mConnectController.offPlayback(mConnectRunnable);
+            mConnectRunnable = null;
+        }
+        getController(context).offPlayback(runnable);
+    }
+
     public static Runnable onDevice(Callback<Void> callback) {
         Runnable runnable = new Runnable() {
             @Override
@@ -159,7 +205,7 @@ public class Manager {
 
             }
         };
-        if(mDeviceCallbacks == null) {
+        if (mDeviceCallbacks == null) {
             mDeviceCallbacks = new HashMap<>();
         }
         mDeviceCallbacks.put(runnable.hashCode(), callback);
@@ -167,8 +213,16 @@ public class Manager {
     }
 
     public static void offDevice(Runnable runnable) {
-        if(mDeviceCallbacks != null) {
+        if (mDeviceCallbacks != null) {
             mDeviceCallbacks.remove(runnable.hashCode());
+        }
+    }
+
+    private static void updateDevice() {
+        if(mDeviceCallbacks != null) {
+            for (Callback<Void> callback : mDeviceCallbacks.values()) {
+                callback.onSuccess(null);
+            }
         }
     }
 
@@ -189,7 +243,7 @@ public class Manager {
                 call.enqueue(new retrofit2.Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
-                        if(response.isSuccessful()) {
+                        if (response.isSuccessful()) {
                             if (callback != null) {
                                 callback.onSuccess(null);
                             }

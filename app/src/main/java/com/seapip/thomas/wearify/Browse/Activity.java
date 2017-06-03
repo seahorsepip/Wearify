@@ -47,7 +47,7 @@ public class Activity extends WearableActivity {
         super.onCreate(savedInstanceState);
     }
 
-    public void setDrawers(WearableDrawerLayout layout,
+    public void setDrawers(final WearableDrawerLayout layout,
                            WearableNavigationDrawer navigationDrawer,
                            final WearableActionDrawer actionDrawer,
                            int position) {
@@ -96,6 +96,7 @@ public class Activity extends WearableActivity {
                         if (currentlyPlaying.is_playing) {
                             actionImage.setImageDrawable(drawablePlaying);
                             drawablePlaying.start();
+                            layout.peekDrawer(Gravity.BOTTOM);
                         } else {
                             actionImage.setImageDrawable(drawablePlay);
                         }
@@ -108,12 +109,12 @@ public class Activity extends WearableActivity {
                 }
             };
 
-            mPlaybackRunnable = Manager.getController(this).onPlayback(mPlaybackCallback);
+            mPlaybackRunnable = Manager.onPlayback(this, mPlaybackCallback);
             mDeviceRunnable = Manager.onDevice(new Callback<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
                     if (mPlaybackCallback != null) {
-                        mPlaybackRunnable = Manager.getController(Activity.this).onPlayback(mPlaybackCallback);
+                        mPlaybackRunnable = Manager.onPlayback(Activity.this, mPlaybackCallback);
                     }
                 }
             });
@@ -155,7 +156,7 @@ public class Activity extends WearableActivity {
     protected void onResume() {
         super.onResume();
         if (mPlaybackCallback != null) {
-            mPlaybackRunnable = Manager.getController(this).onPlayback(mPlaybackCallback);
+            mPlaybackRunnable = Manager.onPlayback(this, mPlaybackCallback);
         }
     }
 
@@ -163,9 +164,9 @@ public class Activity extends WearableActivity {
     protected void onStop() {
         super.onStop();
         if (mPlaybackRunnable != null) {
-            Manager.getController(this).offPlayback(mPlaybackRunnable);
+            Manager.offPlayback(this, mPlaybackRunnable);
         }
-        if(mDeviceRunnable != null) {
+        if (mDeviceRunnable != null) {
             Manager.offDevice(mDeviceRunnable);
         }
     }
@@ -174,7 +175,7 @@ public class Activity extends WearableActivity {
     protected void onPause() {
         super.onPause();
         if (mPlaybackRunnable != null) {
-            Manager.getController(this).offPlayback(mPlaybackRunnable);
+            Manager.offPlayback(this, mPlaybackRunnable);
         }
     }
 }

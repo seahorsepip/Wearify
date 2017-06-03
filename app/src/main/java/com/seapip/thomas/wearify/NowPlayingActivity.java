@@ -244,12 +244,13 @@ public class NowPlayingActivity extends Activity {
             }
         });
 
-        mPlaybackRunnable = Manager.getController(this).onPlayback(mPlaybackCallback);
+        mPlaybackRunnable = Manager.onPlayback(this, mPlaybackCallback);
         mDeviceRunnable = Manager.onDevice(new Callback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 if (mPlaybackCallback != null) {
-                    mPlaybackRunnable = Manager.getController(NowPlayingActivity.this).onPlayback(mPlaybackCallback);
+                    mPlaybackRunnable = Manager.onPlayback(NowPlayingActivity.this, mPlaybackCallback);
+                    Manager.getController(NowPlayingActivity.this).getPlayback(mPlaybackCallback);
                 }
             }
         });
@@ -391,7 +392,7 @@ public class NowPlayingActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        mPlaybackRunnable = Manager.getController(this).onPlayback(mPlaybackCallback);
+        mPlaybackRunnable = Manager.onPlayback(this, mPlaybackCallback);
         onProgress();
     }
 
@@ -399,9 +400,9 @@ public class NowPlayingActivity extends Activity {
     protected void onStop() {
         super.onStop();
         if (mPlaybackRunnable != null) {
-            Manager.getController(this).offPlayback(mPlaybackRunnable);
+            Manager.offPlayback(this, mPlaybackRunnable);
         }
-        if(mDeviceRunnable != null) {
+        if (mDeviceRunnable != null) {
             Manager.offDevice(mDeviceRunnable);
         }
         mProgressHandler.removeCallbacksAndMessages(null);
@@ -411,7 +412,7 @@ public class NowPlayingActivity extends Activity {
     protected void onPause() {
         super.onPause();
         if (mPlaybackRunnable != null) {
-            Manager.getController(this).offPlayback(mPlaybackRunnable);
+            Manager.offPlayback(this, mPlaybackRunnable);
         }
         mProgressHandler.removeCallbacksAndMessages(null);
     }
@@ -421,7 +422,7 @@ public class NowPlayingActivity extends Activity {
         super.onEnterAmbient(ambientDetails);
         mAmbient = true;
         if (mPlaybackRunnable != null) {
-            Manager.getController(this).offPlayback(mPlaybackRunnable);
+            Manager.offPlayback(this, mPlaybackRunnable);
         }
         mProgressHandler.removeCallbacksAndMessages(null);
         mDrawerLayout.setBackgroundColor(Color.BLACK);
@@ -444,7 +445,7 @@ public class NowPlayingActivity extends Activity {
     public void onExitAmbient() {
         super.onExitAmbient();
         mAmbient = false;
-        mPlaybackRunnable = Manager.getController(this).onPlayback(mPlaybackCallback);
+        mPlaybackRunnable = Manager.onPlayback(this, mPlaybackCallback);
         onProgress();
         mDrawerLayout.setBackgroundColor(Color.parseColor("#141414"));
         mNavigationDrawer.setVisibility(VISIBLE);

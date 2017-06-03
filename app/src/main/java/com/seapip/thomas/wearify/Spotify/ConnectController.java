@@ -207,6 +207,10 @@ public class ConnectController implements Controller {
         mPlaybackHandler.removeCallbacks(runnable);
     }
 
+    public void offPlaybackAll() {
+        mPlaybackHandler.removeCallbacksAndMessages(null);
+    }
+
     @Override
     public void prev(final Callback<Void> callback) {
         Manager.cancelAll();
