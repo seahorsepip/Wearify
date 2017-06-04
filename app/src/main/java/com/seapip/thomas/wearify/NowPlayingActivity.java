@@ -253,7 +253,6 @@ public class NowPlayingActivity extends Activity {
         mDeviceRunnable = Manager.onDevice(new Callback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Log.e("WEARIFY", "DEVICE CHANGED!!!");
                 if (mPlaybackCallback != null) {
                     mPlaybackRunnable = Manager.onPlayback(NowPlayingActivity.this, mPlaybackCallback);
                     recreate();

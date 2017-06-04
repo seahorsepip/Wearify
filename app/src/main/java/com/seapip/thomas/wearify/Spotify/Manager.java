@@ -114,59 +114,37 @@ public class Manager {
                                 public void onSuccess(Void aVoid) {
                                     if (currentlyPlaying.context == null) {
                                         //Workaround: https://github.com/spotify/web-api/issues/565
-                                        mCurrentController.shuffle(currentlyPlaying.shuffle_state,
-                                                new Callback<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void aVoid) {
-                                                        if (currentlyPlaying.item != null) {
-                                                            mCurrentController.play(currentlyPlaying.item.uri,
-                                                                    null, 0, new Callback<Void>() {
-                                                                        @Override
-                                                                        public void onSuccess(Void aVoid) {
-                                                                            mCurrentController.seek(
-                                                                                    currentlyPlaying.progress_ms,
-                                                                                    new Callback<Void>() {
-                                                                                        @Override
-                                                                                        public void onSuccess(Void aVoid) {
-                                                                                            updateDevice();
-                                                                                        }
-                                                                                    });
-                                                                        }
-                                                                    });
-                                                        }
-                                                    }
-                                                });
+                                        if (currentlyPlaying.item != null) {
+                                            playTransfer(currentlyPlaying.item.uri, null, 0,
+                                                    currentlyPlaying.shuffle_state,
+                                                    null, currentlyPlaying.progress_ms);
+                                        }
                                     } else if (currentlyPlaying.context.uri.contains(":playlist:")) {
                                         getPlaylistTrackNumber(context, currentlyPlaying.context.uri,
-                                                currentlyPlaying.item.uri, 50, 0, new Callback<Integer>() {
+                                                currentlyPlaying.item.uri, 50, 0,
+                                                new Callback<Integer>() {
                                                     @Override
                                                     public void onSuccess(final Integer position) {
-                                                        mCurrentController.shuffle(
+                                                        playTransfer(null,
+                                                                currentlyPlaying.context.uri,
+                                                                position,
                                                                 currentlyPlaying.shuffle_state,
-                                                                new Callback<Void>() {
-                                                                    @Override
-                                                                    public void onSuccess(Void aVoid) {
-                                                                        mCurrentController.play(null,
-                                                                                currentlyPlaying.context.uri,
-                                                                                position, new Callback<Void>() {
-                                                                                    @Override
-                                                                                    public void onSuccess(Void aVoid) {
-                                                                                        mCurrentController.seek(
-                                                                                                currentlyPlaying.progress_ms,
-                                                                                                new Callback<Void>() {
-                                                                                                    @Override
-                                                                                                    public void onSuccess(Void aVoid) {
-                                                                                                        updateDevice();
-                                                                                                    }
-                                                                                                });
-                                                                                    }
-                                                                                });
-                                                                    }
-                                                                });
+                                                                null, currentlyPlaying.progress_ms);
                                                     }
                                                 });
                                     } else if (currentlyPlaying.context.uri.contains(":album:")) {
-
+                                        getPAlbumTrackNumber(context, currentlyPlaying.context.uri,
+                                                currentlyPlaying.item.uri, 50, 0,
+                                                new Callback<Integer>() {
+                                                    @Override
+                                                    public void onSuccess(Integer position) {
+                                                        playTransfer(null,
+                                                                currentlyPlaying.context.uri,
+                                                                position,
+                                                                currentlyPlaying.shuffle_state,
+                                                                null, currentlyPlaying.progress_ms);
+                                                    }
+                                                });
                                     }
                                 }
                             };
@@ -187,6 +165,26 @@ public class Manager {
                 }
             });
         }
+    }
+
+    private static void playTransfer(final String uris, final String contextUri, final int position,
+                                     boolean shuffleState, String repeatState, final int positionMs) {
+        mCurrentController.shuffle(shuffleState, new Callback<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                mCurrentController.play(uris, contextUri, position, new Callback<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        mCurrentController.seek(positionMs, new Callback<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                updateDevice();
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
 
     public static Runnable onPlayback(Context context, Callback<CurrentlyPlaying> callback) {
@@ -277,21 +275,21 @@ public class Manager {
         });
     }
 
-    private static void getPlaylistTrackNumber(final Context context, final String contextUri, final String trackUri,
-                                               final int limit, final int offset, final Callback<Integer> callback) {
+    private static void getPlaylistTrackNumber(final Context context, final String contextUri,
+                                               final String trackUri, final int limit,
+                                               final int offset, final Callback<Integer> callback) {
         getService(context, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
-                Call<Paging<PlaylistTrack>> call = service.getPlaylistTracks(contextUri.split(":")[2],
-                        contextUri.split(":")[4],
-                        "items(track.uri),total,offset", limit,
-                        offset, "from_token");
+                Call<Paging<PlaylistTrack>> call = service.getPlaylistTracks(
+                        contextUri.split(":")[2], contextUri.split(":")[4],
+                        "items(track.uri),total,offset", limit, offset, "from_token");
                 call.enqueue(new retrofit2.Callback<Paging<PlaylistTrack>>() {
                     @Override
-                    public void onResponse(Call<Paging<PlaylistTrack>> call, retrofit2.Response<Paging<PlaylistTrack>> response) {
+                    public void onResponse(Call<Paging<PlaylistTrack>> call,
+                                           retrofit2.Response<Paging<PlaylistTrack>> response) {
                         if (response.isSuccessful()) {
                             Paging<PlaylistTrack> playlistTracks = response.body();
-                            //addTracks(playlistTracks.items, offset, charts);
                             int x = 0;
                             for (PlaylistTrack playlistTrack : playlistTracks.items) {
                                 if (playlistTrack.track.uri.equals(trackUri)) {
@@ -311,6 +309,46 @@ public class Manager {
 
                     @Override
                     public void onFailure(Call<Paging<PlaylistTrack>> call, Throwable t) {
+
+                    }
+                });
+            }
+        });
+    }
+
+    private static void getPAlbumTrackNumber(final Context context, final String contextUri,
+                                             final String trackUri, final int limit,
+                                             final int offset, final Callback<Integer> callback) {
+        getService(context, new Callback<Service>() {
+            @Override
+            public void onSuccess(Service service) {
+                Call<Paging<Track>> call = service.getAlbumTracks(contextUri.split(":")[2], limit,
+                        offset, "from_token");
+                call.enqueue(new retrofit2.Callback<Paging<Track>>() {
+                    @Override
+                    public void onResponse(Call<Paging<Track>> call,
+                                           retrofit2.Response<Paging<Track>> response) {
+                        if (response.isSuccessful()) {
+                            Paging<Track> albumTracks = response.body();
+                            int x = 0;
+                            for (Track track : albumTracks.items) {
+                                if (track.uri.equals(trackUri)) {
+                                    callback.onSuccess(albumTracks.offset + x);
+                                    return;
+                                }
+                                x++;
+                            }
+                            if (albumTracks.total > albumTracks.offset + 50) {
+                                getPlaylistTrackNumber(context, contextUri, trackUri, limit,
+                                        albumTracks.offset + limit, callback);
+                                return;
+                            }
+                            callback.onError();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Paging<Track>> call, Throwable t) {
 
                     }
                 });
