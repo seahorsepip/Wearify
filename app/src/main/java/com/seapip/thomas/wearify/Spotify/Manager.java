@@ -117,7 +117,8 @@ public class Manager {
                                         if (currentlyPlaying.item != null) {
                                             playTransfer(currentlyPlaying.item.uri, null, 0,
                                                     currentlyPlaying.shuffle_state,
-                                                    null, currentlyPlaying.progress_ms);
+                                                    currentlyPlaying.repeat_state,
+                                                    currentlyPlaying.progress_ms);
                                         }
                                     } else if (currentlyPlaying.context.uri.contains(":playlist:")) {
                                         getPlaylistTrackNumber(context, currentlyPlaying.context.uri,
@@ -129,7 +130,8 @@ public class Manager {
                                                                 currentlyPlaying.context.uri,
                                                                 position,
                                                                 currentlyPlaying.shuffle_state,
-                                                                null, currentlyPlaying.progress_ms);
+                                                                currentlyPlaying.repeat_state,
+                                                                currentlyPlaying.progress_ms);
                                                     }
                                                 });
                                     } else if (currentlyPlaying.context.uri.contains(":album:")) {
@@ -142,7 +144,8 @@ public class Manager {
                                                                 currentlyPlaying.context.uri,
                                                                 position,
                                                                 currentlyPlaying.shuffle_state,
-                                                                null, currentlyPlaying.progress_ms);
+                                                                currentlyPlaying.repeat_state,
+                                                                currentlyPlaying.progress_ms);
                                                     }
                                                 });
                                     }
@@ -168,17 +171,32 @@ public class Manager {
     }
 
     private static void playTransfer(final String uris, final String contextUri, final int position,
-                                     boolean shuffleState, String repeatState, final int positionMs) {
+                                     boolean shuffleState, final String repeatState, final int positionMs) {
+        //Workaround: https://github.com/spotify/web-api/issues/565
+        if (contextUri == null && mCurrentController == mNativeController) {
+            mCurrentController.resume(new Callback<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    updateDevice();
+                }
+            });
+            return;
+        }
         mCurrentController.shuffle(shuffleState, new Callback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                mCurrentController.play(uris, contextUri, position, new Callback<Void>() {
+                mCurrentController.repeat(repeatState, new Callback<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        mCurrentController.seek(positionMs, new Callback<Void>() {
+                        mCurrentController.play(uris, contextUri, position, new Callback<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
-                                updateDevice();
+                                mCurrentController.seek(positionMs, new Callback<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        updateDevice();
+                                    }
+                                });
                             }
                         });
                     }

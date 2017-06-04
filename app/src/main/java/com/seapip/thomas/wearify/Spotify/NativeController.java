@@ -44,6 +44,7 @@ public class NativeController implements Controller, Player.NotificationCallback
     private Metadata mMetadata;
     private HashMap<Integer, Callback<CurrentlyPlaying>> mPlaybackCallbacks;
     private boolean mShuffle;
+    private String mRepeat = "off";
     private AudioManager mAudioManager;
     private int mVolume;
     private Handler mNetworkHandler;
@@ -315,8 +316,23 @@ public class NativeController implements Controller, Player.NotificationCallback
     }
 
     @Override
-    public void repeat(String state, Callback<Void> callback) {
+    public void repeat(String state, final Callback<Void> callback) {
+        mRepeat = state;
+        if (mCurrentPlaybackState != null && mCurrentPlaybackState.isPlaying) {
+            mPlayer.setRepeat(new Player.OperationCallback() {
+                @Override
+                public void onSuccess() {
+                    if (callback != null) {
+                        callback.onSuccess(null);
+                    }
+                }
 
+                @Override
+                public void onError(Error error) {
+
+                }
+            }, !state.equals("off"));
+        }
     }
 
     @Override
@@ -344,6 +360,7 @@ public class NativeController implements Controller, Player.NotificationCallback
             currentlyPlaying.device.volume_percent = mVolume;
             currentlyPlaying.is_playing = mCurrentPlaybackState.isPlaying;
             currentlyPlaying.shuffle_state = mShuffle;
+            currentlyPlaying.repeat_state = mRepeat == null ? "off" : mRepeat;
             currentlyPlaying.progress_ms = (int) mCurrentPlaybackState.positionMs;
             currentlyPlaying.item.duration_ms = (int) mMetadata.currentTrack.durationMs;
         }
@@ -408,7 +425,7 @@ public class NativeController implements Controller, Player.NotificationCallback
     @Override
     public void seek(int positionMs, Callback<Void> callback) {
         mPlayer.seekToPosition(null, positionMs);
-        if(callback != null) {
+        if (callback != null) {
             callback.onSuccess(null);
         }
     }
