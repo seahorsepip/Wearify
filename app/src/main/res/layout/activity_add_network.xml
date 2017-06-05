@@ -2,30 +2,52 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#141414">
+    android:background="#141414"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:paddingBottom="4dp"
+        android:paddingEnd="@dimen/list_padding"
+        android:paddingStart="@dimen/list_padding"
+        android:paddingTop="4dp">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-semi-bold"
+            android:gravity="top"
+            android:maxLines="1"
+            android:text="Network"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+    </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/list_padding"
         android:layout_marginRight="@dimen/list_padding"
-        android:layout_marginTop="@dimen/list_padding"
-        android:paddingTop="20dp"
-        android:textColor="#dddddd"
         android:text="No high-bandwidth network is available. You must add a Wi-Fi network to continue."
-        android:textSize="14sp" />
+        android:textColor="#dddddd"
+        android:textSize="15sp" />
 
     <LinearLayout
         android:id="@+id/button_add_wifi"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:background="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:paddingBottom="8dp"
         android:paddingLeft="@dimen/list_padding"
         android:paddingRight="@dimen/list_padding"
-        android:layout_marginTop="10dp"
         android:paddingTop="8dp">
 
         <com.seapip.thomas.wearify.RoundImageButtonView
@@ -46,7 +68,7 @@
             android:paddingStart="10dp"
             android:text="Add Wi-Fi network"
             android:textColor="@color/white"
-            android:textSize="14sp" />
+            android:textSize="15sp" />
     </LinearLayout>
 
 

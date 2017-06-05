@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -51,11 +52,21 @@ public class LoginActivity extends WearableActivity {
         super.onCreate(savedInstanceState);
         setAmbientEnabled();
         setContentView(R.layout.activity_login);
+        mQRCodeView = (ImageView) findViewById(R.id.QRCode);
+        final LinearLayout infoLayout = (LinearLayout) findViewById(R.id.layout_info);
+        LinearLayout showQRCodeButton = (LinearLayout) findViewById(R.id.button_show_qr_code);
+        showQRCodeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                infoLayout.setVisibility(View.GONE);
+                mQRCodeView.setVisibility(View.VISIBLE);
+            }
+        });
+
         Display display = getWindowManager().getDefaultDisplay();
         final Point size = new Point();
         display.getSize(size);
         mSize = getResources().getConfiguration().isScreenRound() ? size.x / 3 * 2 : size.x - size.x / 20;
-        mQRCodeView = (ImageView) findViewById(R.id.QRCode);
         mLogo = getDrawable(R.drawable.ic_logo);
         mLogoBurnIn = getDrawable(R.drawable.ic_logo_burn_in);
         final Handler handler = new Handler();
@@ -128,6 +139,7 @@ public class LoginActivity extends WearableActivity {
             @Override
             public void onError() {
                 progressBar.setVisibility(View.GONE);
+                infoLayout.setVisibility(View.VISIBLE);
                 qrCodeService.run();
                 loginService.run();
             }
