@@ -18,8 +18,8 @@ import com.seapip.thomas.wearify.Browse.Loading;
 import com.seapip.thomas.wearify.Browse.OnClick;
 import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.Manager;
-import com.seapip.thomas.wearify.Spotify.Paging;
-import com.seapip.thomas.wearify.Spotify.SavedTrack;
+import com.seapip.thomas.wearify.Spotify.Objects.Paging;
+import com.seapip.thomas.wearify.Spotify.Objects.SavedTrack;
 import com.seapip.thomas.wearify.Spotify.Service;
 
 import java.util.ArrayList;
@@ -75,12 +75,13 @@ public class TracksActivity extends Activity {
                                 item.onClick = new OnClick() {
                                     @Override
                                     public void run(Context context) {
+                                        /*
                                         Manager.getController(context).shuffle(false, new Callback<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
                                                 //Manager.play(null, contextUri, position, null);
                                             }
-                                        });
+                                        });*/
                                     }
                                 };
                                 mItems.add(item);

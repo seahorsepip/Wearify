@@ -1,6 +1,8 @@
 package com.seapip.thomas.wearify.Browse;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -12,6 +14,7 @@ import android.graphics.Shader;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.widget.RecyclerView;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.drawer.WearableActionDrawer;
@@ -29,7 +32,9 @@ import com.seapip.thomas.wearify.NavigationDrawerAdapter;
 import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.R;
 import com.seapip.thomas.wearify.Spotify.Callback;
-import com.seapip.thomas.wearify.Spotify.CurrentlyPlaying;
+import com.seapip.thomas.wearify.Spotify.Controller.Controller;
+import com.seapip.thomas.wearify.Spotify.Controller.Service;
+import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
 import com.seapip.thomas.wearify.Spotify.Manager;
 
 import static android.view.View.GONE;
@@ -38,9 +43,20 @@ import static android.view.View.VISIBLE;
 
 public class Activity extends WearableActivity {
 
-    private Callback<CurrentlyPlaying> mPlaybackCallback;
-    private Runnable mPlaybackRunnable;
-    private Runnable mDeviceRunnable;
+    private boolean mIsBound;
+    private Service mController;
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        public void onServiceDisconnected(ComponentName name) {
+            mIsBound = false;
+            mController = null;
+        }
+
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mIsBound = true;
+            mController = ((Service.ControllerBinder) service).getServiceInstance();
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -85,6 +101,7 @@ public class Activity extends WearableActivity {
                 }
             });
 
+            /*
             mPlaybackCallback = new Callback<CurrentlyPlaying>() {
                 @Override
                 public void onSuccess(CurrentlyPlaying currentlyPlaying) {
@@ -118,6 +135,7 @@ public class Activity extends WearableActivity {
                     }
                 }
             });
+            */
         }
     }
 
@@ -152,30 +170,22 @@ public class Activity extends WearableActivity {
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (mPlaybackCallback != null) {
-            mPlaybackRunnable = Manager.onPlayback(this, mPlaybackCallback);
-        }
+    public Controller getController() {
+        return mController.getController();
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        if (mPlaybackRunnable != null) {
-            Manager.offPlayback(this, mPlaybackRunnable);
-        }
-        if (mDeviceRunnable != null) {
-            Manager.offDevice(mDeviceRunnable);
-        }
+    protected void onStart() {
+        super.onStart();
+        Intent mIntent = new Intent(this, Service.class);
+        bindService(mIntent, mConnection, BIND_AUTO_CREATE);
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        if (mPlaybackRunnable != null) {
-            Manager.offPlayback(this, mPlaybackRunnable);
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mIsBound) {
+            unbindService(mConnection);
         }
     }
 }

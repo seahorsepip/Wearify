@@ -1,4 +1,4 @@
-package com.seapip.thomas.wearify.Spotify;
+package com.seapip.thomas.wearify.Spotify.Controller;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,9 +9,19 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.seapip.thomas.wearify.AddWifiActivity;
+import com.seapip.thomas.wearify.Spotify.Callback;
+import com.seapip.thomas.wearify.Spotify.Manager;
+import com.seapip.thomas.wearify.Spotify.Objects.Album;
+import com.seapip.thomas.wearify.Spotify.Objects.Artist;
+import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
+import com.seapip.thomas.wearify.Spotify.Objects.Device;
+import com.seapip.thomas.wearify.Spotify.Objects.Image;
+import com.seapip.thomas.wearify.Spotify.Objects.Playlist;
+import com.seapip.thomas.wearify.Spotify.Objects.Track;
 import com.seapip.thomas.wearify.Wearify.Token;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
@@ -24,7 +34,6 @@ import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
 
-import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -42,7 +51,6 @@ public class NativeController implements Controller, Player.NotificationCallback
     private SpotifyPlayer mPlayer;
     private PlaybackState mCurrentPlaybackState;
     private Metadata mMetadata;
-    private HashMap<Integer, Callback<CurrentlyPlaying>> mPlaybackCallbacks;
     private boolean mShuffle;
     private String mRepeat = "off";
     private AudioManager mAudioManager;
@@ -50,16 +58,20 @@ public class NativeController implements Controller, Player.NotificationCallback
     private Handler mNetworkHandler;
     private ConnectivityManager mConnectivityManager;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
+    private CurrentlyPlaying mCurrentlyPlaying;
 
 
     public NativeController(Context context) {
         mContext = context;
-        mPlaybackCallbacks = new HashMap<>();
         mAudioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
         mVolume = 100 * mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
                 / mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         mConnectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         mNetworkHandler = new Handler();
+        mCurrentlyPlaying = new CurrentlyPlaying();
+        mCurrentlyPlaying.item = new Track();
+        mCurrentlyPlaying.context = new com.seapip.thomas.wearify.Spotify.Objects.Context();
+        mCurrentlyPlaying.device = new Device();
         com.seapip.thomas.wearify.Wearify.Manager.getToken(mContext, new com.seapip.thomas.wearify.Wearify.Callback() {
             @Override
             public void onSuccess(Token token) {
@@ -112,7 +124,6 @@ public class NativeController implements Controller, Player.NotificationCallback
     }
 
     private boolean isNetworkHighBandwidth() {
-
         Network network = mConnectivityManager.getBoundNetworkForProcess();
         network = network == null ? mConnectivityManager.getActiveNetwork() : network;
         if (network == null) {
@@ -122,11 +133,7 @@ public class NativeController implements Controller, Player.NotificationCallback
         int bandwidth = mConnectivityManager
                 .getNetworkCapabilities(network).getLinkDownstreamBandwidthKbps();
 
-        if (bandwidth >= MIN_NETWORK_BANDWIDTH_KBPS) {
-            return true;
-        }
-
-        return false;
+        return bandwidth >= MIN_NETWORK_BANDWIDTH_KBPS;
     }
 
     private void requestHighBandwidthNetwork(final Callback<Void> callback) {
@@ -196,15 +203,39 @@ public class NativeController implements Controller, Player.NotificationCallback
         mContext.startActivity(new Intent(mContext, AddWifiActivity.class));
     }
 
+    public void updateCurrentlyPlaying() {
+        mCurrentPlaybackState = mPlayer.getPlaybackState();
+        if (mMetadata != null && mMetadata.currentTrack != null) {
+            mCurrentlyPlaying.item.uri = mMetadata.currentTrack.uri;
+            mCurrentlyPlaying.item.name = mMetadata.currentTrack.name;
+            mCurrentlyPlaying.item.artists = new Artist[1];
+            mCurrentlyPlaying.item.artists[0] = new Artist();
+            mCurrentlyPlaying.item.artists[0].name = mMetadata.currentTrack.artistName;
+            mCurrentlyPlaying.item.album = new Album();
+            mCurrentlyPlaying.item.album.images = new Image[1];
+            mCurrentlyPlaying.item.album.images[0] = new Image();
+            mCurrentlyPlaying.item.album.images[0].url = mMetadata.currentTrack.albumCoverWebUrl;
+            mCurrentlyPlaying.item.duration_ms = (int) mMetadata.currentTrack.durationMs;
+            mCurrentlyPlaying.context.uri = mMetadata.contextUri;
+        }
+        if (mCurrentPlaybackState != null) {
+            mCurrentlyPlaying.device.is_active = true;
+            mCurrentlyPlaying.device.id = "native_playback";
+            mCurrentlyPlaying.device.name = Build.MODEL;
+            mCurrentlyPlaying.device.type = "Watch";
+            mCurrentlyPlaying.device.volume_percent = mVolume;
+            mCurrentlyPlaying.is_playing = mCurrentPlaybackState.isPlaying;
+            mCurrentlyPlaying.shuffle_state = mShuffle;
+            mCurrentlyPlaying.repeat_state = mRepeat;
+            mCurrentlyPlaying.progress_ms = (int) mCurrentPlaybackState.positionMs;
+        }
+    }
 
-    private void play(final String contextUri, final int position, final Callback<Void> callback) {
+    private void play(final String contextUri, final int position) {
         mPlayer.playUri(new Player.OperationCallback() {
             @Override
             public void onSuccess() {
                 mPlayer.setShuffle(null, mShuffle);
-                if (callback != null) {
-                    callback.onSuccess(null);
-                }
             }
 
             @Override
@@ -215,16 +246,17 @@ public class NativeController implements Controller, Player.NotificationCallback
     }
 
     @Override
-    public void play(final String uris, final String contextUri, final int position, final Callback<Void> callback) {
+    public void play(final String uris, final String contextUri, final int position) {
+        Log.e("WEARIFY", "U WANNA PLAY???");
         getHighBandwidthNetwork(new Callback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 if (mShuffle) {
-                    Manager.getService(mContext, new Callback<Service>() {
+                    Manager.getService(mContext, new Callback<com.seapip.thomas.wearify.Spotify.Service>() {
                         @Override
-                        public void onSuccess(Service service) {
+                        public void onSuccess(com.seapip.thomas.wearify.Spotify.Service service) {
                             if (contextUri == null) {
-                                resume(null);
+                                resume();
                                 return;
                             } else if (contextUri.contains(":playlist:")) {
                                 Call<Playlist> call = service.getPlaylist(contextUri.split(":")[2],
@@ -235,7 +267,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                                         if (response.isSuccessful()) {
                                             Playlist playlist = response.body();
                                             int position = ThreadLocalRandom.current().nextInt(0, playlist.tracks.total);
-                                            play(contextUri, position, callback);
+                                            play(contextUri, position);
                                         }
                                     }
 
@@ -252,7 +284,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                                         if (response.isSuccessful()) {
                                             Album album = response.body();
                                             int position = ThreadLocalRandom.current().nextInt(0, album.tracks.total);
-                                            play(contextUri, position, callback);
+                                            play(contextUri, position);
                                         }
                                     }
 
@@ -266,176 +298,88 @@ public class NativeController implements Controller, Player.NotificationCallback
                     });
                     return;
                 }
-                play(contextUri, position, callback);
+                play(contextUri, position);
             }
         });
     }
 
     @Override
-    public void pause(Callback<Void> callback) {
+    public void pause() {
         releaseHighBandwidthNetwork();
         mPlayer.pause(null);
-        if (callback != null) {
-            callback.onSuccess(null);
-        }
     }
 
     @Override
-    public void resume(final Callback<Void> callback) {
+    public void resume() {
         getHighBandwidthNetwork(new Callback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 mPlayer.resume(null);
-                if (callback != null) {
-                    callback.onSuccess(null);
-                }
             }
         });
     }
 
     @Override
-    public void shuffle(boolean state, final Callback<Void> callback) {
+    public void shuffle(boolean state) {
         mShuffle = state;
         if (mCurrentPlaybackState != null && mCurrentPlaybackState.isPlaying) {
-            mPlayer.setShuffle(new Player.OperationCallback() {
-                @Override
-                public void onSuccess() {
-                    if (callback != null) {
-                        callback.onSuccess(null);
-                    }
-                }
-
-                @Override
-                public void onError(Error error) {
-
-                }
-            }, state);
-        } else {
-            callback.onSuccess(null);
+            mPlayer.setShuffle(null, state);
         }
     }
 
     @Override
-    public void repeat(String state, final Callback<Void> callback) {
+    public void repeat(String state) {
         mRepeat = state;
         if (mCurrentPlaybackState != null && mCurrentPlaybackState.isPlaying) {
-            mPlayer.setRepeat(new Player.OperationCallback() {
-                @Override
-                public void onSuccess() {
-                    if (callback != null) {
-                        callback.onSuccess(null);
-                    }
-                }
-
-                @Override
-                public void onError(Error error) {
-
-                }
-            }, !state.equals("off"));
+            mPlayer.setRepeat(null, !state.equals("off"));
         }
     }
 
     @Override
-    public void getPlayback(Callback<CurrentlyPlaying> callback) {
-        CurrentlyPlaying currentlyPlaying = new CurrentlyPlaying();
-        mCurrentPlaybackState = mPlayer.getPlaybackState();
-        if (mMetadata != null && mMetadata.currentTrack != null && mCurrentPlaybackState != null) {
-            currentlyPlaying.item = new Track();
-            currentlyPlaying.item.uri = mMetadata.currentTrack.uri;
-            currentlyPlaying.item.name = mMetadata.currentTrack.name;
-            currentlyPlaying.item.artists = new Artist[1];
-            currentlyPlaying.item.artists[0] = new Artist();
-            currentlyPlaying.item.artists[0].name = mMetadata.currentTrack.artistName;
-            currentlyPlaying.item.album = new Album();
-            currentlyPlaying.item.album.images = new Image[1];
-            currentlyPlaying.item.album.images[0] = new Image();
-            currentlyPlaying.item.album.images[0].url = mMetadata.currentTrack.albumCoverWebUrl;
-            currentlyPlaying.context = new com.seapip.thomas.wearify.Spotify.Context();
-            currentlyPlaying.context.uri = mMetadata.contextUri;
-            currentlyPlaying.device = new Device();
-            currentlyPlaying.device.is_active = true;
-            currentlyPlaying.device.id = "native_playback";
-            currentlyPlaying.device.name = Build.MODEL;
-            currentlyPlaying.device.type = "Watch";
-            currentlyPlaying.device.volume_percent = mVolume;
-            currentlyPlaying.is_playing = mCurrentPlaybackState.isPlaying;
-            currentlyPlaying.shuffle_state = mShuffle;
-            currentlyPlaying.repeat_state = mRepeat == null ? "off" : mRepeat;
-            currentlyPlaying.progress_ms = (int) mCurrentPlaybackState.positionMs;
-            currentlyPlaying.item.duration_ms = (int) mMetadata.currentTrack.durationMs;
-        }
-        callback.onSuccess(currentlyPlaying);
-    }
-
-    @Override
-    public Runnable onPlayback(Callback<CurrentlyPlaying> callback) {
-        getPlayback(callback);
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        };
-        mPlaybackCallbacks.put(runnable.hashCode(), callback);
-        return runnable;
-    }
-
-    @Override
-    public void offPlayback(Runnable runnable) {
-        mPlaybackCallbacks.remove(runnable.hashCode());
-    }
-
-    @Override
-    public void prev(final Callback<Void> callback) {
+    public void previous() {
         getHighBandwidthNetwork(new Callback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 mPlayer.skipToPrevious(null);
-                if (callback != null) {
-                    callback.onSuccess(null);
-                }
             }
         });
     }
 
     @Override
-    public void next(final Callback<Void> callback) {
+    public void next() {
         getHighBandwidthNetwork(new Callback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 mPlayer.skipToNext(null);
-                if (callback != null) {
-                    callback.onSuccess(null);
-                }
             }
         });
     }
 
     @Override
-    public void volume(int volume, Callback<Void> callback) {
+    public void volume(int volume) {
         mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume > 0 ?
                 volume * mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) / 100 : 0, 0);
         mVolume = volume;
-        updatePlayback();
-        if (callback != null) {
-            callback.onSuccess(null);
-        }
+        updateCurrentlyPlaying();
+        ((Service) mContext).onPlaybackVolume(mCurrentlyPlaying);
     }
 
     @Override
-    public void seek(int positionMs, Callback<Void> callback) {
+    public void seek(int positionMs) {
         mPlayer.seekToPosition(null, positionMs);
-        if (callback != null) {
-            callback.onSuccess(null);
-        }
     }
 
     @Override
     public void destroy() {
-        mPlayer.logout();
-        mPlayer.shutdown();
-        mPlayer.destroy();
         Spotify.destroyPlayer(this);
+    }
+
+    @Override
+    public void bind() {
+        mCurrentPlaybackState = mPlayer.getPlaybackState();
+        mMetadata = mPlayer.getMetadata();
+        updateCurrentlyPlaying();
+        ((Service) mContext).onPlaybackBind(mCurrentlyPlaying);
     }
 
     @Override
@@ -464,16 +408,36 @@ public class NativeController implements Controller, Player.NotificationCallback
     public void onPlaybackEvent(PlayerEvent playerEvent) {
         mCurrentPlaybackState = mPlayer.getPlaybackState();
         mMetadata = mPlayer.getMetadata();
-        updatePlayback();
-    }
-
-    private void updatePlayback() {
-        for (Callback<CurrentlyPlaying> callback : mPlaybackCallbacks.values()) {
-            getPlayback(callback);
+        updateCurrentlyPlaying();
+        Service service = ((Service) mContext);
+        switch (playerEvent) {
+            case kSpPlaybackNotifyPlay:
+            case kSpPlaybackNotifyPause:
+                service.onPlaybackState(mCurrentlyPlaying);
+                break;
+            case kSpPlaybackNotifyNext:
+                service.onPlaybackNext(mCurrentlyPlaying);
+                break;
+            case kSpPlaybackNotifyPrev:
+                service.onPlaybackPrevious(mCurrentlyPlaying);
+                break;
+            case kSpPlaybackNotifyShuffleOn:
+            case kSpPlaybackNotifyShuffleOff:
+                service.onPlaybackShuffle(mCurrentlyPlaying);
+                break;
+            case kSpPlaybackNotifyRepeatOn:
+            case kSpPlaybackNotifyRepeatOff:
+                service.onPlaybackRepeat(mCurrentlyPlaying);
+                break;
+            case kSpPlaybackNotifyTrackChanged:
+            case kSpPlaybackNotifyMetadataChanged:
+                service.onPlaybackMetaData(mCurrentlyPlaying);
+                break;
         }
     }
 
     @Override
     public void onPlaybackError(Error error) {
+
     }
 }

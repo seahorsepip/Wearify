@@ -1,4 +1,4 @@
-package com.seapip.thomas.wearify.Spotify;
+package com.seapip.thomas.wearify.Spotify.Objects;
 
 public class CurrentlyPlaying {
     public Device device;

@@ -1,21 +1,16 @@
 package com.seapip.thomas.wearify.phone;
 
-import android.Manifest;
 import android.app.KeyguardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.PowerManager;
 import android.provider.MediaStore;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.WindowManager;
@@ -51,17 +46,10 @@ public class MainActivity extends AppCompatActivity {
 
         MediaSessionManager sessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
         List<MediaController> controllers = null;
-        controllers = sessionManager.getActiveSessions(
-                new ComponentName(this, NotificationListener.class));
-        Log.e("WEARIFY", "found " + controllers.size() + " controllers");
-        if (controllers.size() > 0) {
-            controllers.get(0).getTransportControls().pause();
-            Log.e("WEARIFY", controllers.get(0).getPackageName());
-            Log.e("WEARIFY", controllers.get(0).getMetadata().getString(MediaMetadata.METADATA_KEY_TITLE));
-            if (controllers.get(0).getMetadata().keySet() != null) {
-                for (String key : controllers.get(0).getMetadata().keySet()) {
-                    Log.e("WEARIFY", key);
-                }
+        controllers = sessionManager.getActiveSessions(new ComponentName(this, NotificationListener.class));
+        for (MediaController controller : controllers) {
+            if(controller.getPackageName().equals("com.spotify.music")) {
+                controller.getTransportControls().pause();
             }
         }
     }

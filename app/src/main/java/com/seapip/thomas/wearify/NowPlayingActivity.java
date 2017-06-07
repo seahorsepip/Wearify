@@ -1,19 +1,21 @@
 package com.seapip.thomas.wearify;
 
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.Settings;
+import android.os.IBinder;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.wearable.view.WearableRecyclerView;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,11 +29,12 @@ import com.seapip.thomas.wearify.Browse.Header;
 import com.seapip.thomas.wearify.Browse.Item;
 import com.seapip.thomas.wearify.Browse.OnClick;
 import com.seapip.thomas.wearify.Spotify.Callback;
-import com.seapip.thomas.wearify.Spotify.CurrentlyPlaying;
-import com.seapip.thomas.wearify.Spotify.Device;
-import com.seapip.thomas.wearify.Spotify.Devices;
+import com.seapip.thomas.wearify.Spotify.Controller.Callbacks;
+import com.seapip.thomas.wearify.Spotify.Controller.Service;
 import com.seapip.thomas.wearify.Spotify.Manager;
-import com.seapip.thomas.wearify.Spotify.Service;
+import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
+import com.seapip.thomas.wearify.Spotify.Objects.Device;
+import com.seapip.thomas.wearify.Spotify.Objects.Devices;
 import com.seapip.thomas.wearify.Spotify.Util;
 import com.squareup.picasso.Picasso;
 
@@ -44,8 +47,24 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static com.seapip.thomas.wearify.Spotify.Util.largestImageUrl;
 
-public class NowPlayingActivity extends Activity {
+public class NowPlayingActivity extends Activity implements Callbacks {
 
+    private boolean mIsBound;
+    private Service mController;
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        public void onServiceDisconnected(ComponentName name) {
+            mIsBound = false;
+            mController = null;
+        }
+
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mIsBound = true;
+            mController = ((Service.ControllerBinder) service).getServiceInstance();
+            mController.setCallbacks(NowPlayingActivity.this);
+            mController.getController().bind();
+        }
+    };
     private boolean mAmbient;
     private WearableDrawerLayout mDrawerLayout;
     private WearableNavigationDrawer mNavigationDrawer;
@@ -65,9 +84,10 @@ public class NowPlayingActivity extends Activity {
     private MenuItem mShuffleMenuItem;
     private MenuItem mRepeatMenuItem;
     private MenuItem mDeviceMenuItem;
-    private Callback<CurrentlyPlaying> mPlaybackCallback;
-    private Runnable mPlaybackRunnable;
-    private Runnable mDeviceRunnable;
+    private boolean mIsPlaying = true;
+    private boolean mShuffle;
+    private String mRepeat;
+    private int mVolume;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -94,6 +114,7 @@ public class NowPlayingActivity extends Activity {
 
         setDrawers(mDrawerLayout, mNavigationDrawer, null, 1);
 
+        /*
         mPlaybackCallback = new Callback<CurrentlyPlaying>() {
             @Override
             public void onSuccess(final CurrentlyPlaying currentlyPlaying) {
@@ -117,9 +138,6 @@ public class NowPlayingActivity extends Activity {
                         currentlyPlaying.device.volume_percent = mCurrentlyPlaying.device.volume_percent;
                     }
                     mCurrentlyPlaying = currentlyPlaying;
-                    setPlayIcon();
-                    setShuffleIcon();
-                    setRepeatIcon();
                     switch (currentlyPlaying.device.type) {
                         case "Watch":
                             mDeviceMenuItem.setIcon(R.drawable.ic_watch_black_24dp);
@@ -141,20 +159,15 @@ public class NowPlayingActivity extends Activity {
                     }
                 }
             }
-        };
+        };*/
 
         mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mCurrentlyPlaying != null) {
-                    mCurrentlyPlaying.is_playing = !mCurrentlyPlaying.is_playing;
-                    if (mCurrentlyPlaying.is_playing) {
-                        Manager.getController(NowPlayingActivity.this).resume(null);
-                    } else {
-                        Manager.getController(NowPlayingActivity.this).pause(null);
-                    }
-                    setPlayIcon();
-                    mCurrentlyPlaying.timestamp = System.currentTimeMillis();
+                if (mIsPlaying) {
+                    mController.getController().pause();
+                } else {
+                    mController.getController().resume();
                 }
             }
         });
@@ -163,10 +176,7 @@ public class NowPlayingActivity extends Activity {
         mPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mBackgroundImage.getVisibility() == VISIBLE) {
-                    Manager.getController(NowPlayingActivity.this).prev(null);
-                    setLoading();
-                }
+                mController.getController().previous();
             }
         });
         mPrev.setClickAlpha(20);
@@ -174,10 +184,7 @@ public class NowPlayingActivity extends Activity {
         mNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mBackgroundImage.getVisibility() == VISIBLE) {
-                    Manager.getController(NowPlayingActivity.this).next(null);
-                    setLoading();
-                }
+                mController.getController().next();
             }
         });
         mNext.setClickAlpha(20);
@@ -185,10 +192,7 @@ public class NowPlayingActivity extends Activity {
         mVolDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mCurrentlyPlaying != null) {
-                    mCurrentlyPlaying.device.volume_percent = Math.max(0, mCurrentlyPlaying.device.volume_percent - 5);
-                    Manager.getController(NowPlayingActivity.this).volume(mCurrentlyPlaying.device.volume_percent, null);
-                }
+                mController.getController().volume(Math.max(0, mVolume - 5));
             }
         });
         mVolDown.setClickAlpha(20);
@@ -196,10 +200,7 @@ public class NowPlayingActivity extends Activity {
         mVolUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mCurrentlyPlaying != null) {
-                    mCurrentlyPlaying.device.volume_percent = Math.min(100, mCurrentlyPlaying.device.volume_percent + 5);
-                    Manager.getController(NowPlayingActivity.this).volume(mCurrentlyPlaying.device.volume_percent, null);
-                }
+                mController.getController().volume(Math.min(100, mVolume + 5));
             }
         });
         mVolUp.setClickAlpha(20);
@@ -210,11 +211,7 @@ public class NowPlayingActivity extends Activity {
         mShuffleMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(final MenuItem item) {
-                if (mCurrentlyPlaying != null) {
-                    mCurrentlyPlaying.shuffle_state = !mCurrentlyPlaying.shuffle_state;
-                    setShuffleIcon();
-                    Manager.getController(NowPlayingActivity.this).shuffle(mCurrentlyPlaying.shuffle_state, null);
-                }
+                mController.getController().shuffle(!mShuffle);
                 return false;
             }
         });
@@ -222,21 +219,18 @@ public class NowPlayingActivity extends Activity {
         mRepeatMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(final MenuItem item) {
-                if (mCurrentlyPlaying != null) {
-                    switch (mCurrentlyPlaying.repeat_state) {
-                        case "off":
-                            mCurrentlyPlaying.repeat_state = "context";
-                            break;
-                        case "context":
-                            mCurrentlyPlaying.repeat_state = "track";
-                            break;
-                        case "track":
-                            mCurrentlyPlaying.repeat_state = "off";
-                            break;
-                    }
-                    setRepeatIcon();
-                    Manager.getController(NowPlayingActivity.this).repeat(mCurrentlyPlaying.repeat_state, null);
+                switch (mRepeat) {
+                    case "off":
+                        mRepeat = "context";
+                        break;
+                    case "context":
+                        mRepeat = "track";
+                        break;
+                    case "track":
+                        mRepeat = "off";
+                        break;
                 }
+                mController.getController().repeat(mRepeat);
                 return false;
             }
         });
@@ -248,18 +242,14 @@ public class NowPlayingActivity extends Activity {
                 return false;
             }
         });
-
-        mPlaybackRunnable = Manager.onPlayback(this, mPlaybackCallback);
-        mDeviceRunnable = Manager.onDevice(new Callback<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                if (mPlaybackCallback != null) {
-                    mPlaybackRunnable = Manager.onPlayback(NowPlayingActivity.this, mPlaybackCallback);
-                    recreate();
-                }
-            }
-        });
         onProgress();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent mIntent = new Intent(this, Service.class);
+        bindService(mIntent, mConnection, BIND_AUTO_CREATE);
     }
 
     private void deviceDialog() {
@@ -275,9 +265,9 @@ public class NowPlayingActivity extends Activity {
         recyclerView.setAdapter(adapter);
         dialog.setCancelable(true);
         dialog.show();
-        Manager.getService(this, new Callback<Service>() {
+        Manager.getService(this, new Callback<com.seapip.thomas.wearify.Spotify.Service>() {
             @Override
-            public void onSuccess(Service service) {
+            public void onSuccess(com.seapip.thomas.wearify.Spotify.Service service) {
                 Call<Devices> call = service.devices();
                 call.enqueue(new retrofit2.Callback<Devices>() {
                     @Override
@@ -324,7 +314,6 @@ public class NowPlayingActivity extends Activity {
                                                     Manager.CONNECT_CONTROLLER, device.id);
                                             dialog.dismiss();
                                             mActionDrawer.closeDrawer();
-                                            setLoading();
                                         }
                                     };
                                     items.add(item);
@@ -352,38 +341,6 @@ public class NowPlayingActivity extends Activity {
         mProgressBar.setVisibility(VISIBLE);
     }
 
-    private void setPlayIcon() {
-        mPlay.setImageDrawable(
-                getDrawable(mCurrentlyPlaying != null && mCurrentlyPlaying.is_playing ?
-                        mAmbient ?
-                                R.drawable.ic_pause_black_burn_in_24dp :
-                                R.drawable.ic_pause_black_24dp :
-                        mAmbient ?
-                                R.drawable.ic_play_arrow_black_burn_in_24dp :
-                                R.drawable.ic_play_arrow_black_24dp));
-    }
-
-    private void setShuffleIcon() {
-        mShuffleMenuItem.setIcon(mCurrentlyPlaying.shuffle_state ?
-                R.drawable.ic_shuffle_black_24dp : R.drawable.ic_shuffle_disabled_black_24px);
-    }
-
-    private void setRepeatIcon() {
-        if (mCurrentlyPlaying.repeat_state != null) {
-            switch (mCurrentlyPlaying.repeat_state) {
-                case "off":
-                    mRepeatMenuItem.setIcon(R.drawable.ic_repeat_disabled_black_24px);
-                    break;
-                case "context":
-                    mRepeatMenuItem.setIcon(R.drawable.ic_repeat_black_24dp);
-                    break;
-                case "track":
-                    mRepeatMenuItem.setIcon(R.drawable.ic_repeat_one_black_24dp);
-                    break;
-            }
-        }
-    }
-
     private void onProgress() {
         (new Runnable() {
             @Override
@@ -399,30 +356,78 @@ public class NowPlayingActivity extends Activity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        mPlaybackRunnable = Manager.onPlayback(this, mPlaybackCallback);
-        onProgress();
+    public void onPlaybackState(CurrentlyPlaying currentlyPlaying) {
+        mIsPlaying = currentlyPlaying.is_playing;
+        mPlay.setImageDrawable(
+                getDrawable(mIsPlaying ?
+                        mAmbient ?
+                                R.drawable.ic_pause_black_burn_in_24dp :
+                                R.drawable.ic_pause_black_24dp :
+                        mAmbient ?
+                                R.drawable.ic_play_arrow_black_burn_in_24dp :
+                                R.drawable.ic_play_arrow_black_24dp));
+    }
+
+    @Override
+    public void onPlaybackShuffle(CurrentlyPlaying currentlyPlaying) {
+        mShuffle = currentlyPlaying.shuffle_state;
+        mShuffleMenuItem.setIcon(mShuffle ?
+                R.drawable.ic_shuffle_black_24dp : R.drawable.ic_shuffle_disabled_black_24px);
+    }
+
+    @Override
+    public void onPlaybackRepeat(CurrentlyPlaying currentlyPlaying) {
+        mRepeat = currentlyPlaying.repeat_state;
+        switch (mRepeat) {
+            case "off":
+                mRepeatMenuItem.setIcon(R.drawable.ic_repeat_disabled_black_24px);
+                break;
+            case "context":
+                mRepeatMenuItem.setIcon(R.drawable.ic_repeat_black_24dp);
+                break;
+            case "track":
+                mRepeatMenuItem.setIcon(R.drawable.ic_repeat_one_black_24dp);
+                break;
+        }
+    }
+
+    @Override
+    public void onPlaybackPrevious(CurrentlyPlaying currentlyPlaying) {
+
+    }
+
+    @Override
+    public void onPlaybackNext(CurrentlyPlaying currentlyPlaying) {
+
+    }
+
+    @Override
+    public void onPlaybackVolume(CurrentlyPlaying currentlyPlaying) {
+        mVolume = currentlyPlaying.device.volume_percent;
+    }
+
+    @Override
+    public void onPlaybackSeek(CurrentlyPlaying currentlyPlaying) {
+
+    }
+
+    @Override
+    public void onPlaybackMetaData(CurrentlyPlaying currentlyPlaying) {
+        Picasso.with(getApplicationContext())
+                .load(largestImageUrl(currentlyPlaying.item.album.images))
+                .fit().into(mBackgroundImage);
+        mTitle.setText(currentlyPlaying.item.name);
+        mSubTitle.setText(Util.names(currentlyPlaying.item.artists));
+    }
+
+    @Override
+    public void onPlaybackDevice(CurrentlyPlaying currentlyPlaying) {
+
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (mPlaybackRunnable != null) {
-            Manager.offPlayback(this, mPlaybackRunnable);
-        }
-        if (mDeviceRunnable != null) {
-            Manager.offDevice(mDeviceRunnable);
-        }
-        mProgressHandler.removeCallbacksAndMessages(null);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (mPlaybackRunnable != null) {
-            Manager.offPlayback(this, mPlaybackRunnable);
-        }
         mProgressHandler.removeCallbacksAndMessages(null);
     }
 
@@ -430,16 +435,12 @@ public class NowPlayingActivity extends Activity {
     public void onEnterAmbient(Bundle ambientDetails) {
         super.onEnterAmbient(ambientDetails);
         mAmbient = true;
-        if (mPlaybackRunnable != null) {
-            Manager.offPlayback(this, mPlaybackRunnable);
-        }
         mProgressHandler.removeCallbacksAndMessages(null);
         mDrawerLayout.setBackgroundColor(Color.BLACK);
         mNavigationDrawer.setVisibility(GONE);
         mBackgroundImage.setVisibility(GONE);
         mProgress.setVisibility(GONE);
         mActionDrawer.setVisibility(GONE);
-        setPlayIcon();
         mPlay.setBackgroundColor(Color.TRANSPARENT);
         mPlay.setTint(Color.WHITE);
         mPlay.setBorder(Color.parseColor("#777777"));
@@ -454,14 +455,12 @@ public class NowPlayingActivity extends Activity {
     public void onExitAmbient() {
         super.onExitAmbient();
         mAmbient = false;
-        mPlaybackRunnable = Manager.onPlayback(this, mPlaybackCallback);
         onProgress();
         mDrawerLayout.setBackgroundColor(Color.parseColor("#141414"));
         mNavigationDrawer.setVisibility(VISIBLE);
         mBackgroundImage.setVisibility(VISIBLE);
         mProgress.setVisibility(VISIBLE);
         mActionDrawer.setVisibility(VISIBLE);
-        setPlayIcon();
         mPlay.setBackgroundColor(Color.parseColor("#00ffe0"));
         mPlay.setTint(Color.argb(180, 0, 0, 0));
         mPlay.setBorder(Color.TRANSPARENT);
@@ -474,12 +473,15 @@ public class NowPlayingActivity extends Activity {
     @Override
     public void onUpdateAmbient() {
         super.onUpdateAmbient();
-        Manager.getController(this).getPlayback(mPlaybackCallback);
     }
 
     @Override
     protected void onDestroy() {
         //Manager.destroy();
         super.onDestroy();
+        if (mIsBound) {
+            mController.unsetCallbacks(this);
+            unbindService(mConnection);
+        }
     }
 }

@@ -18,12 +18,12 @@ import com.seapip.thomas.wearify.Browse.Item;
 import com.seapip.thomas.wearify.Browse.LetterGroupHeader;
 import com.seapip.thomas.wearify.Browse.Loading;
 import com.seapip.thomas.wearify.Browse.OnClick;
-import com.seapip.thomas.wearify.Spotify.Artist;
-import com.seapip.thomas.wearify.Spotify.Artists;
+import com.seapip.thomas.wearify.Spotify.Objects.Artist;
+import com.seapip.thomas.wearify.Spotify.Objects.Artists;
 import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.Manager;
-import com.seapip.thomas.wearify.Spotify.Paging;
-import com.seapip.thomas.wearify.Spotify.SavedTrack;
+import com.seapip.thomas.wearify.Spotify.Objects.Paging;
+import com.seapip.thomas.wearify.Spotify.Objects.SavedTrack;
 import com.seapip.thomas.wearify.Spotify.Service;
 import com.seapip.thomas.wearify.Spotify.Util;
 

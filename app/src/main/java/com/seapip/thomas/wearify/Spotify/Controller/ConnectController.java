@@ -1,7 +1,14 @@
-package com.seapip.thomas.wearify.Spotify;
+package com.seapip.thomas.wearify.Spotify.Controller;
 
 import android.content.Context;
 import android.os.Handler;
+
+import com.seapip.thomas.wearify.Spotify.Callback;
+import com.seapip.thomas.wearify.Spotify.Manager;
+import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
+import com.seapip.thomas.wearify.Spotify.Objects.Offset;
+import com.seapip.thomas.wearify.Spotify.Objects.Play;
+import com.seapip.thomas.wearify.Spotify.Service;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -21,8 +28,7 @@ public class ConnectController implements Controller {
     }
 
     @Override
-    public void play(final String uris, final String contextUri,
-                     final int position, final Callback<Void> callback) {
+    public void play(final String uris, final String contextUri, final int position) {
         getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
@@ -38,9 +44,6 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            if (callback != null) {
-                                callback.onSuccess(null);
-                            }
                         }
                     }
 
@@ -54,7 +57,7 @@ public class ConnectController implements Controller {
     }
 
     @Override
-    public void pause(final Callback<Void> callback) {
+    public void pause() {
         Manager.cancelAll();
         getService(mContext, new Callback<Service>() {
             @Override
@@ -64,9 +67,6 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            if (callback != null) {
-                                callback.onSuccess(null);
-                            }
                         }
                     }
 
@@ -80,7 +80,7 @@ public class ConnectController implements Controller {
     }
 
     @Override
-    public void resume(final Callback<Void> callback) {
+    public void resume() {
         Manager.cancelAll();
         getService(mContext, new Callback<Service>() {
             @Override
@@ -90,9 +90,6 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            if (callback != null) {
-                                callback.onSuccess(null);
-                            }
                         }
                     }
 
@@ -106,7 +103,7 @@ public class ConnectController implements Controller {
     }
 
     @Override
-    public void shuffle(final boolean state, final Callback<Void> callback) {
+    public void shuffle(final boolean state) {
         Manager.cancelAll();
         getService(mContext, new Callback<Service>() {
             @Override
@@ -116,9 +113,6 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            if (callback != null) {
-                                callback.onSuccess(null);
-                            }
                         }
                     }
 
@@ -132,7 +126,7 @@ public class ConnectController implements Controller {
     }
 
     @Override
-    public void repeat(final String state, final Callback<Void> callback) {
+    public void repeat(final String state) {
         Manager.cancelAll();
         getService(mContext, new Callback<Service>() {
             @Override
@@ -142,9 +136,6 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            if (callback != null) {
-                                callback.onSuccess(null);
-                            }
                         }
                     }
 
@@ -157,7 +148,6 @@ public class ConnectController implements Controller {
         });
     }
 
-    @Override
     public void getPlayback(final Callback<CurrentlyPlaying> callback) {
         getService(mContext, new Callback<Service>() {
             @Override
@@ -185,7 +175,7 @@ public class ConnectController implements Controller {
         });
     }
 
-    @Override
+
     public Runnable onPlayback(final Callback<CurrentlyPlaying> callback) {
         mPlaybackHandler.removeCallbacksAndMessages(null);
         if (mCurrentlyPlaying != null) {
@@ -202,13 +192,12 @@ public class ConnectController implements Controller {
         return runnable;
     }
 
-    @Override
     public void offPlayback(Runnable runnable) {
         mPlaybackHandler.removeCallbacks(runnable);
     }
 
     @Override
-    public void prev(final Callback<Void> callback) {
+    public void previous() {
         Manager.cancelAll();
         getService(mContext, new Callback<Service>() {
             @Override
@@ -218,9 +207,6 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            if (callback != null) {
-                                callback.onSuccess(null);
-                            }
                         }
                     }
 
@@ -234,7 +220,7 @@ public class ConnectController implements Controller {
     }
 
     @Override
-    public void next(final Callback<Void> callback) {
+    public void next() {
         Manager.cancelAll();
         getService(mContext, new Callback<Service>() {
             @Override
@@ -244,36 +230,6 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            if (callback != null) {
-                                callback.onSuccess(null);
-
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-
-                    }
-                });
-            }
-        });
-    }
-
-    public void volume(final int volume, final Callback<Void> callback) {
-        Manager.cancelAll();
-        getService(mContext, new Callback<Service>() {
-            @Override
-            public void onSuccess(Service service) {
-                Call<Void> call = service.volume(volume, mDeviceId);
-                call.enqueue(new retrofit2.Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
-                        if (response.isSuccessful()) {
-                            if (callback != null) {
-                                callback.onSuccess(null);
-
-                            }
                         }
                     }
 
@@ -287,7 +243,30 @@ public class ConnectController implements Controller {
     }
 
     @Override
-    public void seek(final int positionMs, final Callback<Void> callback) {
+    public void volume(final int volume) {
+        Manager.cancelAll();
+        getService(mContext, new Callback<Service>() {
+            @Override
+            public void onSuccess(Service service) {
+                Call<Void> call = service.volume(volume, mDeviceId);
+                call.enqueue(new retrofit2.Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
+                        if (response.isSuccessful()) {
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void seek(final int positionMs) {
         getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
@@ -296,9 +275,6 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {
                         if (response.isSuccessful()) {
-                            if (callback != null) {
-                                callback.onSuccess(null);
-                            }
                         }
                     }
 
@@ -313,6 +289,11 @@ public class ConnectController implements Controller {
 
     @Override
     public void destroy() {
+
+    }
+
+    @Override
+    public void bind() {
 
     }
 }

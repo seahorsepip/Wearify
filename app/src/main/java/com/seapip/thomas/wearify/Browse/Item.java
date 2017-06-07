@@ -3,10 +3,10 @@ package com.seapip.thomas.wearify.Browse;
 import android.graphics.drawable.Drawable;
 import android.support.wearable.view.WearableRecyclerView;
 
-import com.seapip.thomas.wearify.Spotify.Album;
-import com.seapip.thomas.wearify.Spotify.Artist;
-import com.seapip.thomas.wearify.Spotify.Playlist;
-import com.seapip.thomas.wearify.Spotify.Track;
+import com.seapip.thomas.wearify.Spotify.Objects.Album;
+import com.seapip.thomas.wearify.Spotify.Objects.Artist;
+import com.seapip.thomas.wearify.Spotify.Objects.Playlist;
+import com.seapip.thomas.wearify.Spotify.Objects.Track;
 import com.seapip.thomas.wearify.Spotify.Util;
 
 import static com.seapip.thomas.wearify.Spotify.Util.names;

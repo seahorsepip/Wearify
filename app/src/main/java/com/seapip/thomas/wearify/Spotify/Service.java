@@ -1,5 +1,21 @@
 package com.seapip.thomas.wearify.Spotify;
 
+import com.seapip.thomas.wearify.Spotify.Objects.Album;
+import com.seapip.thomas.wearify.Spotify.Objects.Artists;
+import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
+import com.seapip.thomas.wearify.Spotify.Objects.CursorPaging;
+import com.seapip.thomas.wearify.Spotify.Objects.Devices;
+import com.seapip.thomas.wearify.Spotify.Objects.Paging;
+import com.seapip.thomas.wearify.Spotify.Objects.Play;
+import com.seapip.thomas.wearify.Spotify.Objects.PlayHistory;
+import com.seapip.thomas.wearify.Spotify.Objects.Playlist;
+import com.seapip.thomas.wearify.Spotify.Objects.PlaylistTrack;
+import com.seapip.thomas.wearify.Spotify.Objects.SavedAlbum;
+import com.seapip.thomas.wearify.Spotify.Objects.SavedTrack;
+import com.seapip.thomas.wearify.Spotify.Objects.Track;
+import com.seapip.thomas.wearify.Spotify.Objects.Transfer;
+import com.seapip.thomas.wearify.Spotify.Objects.User;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;

@@ -2,6 +2,14 @@ package com.seapip.thomas.wearify.Spotify;
 
 import android.content.Context;
 
+import com.seapip.thomas.wearify.Spotify.Controller.ConnectController;
+import com.seapip.thomas.wearify.Spotify.Controller.Controller;
+import com.seapip.thomas.wearify.Spotify.Controller.NativeController;
+import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
+import com.seapip.thomas.wearify.Spotify.Objects.Paging;
+import com.seapip.thomas.wearify.Spotify.Objects.PlaylistTrack;
+import com.seapip.thomas.wearify.Spotify.Objects.Track;
+import com.seapip.thomas.wearify.Spotify.Objects.Transfer;
 import com.seapip.thomas.wearify.Wearify.Token;
 
 import java.io.IOException;
@@ -102,6 +110,7 @@ public class Manager {
                 updateDevice();
                 return;
             }
+            /*
             mCurrentController.getPlayback(new Callback<CurrentlyPlaying>() {
                 @Override
                 public void onSuccess(final CurrentlyPlaying currentlyPlaying) {
@@ -135,7 +144,7 @@ public class Manager {
                                                     }
                                                 });
                                     } else if (currentlyPlaying.context.uri.contains(":album:")) {
-                                        getPAlbumTrackNumber(context, currentlyPlaying.context.uri,
+                                        getAlbumTrackNumber(context, currentlyPlaying.context.uri,
                                                 currentlyPlaying.item.uri, 50, 0,
                                                 new Callback<Integer>() {
                                                     @Override
@@ -166,12 +175,13 @@ public class Manager {
                         }
                     });
                 }
-            });
+            });*/
         }
     }
 
     private static void playTransfer(final String uris, final String contextUri, final int position,
                                      boolean shuffleState, final String repeatState, final int positionMs) {
+        /*
         //Workaround: https://github.com/spotify/web-api/issues/565
         if (contextUri == null && mCurrentController == mNativeController) {
             mCurrentController.resume(new Callback<Void>() {
@@ -202,7 +212,7 @@ public class Manager {
                     }
                 });
             }
-        });
+        });*/
     }
 
     public static Runnable onPlayback(Context context, Callback<CurrentlyPlaying> callback) {
@@ -221,7 +231,8 @@ public class Manager {
                 }
             });
         }
-        return getController(context).onPlayback(callback);
+        //return getController(context).onPlayback(callback);
+        return null;
     }
 
     public static void offPlayback(Context context, Runnable runnable) {
@@ -229,7 +240,7 @@ public class Manager {
             mConnectController.offPlayback(mConnectRunnable);
             mConnectRunnable = null;
         }
-        getController(context).offPlayback(runnable);
+        //getController(context).offPlayback(runnable);
     }
 
     public static Runnable onDevice(Callback<Void> callback) {
@@ -334,9 +345,9 @@ public class Manager {
         });
     }
 
-    private static void getPAlbumTrackNumber(final Context context, final String contextUri,
-                                             final String trackUri, final int limit,
-                                             final int offset, final Callback<Integer> callback) {
+    private static void getAlbumTrackNumber(final Context context, final String contextUri,
+                                            final String trackUri, final int limit,
+                                            final int offset, final Callback<Integer> callback) {
         getService(context, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {

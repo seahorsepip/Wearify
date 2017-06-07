@@ -2,6 +2,9 @@ package com.seapip.thomas.wearify.Spotify;
 
 import android.text.TextUtils;
 
+import com.seapip.thomas.wearify.Spotify.Objects.Artist;
+import com.seapip.thomas.wearify.Spotify.Objects.Image;
+
 import java.util.ArrayList;
 
 public class Util {

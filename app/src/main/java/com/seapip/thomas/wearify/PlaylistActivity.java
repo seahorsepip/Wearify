@@ -19,11 +19,11 @@ import com.seapip.thomas.wearify.Browse.Loading;
 import com.seapip.thomas.wearify.Browse.OnClick;
 import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.Manager;
-import com.seapip.thomas.wearify.Spotify.Paging;
-import com.seapip.thomas.wearify.Spotify.Playlist;
-import com.seapip.thomas.wearify.Spotify.PlaylistTrack;
+import com.seapip.thomas.wearify.Spotify.Objects.Paging;
+import com.seapip.thomas.wearify.Spotify.Objects.Playlist;
+import com.seapip.thomas.wearify.Spotify.Objects.PlaylistTrack;
 import com.seapip.thomas.wearify.Spotify.Service;
-import com.seapip.thomas.wearify.Spotify.User;
+import com.seapip.thomas.wearify.Spotify.Objects.User;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -66,12 +66,8 @@ public class PlaylistActivity extends Activity {
         shuffle.onClick = new OnClick() {
             @Override
             public void run(final Context context) {
-                Manager.getController(context).shuffle(true, new Callback<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Manager.getController(context).play(null, mUri, -1, null);
-                    }
-                });
+                getController().shuffle(true);
+                getController().play(null, mUri, -1);
             }
         };
         mItems.add(shuffle);
@@ -187,12 +183,8 @@ public class PlaylistActivity extends Activity {
             item.onClick = new OnClick() {
                 @Override
                 public void run(final Context context) {
-                    Manager.getController(context).shuffle(false, new Callback<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Manager.getController(context).play(null, mUri, position, null);
-                        }
-                    });
+                    getController().shuffle(false);
+                    getController().play(null, mUri, position);
                 }
             };
             mItems.add(item);
