@@ -22,10 +22,10 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.google.android.support:wearable:2.0.2'
     compile 'com.spotify.sdk:spotify-player-24-noconnect-2.20b@aar'
-    //compile 'com.spotify.sdk:spotify-player-beta22-noconnect-2.20b@aar'
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
     compile 'com.squareup.retrofit2:converter-gson:2.3.0'
     compile 'com.squareup.okhttp3:logging-interceptor:3.5.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.journeyapps:zxing-android-embedded:3.5.0'
+    compile 'com.android.support:palette-v7:25.2.0'
 }

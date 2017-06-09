@@ -28,6 +28,7 @@ import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Connectivity;
 import com.spotify.sdk.android.player.Error;
 import com.spotify.sdk.android.player.Metadata;
+import com.spotify.sdk.android.player.PlaybackBitrate;
 import com.spotify.sdk.android.player.PlaybackState;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerEvent;
@@ -43,7 +44,7 @@ import retrofit2.Response;
 public class NativeController implements Controller, Player.NotificationCallback, ConnectionStateCallback {
 
     private static final String CLIENT_ID = "59fb3493386b4a6f8db44f3df59e5a34";
-    private static final long NETWORK_CONNECTIVITY_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(3);
+    private static final long NETWORK_CONNECTIVITY_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(5);
     private static final long NETWORK_CONNECTIVITY_RELEASE_MS = TimeUnit.SECONDS.toMillis(100);
     private static final int MIN_NETWORK_BANDWIDTH_KBPS = 3000;
 
@@ -69,7 +70,6 @@ public class NativeController implements Controller, Player.NotificationCallback
         mConnectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         mNetworkHandler = new Handler();
         mCurrentlyPlaying = new CurrentlyPlaying();
-        mCurrentlyPlaying.item = new Track();
         mCurrentlyPlaying.context = new com.seapip.thomas.wearify.Spotify.Objects.Context();
         mCurrentlyPlaying.device = new Device();
         com.seapip.thomas.wearify.Wearify.Manager.getToken(mContext, new com.seapip.thomas.wearify.Wearify.Callback() {
@@ -91,6 +91,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                                 public void onError(Error error) {
                                 }
                             }, Connectivity.MOBILE);
+                            player.setPlaybackBitrate(null, PlaybackBitrate.BITRATE_LOW);
                             player.addNotificationCallback(NativeController.this);
                             player.addConnectionStateCallback(NativeController.this);
                         }
@@ -182,6 +183,7 @@ public class NativeController implements Controller, Player.NotificationCallback
         mNetworkHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                mNetworkHandler.removeCallbacksAndMessages(null);
                 mPlayer.pause(null);
                 addWifiNetwork();
                 unregisterNetworkCallback();
@@ -206,6 +208,7 @@ public class NativeController implements Controller, Player.NotificationCallback
     public void updateCurrentlyPlaying() {
         mCurrentPlaybackState = mPlayer.getPlaybackState();
         if (mMetadata != null && mMetadata.currentTrack != null) {
+            mCurrentlyPlaying.item = new Track();
             mCurrentlyPlaying.item.uri = mMetadata.currentTrack.uri;
             mCurrentlyPlaying.item.name = mMetadata.currentTrack.name;
             mCurrentlyPlaying.item.artists = new Artist[1];

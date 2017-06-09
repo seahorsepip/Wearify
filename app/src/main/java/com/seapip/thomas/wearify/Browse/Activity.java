@@ -32,6 +32,7 @@ import com.seapip.thomas.wearify.NavigationDrawerAdapter;
 import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.R;
 import com.seapip.thomas.wearify.Spotify.Callback;
+import com.seapip.thomas.wearify.Spotify.Controller.Callbacks;
 import com.seapip.thomas.wearify.Spotify.Controller.Controller;
 import com.seapip.thomas.wearify.Spotify.Controller.Service;
 import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
@@ -41,7 +42,7 @@ import static android.view.View.GONE;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
-public class Activity extends WearableActivity {
+public class Activity extends WearableActivity implements Callbacks {
 
     private boolean mIsBound;
     private Service mController;
@@ -55,8 +56,15 @@ public class Activity extends WearableActivity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             mIsBound = true;
             mController = ((Service.ControllerBinder) service).getServiceInstance();
+            mController.setCallbacks(Activity.this);
+            mController.getController().bind();
         }
     };
+    private WearableDrawerLayout mLayout;
+    private WearableActionDrawer mActionDrawer;
+    private ImageView mActionImage;
+    private Drawable mDrawablePlay;
+    private AnimatedVectorDrawable mDrawablePlaying;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,7 +76,8 @@ public class Activity extends WearableActivity {
                            final WearableActionDrawer actionDrawer,
                            int position) {
         // Main Wearable Drawer Layout that wraps all content
-        layout.peekDrawer(Gravity.BOTTOM);
+        mLayout = layout;
+        mLayout.peekDrawer(Gravity.BOTTOM);
 
         // Top Navigation Drawer
         if (navigationDrawer != null) {
@@ -82,17 +91,18 @@ public class Activity extends WearableActivity {
 
         // Bottom Action Drawer
         if (actionDrawer != null) {
-            actionDrawer.setShouldPeekOnScrollDown(true);
-            Menu menu = actionDrawer.getMenu();
-            final Drawable drawablePlay = getDrawable(R.drawable.ic_play_arrow_black_24dp);
-            drawablePlay.setTint(Color.argb(180, 0, 0, 0));
-            final AnimatedVectorDrawable drawablePlaying = (AnimatedVectorDrawable) getDrawable(R.drawable.ic_audio_waves_animated);
+            mActionDrawer = actionDrawer;
+            mActionDrawer.setShouldPeekOnScrollDown(true);
+            mDrawablePlay = getDrawable(R.drawable.ic_play_arrow_black_24dp);
+            mDrawablePlay.setTint(Color.argb(180, 0, 0, 0));
+            mDrawablePlaying = (AnimatedVectorDrawable) getDrawable(R.drawable.ic_audio_waves_animated);
+            mDrawablePlaying.setTint(Color.argb(180, 0, 0, 0));
+            Menu menu = mActionDrawer.getMenu();
             menu.add("Now Playing").setIcon(null);
             LayoutInflater layoutInflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
             final LinearLayout view = (LinearLayout) layoutInflater.inflate(R.layout.action_drawer_view, null);
-            actionDrawer.setPeekContent(view);
-            final ImageView actionImage = (ImageView) view.findViewById(R.id.action_image);
-            drawablePlaying.setTint(Color.argb(180, 0, 0, 0));
+            mActionDrawer.setPeekContent(view);
+            mActionImage = (ImageView) view.findViewById(R.id.action_image);
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -100,42 +110,6 @@ public class Activity extends WearableActivity {
                     startActivityForResult(intent, 0);
                 }
             });
-
-            /*
-            mPlaybackCallback = new Callback<CurrentlyPlaying>() {
-                @Override
-                public void onSuccess(CurrentlyPlaying currentlyPlaying) {
-                    if (currentlyPlaying == null || currentlyPlaying.item == null
-                            || currentlyPlaying.device == null || !currentlyPlaying.device.is_active) {
-                        actionDrawer.setVisibility(INVISIBLE);
-                    } else {
-                        actionDrawer.setVisibility(VISIBLE);
-                        if (currentlyPlaying.is_playing) {
-                            actionImage.setImageDrawable(drawablePlaying);
-                            drawablePlaying.start();
-                            layout.peekDrawer(Gravity.BOTTOM);
-                        } else {
-                            actionImage.setImageDrawable(drawablePlay);
-                        }
-                    }
-                }
-
-                @Override
-                public void onError() {
-                    actionDrawer.setVisibility(GONE);
-                }
-            };
-
-            mPlaybackRunnable = Manager.onPlayback(this, mPlaybackCallback);
-            mDeviceRunnable = Manager.onDevice(new Callback<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    if (mPlaybackCallback != null) {
-                        mPlaybackRunnable = Manager.onPlayback(Activity.this, mPlaybackCallback);
-                    }
-                }
-            });
-            */
         }
     }
 
@@ -183,9 +157,66 @@ public class Activity extends WearableActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         if (mIsBound) {
+            mController.unsetCallbacks(this);
             unbindService(mConnection);
         }
+        super.onDestroy();
+    }
+
+    @Override
+    public void onPlaybackState(CurrentlyPlaying currentlyPlaying) {
+        if (currentlyPlaying.item == null) {
+            mActionDrawer.setVisibility(INVISIBLE);
+        } else {
+            mActionDrawer.setVisibility(VISIBLE);
+            if (currentlyPlaying.is_playing) {
+                mActionImage.setImageDrawable(mDrawablePlaying);
+                mDrawablePlaying.start();
+                mLayout.peekDrawer(Gravity.BOTTOM);
+            } else {
+                mActionImage.setImageDrawable(mDrawablePlay);
+            }
+        }
+    }
+
+    @Override
+    public void onPlaybackShuffle(CurrentlyPlaying currentlyPlaying) {
+
+    }
+
+    @Override
+    public void onPlaybackRepeat(CurrentlyPlaying currentlyPlaying) {
+
+    }
+
+    @Override
+    public void onPlaybackPrevious(CurrentlyPlaying currentlyPlaying) {
+
+    }
+
+    @Override
+    public void onPlaybackNext(CurrentlyPlaying currentlyPlaying) {
+
+    }
+
+    @Override
+    public void onPlaybackVolume(CurrentlyPlaying currentlyPlaying) {
+
+    }
+
+    @Override
+    public void onPlaybackSeek(CurrentlyPlaying currentlyPlaying) {
+
+    }
+
+    @Override
+    public void onPlaybackMetaData(CurrentlyPlaying currentlyPlaying) {
+
+    }
+
+    @Override
+    public void onPlaybackDevice(CurrentlyPlaying currentlyPlaying) {
+
     }
 }

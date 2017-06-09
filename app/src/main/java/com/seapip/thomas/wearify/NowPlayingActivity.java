@@ -112,54 +112,9 @@ public class NowPlayingActivity extends Activity implements Callbacks {
         mProgress = (CircularProgressView) findViewById(R.id.circle_progress);
         mProgressHandler = new Handler();
 
-        setDrawers(mDrawerLayout, mNavigationDrawer, null, 1);
+        setDrawers(mDrawerLayout, null, null, 1);
 
-        /*
-        mPlaybackCallback = new Callback<CurrentlyPlaying>() {
-            @Override
-            public void onSuccess(final CurrentlyPlaying currentlyPlaying) {
-                if (currentlyPlaying != null && currentlyPlaying.item != null) {
-                    if (mCurrentlyPlaying == null || !mCurrentlyPlaying.item.uri.equals(currentlyPlaying.item.uri)) {
-                        if (!mAmbient) {
-                            mBackgroundImage.setVisibility(VISIBLE);
-                        }
-                        Picasso.with(getApplicationContext())
-                                .load(largestImageUrl(currentlyPlaying.item.album.images))
-                                .fit().into(mBackgroundImage);
-                        mTitle.setText(currentlyPlaying.item.name);
-                        mSubTitle.setText(Util.names(currentlyPlaying.item.artists));
-                        if (!mAmbient) {
-                            mProgress.setVisibility(VISIBLE);
-                        }
-                        mProgressBar.setVisibility(GONE);
-                        currentlyPlaying.timestamp = 0;
-                    } else if (mCurrentlyPlaying.device.id.equals(currentlyPlaying.device.id)) {
-                        //These kind of fixes make me cry...
-                        currentlyPlaying.device.volume_percent = mCurrentlyPlaying.device.volume_percent;
-                    }
-                    mCurrentlyPlaying = currentlyPlaying;
-                    switch (currentlyPlaying.device.type) {
-                        case "Watch":
-                            mDeviceMenuItem.setIcon(R.drawable.ic_watch_black_24dp);
-                            break;
-                        case "Smartphone":
-                            mDeviceMenuItem.setIcon(R.drawable.ic_smartphone_black_24dp);
-                            break;
-                        case "Tablet":
-                            mDeviceMenuItem.setIcon(R.drawable.ic_tablet_black_24dp);
-                            break;
-                        default:
-                        case "Computer":
-                            mDeviceMenuItem.setIcon(R.drawable.ic_computer_black_24dp);
-                            break;
-                    }
-                    mDeviceMenuItem.setTitle(currentlyPlaying.device.name);
-                    if (currentlyPlaying.device == null || !currentlyPlaying.device.is_active) {
-                        finish();
-                    }
-                }
-            }
-        };*/
+        mNavigationDrawer.setVisibility(GONE);
 
         mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -205,7 +160,6 @@ public class NowPlayingActivity extends Activity implements Callbacks {
         });
         mVolUp.setClickAlpha(20);
 
-        mActionDrawer = (WearableActionDrawer) findViewById(R.id.bottom_action_drawer);
         Menu menu = mActionDrawer.getMenu();
         mShuffleMenuItem = menu.add("Shuffle").setIcon(getDrawable(R.drawable.ic_shuffle_black_24dp));
         mShuffleMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
@@ -333,12 +287,14 @@ public class NowPlayingActivity extends Activity implements Callbacks {
         });
     }
 
-    private void setLoading() {
-        mBackgroundImage.setVisibility(GONE);
-        mTitle.setText("");
-        mSubTitle.setText("");
-        mProgress.setVisibility(GONE);
-        mProgressBar.setVisibility(VISIBLE);
+    private void setLoading(boolean loading) {
+        mBackgroundImage.setVisibility(loading ? GONE : VISIBLE);
+        if(loading) {
+            mTitle.setText("");
+            mSubTitle.setText("");
+            mProgress.setVisibility(GONE);
+        }
+        mProgressBar.setVisibility(loading ? VISIBLE : GONE);
     }
 
     private void onProgress() {
@@ -355,9 +311,7 @@ public class NowPlayingActivity extends Activity implements Callbacks {
         }).run();
     }
 
-    @Override
-    public void onPlaybackState(CurrentlyPlaying currentlyPlaying) {
-        mIsPlaying = currentlyPlaying.is_playing;
+    private void setPlayButton() {
         mPlay.setImageDrawable(
                 getDrawable(mIsPlaying ?
                         mAmbient ?
@@ -366,6 +320,21 @@ public class NowPlayingActivity extends Activity implements Callbacks {
                         mAmbient ?
                                 R.drawable.ic_play_arrow_black_burn_in_24dp :
                                 R.drawable.ic_play_arrow_black_24dp));
+        if (mAmbient) {
+            mPlay.setBackgroundColor(Color.TRANSPARENT);
+            mPlay.setTint(Color.WHITE);
+            mPlay.setBorder(Color.parseColor("#777777"));
+        } else {
+            mPlay.setBorder(Color.TRANSPARENT);
+            mPlay.setBackgroundColor(Color.parseColor("#00ffe0"));
+            mPlay.setTint(Color.argb(180, 0, 0, 0));
+        }
+    }
+
+    @Override
+    public void onPlaybackState(CurrentlyPlaying currentlyPlaying) {
+        mIsPlaying = currentlyPlaying.is_playing;
+        setPlayButton();
     }
 
     @Override
@@ -422,7 +391,19 @@ public class NowPlayingActivity extends Activity implements Callbacks {
 
     @Override
     public void onPlaybackDevice(CurrentlyPlaying currentlyPlaying) {
-
+        mDeviceMenuItem.setTitle(currentlyPlaying.device.name);
+        switch (currentlyPlaying.device.type) {
+            case "Smartphone":
+                mDeviceMenuItem.setIcon(R.drawable.ic_smartphone_black_24dp);
+                break;
+            case "Tablet":
+                mDeviceMenuItem.setIcon(R.drawable.ic_tablet_black_24dp);
+                break;
+            default:
+            case "Computer":
+                mDeviceMenuItem.setIcon(R.drawable.ic_computer_black_24dp);
+                break;
+        }
     }
 
     @Override
@@ -441,9 +422,7 @@ public class NowPlayingActivity extends Activity implements Callbacks {
         mBackgroundImage.setVisibility(GONE);
         mProgress.setVisibility(GONE);
         mActionDrawer.setVisibility(GONE);
-        mPlay.setBackgroundColor(Color.TRANSPARENT);
-        mPlay.setTint(Color.WHITE);
-        mPlay.setBorder(Color.parseColor("#777777"));
+        setPlayButton();
         mNext.setImageDrawable(getDrawable(R.drawable.ic_skip_next_black_burn_in_24dp));
         mPrev.setImageDrawable(getDrawable(R.drawable.ic_skip_previous_black_burn_in_24dp));
         mVolDown.setImageDrawable(getDrawable(R.drawable.ic_volume_down_black_burn_in_24dp));
@@ -461,9 +440,7 @@ public class NowPlayingActivity extends Activity implements Callbacks {
         mBackgroundImage.setVisibility(VISIBLE);
         mProgress.setVisibility(VISIBLE);
         mActionDrawer.setVisibility(VISIBLE);
-        mPlay.setBackgroundColor(Color.parseColor("#00ffe0"));
-        mPlay.setTint(Color.argb(180, 0, 0, 0));
-        mPlay.setBorder(Color.TRANSPARENT);
+        setPlayButton();
         mNext.setImageDrawable(getDrawable(R.drawable.ic_skip_next_black_24dp));
         mPrev.setImageDrawable(getDrawable(R.drawable.ic_skip_previous_black_24dp));
         mVolDown.setImageDrawable(getDrawable(R.drawable.ic_volume_down_black_24dp));

@@ -101,7 +101,7 @@ public class LibraryActivity extends Activity {
                             mItems.remove(loading);
                             CursorPaging<PlayHistory> playHistories = response.body();
                             for (final PlayHistory playHistory : playHistories.items) {
-                                if (playHistory.context != null && !containsUri(playHistory.context.uri)) {
+                                if (playHistory.context != null && playHistory.context.type != null && !containsUri(playHistory.context.uri)) {
                                     final Item item = new Item();
                                     item.uri = playHistory.context.uri;
                                     switch (playHistory.context.type) {
