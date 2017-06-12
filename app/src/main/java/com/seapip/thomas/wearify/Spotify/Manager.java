@@ -214,6 +214,7 @@ public class Manager {
             }
         });*/
     }
+    /*
 
     public static Runnable onPlayback(Context context, Callback<CurrentlyPlaying> callback) {
         if (mConnectRunnable == null) {
@@ -241,7 +242,7 @@ public class Manager {
             mConnectRunnable = null;
         }
         //getController(context).offPlayback(runnable);
-    }
+    }*/
 
     public static Runnable onDevice(Callback<Void> callback) {
         Runnable runnable = new Runnable() {

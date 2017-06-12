@@ -117,8 +117,9 @@ public class Service extends android.app.Service implements Callbacks {
         mCallbacks = new ArrayList<>();
         mNotificationBuilder = new Notification.Builder(this);
         mNativeController = new NativeController(this);
-        mCurrentController = mNativeController;
-        //mConnectController = new ConnectController(this);
+        mConnectController = new ConnectController(this);
+        mConnectController.setInterval(3000);
+        mCurrentController = mConnectController;
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         Intent destroyIntent = new Intent(getApplicationContext(), Service.class);
         destroyIntent.setAction(ACTION_CMD);
@@ -129,27 +130,23 @@ public class Service extends android.app.Service implements Callbacks {
                 .setPriority(Notification.PRIORITY_MAX)
                 .setStyle(new Notification.MediaStyle().setShowActionsInCompactView(0, 1, 2).setMediaSession(mSession.getSessionToken()))
                 .setDeleteIntent(PendingIntent.getService(getApplicationContext(), 0, destroyIntent, 0));
-        Log.e("WEARIFY", "CONTROLLER_SERVICE_CREATED!!!");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.e("WEARIFY", "CONTROLLER_SERVICE_STARTED!!!");
         if (intent != null) {
-            Log.e("WEARIFY", intent.toString());
-            Log.e("WEARIFY", intent.getAction() + "-");
-            Log.e("WEARIFY", intent.getStringExtra(CMD_NAME) + "-");
             String action = intent.getAction();
             String command = intent.getStringExtra(CMD_NAME);
             if (ACTION_CMD.equals(action)) {
                 if (CMD_DESTROY.equals(command)) {
-                    Log.e("WEARIFY", "DESTROY!!!");
                     mNativeController.destroy();
+                    mConnectController.destroy();
                     mSession.setActive(false);
                     stopForeground(false);
                     for (Callbacks callbacks : mCallbacks) {
                         ((Activity) callbacks).finish();
                     }
+                    stopSelf();
                 }
             }
         }
@@ -171,8 +168,8 @@ public class Service extends android.app.Service implements Callbacks {
 
     @Override
     public void onDestroy() {
-        Log.e("WEARIFY", "CONTROLLER_SERVICE_DESTROYED!!!");
         mNativeController.destroy();
+        mConnectController.destroy();
         mSession.setActive(false);
         stopForeground(false);
         super.onDestroy();

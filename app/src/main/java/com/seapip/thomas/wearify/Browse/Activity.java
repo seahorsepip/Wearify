@@ -31,14 +31,11 @@ import android.widget.LinearLayout;
 import com.seapip.thomas.wearify.NavigationDrawerAdapter;
 import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.R;
-import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.Controller.Callbacks;
 import com.seapip.thomas.wearify.Spotify.Controller.Controller;
 import com.seapip.thomas.wearify.Spotify.Controller.Service;
 import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
-import com.seapip.thomas.wearify.Spotify.Manager;
 
-import static android.view.View.GONE;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
@@ -217,6 +214,11 @@ public class Activity extends WearableActivity implements Callbacks {
 
     @Override
     public void onPlaybackDevice(CurrentlyPlaying currentlyPlaying) {
-
+        if (currentlyPlaying.device.is_active) {
+            mActionDrawer.setVisibility(VISIBLE);
+            mLayout.peekDrawer(Gravity.BOTTOM);
+        } else {
+            mActionDrawer.setVisibility(INVISIBLE);
+        }
     }
 }
