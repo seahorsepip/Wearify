@@ -22,8 +22,8 @@ import com.seapip.thomas.wearify.Spotify.Manager;
 import com.seapip.thomas.wearify.Spotify.Objects.Paging;
 import com.seapip.thomas.wearify.Spotify.Objects.Playlist;
 import com.seapip.thomas.wearify.Spotify.Objects.PlaylistTrack;
-import com.seapip.thomas.wearify.Spotify.Service;
 import com.seapip.thomas.wearify.Spotify.Objects.User;
+import com.seapip.thomas.wearify.Spotify.Service;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -66,8 +66,7 @@ public class PlaylistActivity extends Activity {
         shuffle.onClick = new OnClick() {
             @Override
             public void run(final Context context) {
-                getController().shuffle(true);
-                getController().play(null, mUri, -1);
+                getService().play(null, mUri, -1, true, "off", 0);
             }
         };
         mItems.add(shuffle);
@@ -183,8 +182,7 @@ public class PlaylistActivity extends Activity {
             item.onClick = new OnClick() {
                 @Override
                 public void run(final Context context) {
-                    getController().shuffle(false);
-                    getController().play(null, mUri, position);
+                    getService().play(null, mUri, position, false, "off", 0);
                 }
             };
             mItems.add(item);

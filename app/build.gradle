@@ -9,6 +9,7 @@ android {
         targetSdkVersion 25
         versionCode 4
         versionName "0.0.4"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -28,5 +29,8 @@ dependencies {
     compile 'com.squareup.okhttp3:logging-interceptor:3.5.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.journeyapps:zxing-android-embedded:3.5.0'
-    compile 'com.android.support:palette-v7:25.2.0'
+    testCompile 'junit:junit:4.12'
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
 }

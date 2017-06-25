@@ -31,7 +31,7 @@ import android.widget.LinearLayout;
 import com.seapip.thomas.wearify.NavigationDrawerAdapter;
 import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.R;
-import com.seapip.thomas.wearify.Spotify.Controller.Callbacks;
+import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.Controller.Controller;
 import com.seapip.thomas.wearify.Spotify.Controller.Service;
 import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
@@ -39,7 +39,7 @@ import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
-public class Activity extends WearableActivity implements Callbacks {
+public class Activity extends WearableActivity implements Controller.Callbacks {
 
     private boolean mIsBound;
     private Service mController;
@@ -54,7 +54,12 @@ public class Activity extends WearableActivity implements Callbacks {
             mIsBound = true;
             mController = ((Service.ControllerBinder) service).getServiceInstance();
             mController.setCallbacks(Activity.this);
-            mController.getController().bind();
+            mController.getController(new Callback<Controller>() {
+                @Override
+                public void onSuccess(Controller controller) {
+                    controller.bind();
+                }
+            });
         }
     };
     private WearableDrawerLayout mLayout;
@@ -89,6 +94,7 @@ public class Activity extends WearableActivity implements Callbacks {
         // Bottom Action Drawer
         if (actionDrawer != null) {
             mActionDrawer = actionDrawer;
+            mActionDrawer.setVisibility(INVISIBLE);
             mActionDrawer.setShouldPeekOnScrollDown(true);
             mDrawablePlay = getDrawable(R.drawable.ic_play_arrow_black_24dp);
             mDrawablePlay.setTint(Color.argb(180, 0, 0, 0));
@@ -139,6 +145,10 @@ public class Activity extends WearableActivity implements Callbacks {
 
             }
         });
+    }
+
+    public Service getService() {
+        return mController;
     }
 
     public Controller getController() {

@@ -29,7 +29,7 @@ import com.seapip.thomas.wearify.Browse.Header;
 import com.seapip.thomas.wearify.Browse.Item;
 import com.seapip.thomas.wearify.Browse.OnClick;
 import com.seapip.thomas.wearify.Spotify.Callback;
-import com.seapip.thomas.wearify.Spotify.Controller.Callbacks;
+import com.seapip.thomas.wearify.Spotify.Controller.Controller;
 import com.seapip.thomas.wearify.Spotify.Controller.Service;
 import com.seapip.thomas.wearify.Spotify.Manager;
 import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
@@ -47,7 +47,7 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static com.seapip.thomas.wearify.Spotify.Util.largestImageUrl;
 
-public class NowPlayingActivity extends Activity implements Callbacks {
+public class NowPlayingActivity extends Activity implements Controller.Callbacks {
 
     private boolean mIsBound;
     private Service mController;
@@ -192,7 +192,7 @@ public class NowPlayingActivity extends Activity implements Callbacks {
         mDeviceMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(final MenuItem item) {
-                deviceDialog();
+                startActivity(new Intent(NowPlayingActivity.this, DeviceActivity.class));
                 return false;
             }
         });
@@ -204,87 +204,6 @@ public class NowPlayingActivity extends Activity implements Callbacks {
         super.onStart();
         Intent mIntent = new Intent(this, Service.class);
         bindService(mIntent, mConnection, BIND_AUTO_CREATE);
-    }
-
-    private void deviceDialog() {
-        final Dialog dialog = new Dialog(NowPlayingActivity.this);
-        dialog.setContentView(R.layout.dialog_device);
-        final ProgressBar progressBar = (ProgressBar) dialog.findViewById(R.id.progress_bar);
-        progressBar.getIndeterminateDrawable().setColorFilter(Color.parseColor("#00ffe0"), PorterDuff.Mode.SRC_ATOP);
-        final WearableRecyclerView recyclerView = (WearableRecyclerView) dialog.findViewById(R.id.content);
-        final ArrayList<Item> items = new ArrayList<>();
-        items.add(new Header("Devices"));
-        Adapter adapter = new Adapter(NowPlayingActivity.this, items);
-        recyclerView.setLayoutManager(new LinearLayoutManager(NowPlayingActivity.this));
-        recyclerView.setAdapter(adapter);
-        dialog.setCancelable(true);
-        dialog.show();
-        Manager.getService(this, new Callback<com.seapip.thomas.wearify.Spotify.Service>() {
-            @Override
-            public void onSuccess(com.seapip.thomas.wearify.Spotify.Service service) {
-                Call<Devices> call = service.devices();
-                call.enqueue(new retrofit2.Callback<Devices>() {
-                    @Override
-                    public void onResponse(Call<Devices> call, Response<Devices> response) {
-                        if (response.isSuccessful()) {
-                            Devices devices = response.body();
-                            progressBar.setVisibility(GONE);
-                            Item watch = new Item();
-                            watch.title = Build.MODEL;
-                            watch.subTitle = "Watch";
-                            watch.image = getDrawable(R.drawable.ic_watch_black_24dp);
-                            watch.onClick = new OnClick() {
-                                @Override
-                                public void run(Context context) {
-                                    Manager.transferController(context, Manager.NATIVE_CONTROLLER, null);
-                                    dialog.dismiss();
-                                    mActionDrawer.closeDrawer();
-                                }
-                            };
-                            items.add(watch);
-                            for (final Device device : devices.devices) {
-                                if (!device.is_restricted) {
-                                    Item item = new Item();
-                                    item.title = device.name;
-                                    switch (device.type) {
-                                        case "Smartphone":
-                                            item.subTitle = "Phone";
-                                            item.image = getDrawable(R.drawable.ic_smartphone_black_24dp);
-                                            break;
-                                        case "Tablet":
-                                            item.subTitle = "Tablet";
-                                            item.image = getDrawable(R.drawable.ic_tablet_black_24dp);
-                                            break;
-                                        default:
-                                        case "Computer":
-                                            item.subTitle = "Computer";
-                                            item.image = getDrawable(R.drawable.ic_computer_black_24dp);
-                                            break;
-                                    }
-                                    item.onClick = new OnClick() {
-                                        @Override
-                                        public void run(Context context) {
-                                            Manager.transferController(context,
-                                                    Manager.CONNECT_CONTROLLER, device.id);
-                                            dialog.dismiss();
-                                            mActionDrawer.closeDrawer();
-                                        }
-                                    };
-                                    items.add(item);
-                                }
-                            }
-                        }
-                        recyclerView.getAdapter().notifyDataSetChanged();
-                    }
-
-
-                    @Override
-                    public void onFailure(Call<Devices> call, Throwable t) {
-
-                    }
-                });
-            }
-        });
     }
 
     private void setLoading(boolean loading) {
@@ -393,6 +312,9 @@ public class NowPlayingActivity extends Activity implements Callbacks {
     public void onPlaybackDevice(CurrentlyPlaying currentlyPlaying) {
         mDeviceMenuItem.setTitle(currentlyPlaying.device.name);
         switch (currentlyPlaying.device.type) {
+            case "Native":
+                mDeviceMenuItem.setIcon(R.drawable.ic_watch_black_24dp);
+                break;
             case "Smartphone":
                 mDeviceMenuItem.setIcon(R.drawable.ic_smartphone_black_24dp);
                 break;

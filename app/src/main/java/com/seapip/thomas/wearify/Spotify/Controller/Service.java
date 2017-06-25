@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -15,28 +16,40 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.wearable.media.MediaControlConstants;
-import android.util.Log;
 import android.view.KeyEvent;
 
+import com.seapip.thomas.wearify.DeviceActivity;
 import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.R;
+import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
+import com.seapip.thomas.wearify.Spotify.Objects.Paging;
+import com.seapip.thomas.wearify.Spotify.Objects.PlaylistTrack;
+import com.seapip.thomas.wearify.Spotify.Objects.Track;
+import com.seapip.thomas.wearify.Spotify.Objects.Transfer;
 import com.seapip.thomas.wearify.Spotify.Util;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 
-public class Service extends android.app.Service implements Callbacks {
+import retrofit2.Call;
+
+import static com.seapip.thomas.wearify.Spotify.Manager.getService;
+
+public class Service extends android.app.Service {
+    final static public int NATIVE_CONTROLLER = 1;
+    final static public int CONNECT_CONTROLLER = 2;
+    final static public int BLUETOOTH_CONTROLLER = 3;
     private static final String ACTION_CMD = "com.seapip.thomas.wearify.ACTION_CMD";
     private static final String CMD_NAME = "CMD_NAME";
     private static final String CMD_DESTROY = "CMD_DESTROY";
     private NotificationManager mNotificationManager;
     private IBinder mBinder;
-    private ArrayList<Callbacks> mCallbacks;
+    private ArrayList<Controller.Callbacks> mCallbacks;
     private NativeController mNativeController;
     private ConnectController mConnectController;
-    private Controller mCurrentController;
+    private int mCurrentControllerId;
     private Notification.Builder mNotificationBuilder;
     private MediaSession mSession;
     private PlaybackState.Builder mPlaybackStateBuilder;
@@ -51,12 +64,22 @@ public class Service extends android.app.Service implements Callbacks {
         mSession.setCallback(new MediaSession.Callback() {
             @Override
             public void onPlay() {
-                mCurrentController.resume();
+                getController(new Callback<Controller>() {
+                    @Override
+                    public void onSuccess(Controller controller) {
+                        controller.resume();
+                    }
+                });
             }
 
             @Override
             public void onPause() {
-                mCurrentController.pause();
+                getController(new Callback<Controller>() {
+                    @Override
+                    public void onSuccess(Controller controller) {
+                        controller.pause();
+                    }
+                });
             }
 
             @Override
@@ -64,10 +87,20 @@ public class Service extends android.app.Service implements Callbacks {
                 if (Intent.ACTION_MEDIA_BUTTON.equals(mediaButtonIntent.getAction())) {
                     KeyEvent event = mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
                     if (event.getKeyCode() == KeyEvent.KEYCODE_MEDIA_PLAY) {
-                        mCurrentController.resume();
+                        getController(new Callback<Controller>() {
+                            @Override
+                            public void onSuccess(Controller controller) {
+                                controller.resume();
+                            }
+                        });
                         return false;
                     } else if (event.getKeyCode() == KeyEvent.KEYCODE_MEDIA_PAUSE) {
-                        mCurrentController.pause();
+                        getController(new Callback<Controller>() {
+                            @Override
+                            public void onSuccess(Controller controller) {
+                                controller.pause();
+                            }
+                        });
                         return false;
                     }
                 }
@@ -77,12 +110,22 @@ public class Service extends android.app.Service implements Callbacks {
 
             @Override
             public void onSkipToPrevious() {
-                mCurrentController.previous();
+                getController(new Callback<Controller>() {
+                    @Override
+                    public void onSuccess(Controller controller) {
+                        controller.previous();
+                    }
+                });
             }
 
             @Override
             public void onSkipToNext() {
-                mCurrentController.next();
+                getController(new Callback<Controller>() {
+                    @Override
+                    public void onSuccess(Controller controller) {
+                        controller.next();
+                    }
+                });
             }
         });
         PendingIntent sessionActivity = PendingIntent.getActivity(getApplicationContext(), 0,
@@ -116,10 +159,135 @@ public class Service extends android.app.Service implements Callbacks {
         mBinder = new ControllerBinder();
         mCallbacks = new ArrayList<>();
         mNotificationBuilder = new Notification.Builder(this);
-        mNativeController = new NativeController(this);
-        mConnectController = new ConnectController(this);
+        Callbacks callbacks = new Callbacks() {
+            @Override
+            public void onPlaybackBind(CurrentlyPlaying currentlyPlaying, int controllerId) {
+                if (mCurrentControllerId == controllerId) {
+                    for (Controller.Callbacks callbacks : mCallbacks) {
+                        callbacks.onPlaybackState(currentlyPlaying);
+                        callbacks.onPlaybackShuffle(currentlyPlaying);
+                        callbacks.onPlaybackRepeat(currentlyPlaying);
+                        callbacks.onPlaybackPrevious(currentlyPlaying);
+                        callbacks.onPlaybackNext(currentlyPlaying);
+                        callbacks.onPlaybackVolume(currentlyPlaying);
+                        callbacks.onPlaybackSeek(currentlyPlaying);
+                        callbacks.onPlaybackMetaData(currentlyPlaying);
+                        callbacks.onPlaybackDevice(currentlyPlaying);
+                    }
+                }
+            }
+
+            @Override
+            public void onPlaybackState(CurrentlyPlaying currentlyPlaying, int controllerId) {
+                if (mCurrentControllerId == controllerId) {
+                    mPlaybackStateBuilder.setState(currentlyPlaying.is_playing ?
+                            PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED, 0, 1);
+                    mSession.setPlaybackState(mPlaybackStateBuilder.build());
+                    mNotificationBuilder.setOngoing(currentlyPlaying.is_playing);
+                    mNotificationManager.notify(1337, mNotificationBuilder.build());
+                    if (currentlyPlaying.is_playing) {
+                        mSession.setActive(true);
+                        startService(new Intent(getApplicationContext(), Service.class));
+                        startForeground(0, null);
+                    }
+                    for (Controller.Callbacks callbacks : mCallbacks) {
+                        callbacks.onPlaybackState(currentlyPlaying);
+                    }
+
+                    if (mCurrentControllerId != CONNECT_CONTROLLER) {
+                        mConnectController.setInterval(currentlyPlaying.is_playing ? 0 : 3000);
+                    }
+                } else if (controllerId == CONNECT_CONTROLLER && currentlyPlaying.device != null
+                        && currentlyPlaying.device.is_active && currentlyPlaying.is_playing) {
+                    Controller controller = getController();
+                    if (controller != null) {
+                        controller.pause();
+                    }
+                    mCurrentControllerId = CONNECT_CONTROLLER;
+                    getController().bind();
+                }
+            }
+
+            @Override
+            public void onPlaybackShuffle(CurrentlyPlaying currentlyPlaying, int controllerId) {
+                if (mCurrentControllerId == controllerId) {
+                    for (Controller.Callbacks callbacks : mCallbacks) {
+                        callbacks.onPlaybackShuffle(currentlyPlaying);
+                    }
+                }
+            }
+
+            @Override
+            public void onPlaybackRepeat(CurrentlyPlaying currentlyPlaying, int controllerId) {
+                if (mCurrentControllerId == controllerId) {
+                    for (Controller.Callbacks callbacks : mCallbacks) {
+                        callbacks.onPlaybackRepeat(currentlyPlaying);
+                    }
+                }
+            }
+
+            @Override
+            public void onPlaybackPrevious(CurrentlyPlaying currentlyPlaying, int controllerId) {
+                if (mCurrentControllerId == controllerId) {
+                    for (Controller.Callbacks callbacks : mCallbacks) {
+                        callbacks.onPlaybackPrevious(currentlyPlaying);
+                    }
+                }
+            }
+
+            @Override
+            public void onPlaybackNext(CurrentlyPlaying currentlyPlaying, int controllerId) {
+                if (mCurrentControllerId == controllerId) {
+                    for (Controller.Callbacks callbacks : mCallbacks) {
+                        callbacks.onPlaybackNext(currentlyPlaying);
+                    }
+                }
+            }
+
+            @Override
+            public void onPlaybackVolume(CurrentlyPlaying currentlyPlaying, int controllerId) {
+                if (mCurrentControllerId == controllerId) {
+                    for (Controller.Callbacks callbacks : mCallbacks) {
+                        callbacks.onPlaybackVolume(currentlyPlaying);
+                    }
+                }
+            }
+
+            @Override
+            public void onPlaybackSeek(CurrentlyPlaying currentlyPlaying, int controllerId) {
+                if (mCurrentControllerId == controllerId) {
+                    for (Controller.Callbacks callbacks : mCallbacks) {
+                        callbacks.onPlaybackSeek(currentlyPlaying);
+                    }
+                }
+            }
+
+            @Override
+            public void onPlaybackMetaData(CurrentlyPlaying currentlyPlaying, int controllerId) {
+                if (mCurrentControllerId == controllerId) {
+                    mMediaMetadataBuilder.putString(MediaMetadata.METADATA_KEY_TITLE, currentlyPlaying.item.name.trim());
+                    mMediaMetadataBuilder.putString(MediaMetadata.METADATA_KEY_ARTIST, Util.names(currentlyPlaying.item.artists).trim());
+                    mMediaMetadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ART, null);
+                    mSession.setMetadata(mMediaMetadataBuilder.build());
+                    Picasso.with(getApplicationContext()).load(Util.smallestImageUrl(currentlyPlaying.item.album.images)).into(mMediaMetadataTarget);
+                    for (Controller.Callbacks callbacks : mCallbacks) {
+                        callbacks.onPlaybackMetaData(currentlyPlaying);
+                    }
+                }
+            }
+
+            @Override
+            public void onPlaybackDevice(CurrentlyPlaying currentlyPlaying, int controllerId) {
+                if (mCurrentControllerId == controllerId) {
+                    for (Controller.Callbacks callbacks : mCallbacks) {
+                        callbacks.onPlaybackDevice(currentlyPlaying);
+                    }
+                }
+            }
+        };
+        mNativeController = new NativeController(this, callbacks);
+        mConnectController = new ConnectController(this, callbacks);
         mConnectController.setInterval(3000);
-        mCurrentController = mConnectController;
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         Intent destroyIntent = new Intent(getApplicationContext(), Service.class);
         destroyIntent.setAction(ACTION_CMD);
@@ -143,7 +311,7 @@ public class Service extends android.app.Service implements Callbacks {
                     mConnectController.destroy();
                     mSession.setActive(false);
                     stopForeground(false);
-                    for (Callbacks callbacks : mCallbacks) {
+                    for (Controller.Callbacks callbacks : mCallbacks) {
                         ((Activity) callbacks).finish();
                     }
                     stopSelf();
@@ -158,11 +326,11 @@ public class Service extends android.app.Service implements Callbacks {
         return mBinder;
     }
 
-    public void setCallbacks(Callbacks callbacks) {
+    public void setCallbacks(Controller.Callbacks callbacks) {
         mCallbacks.add(callbacks);
     }
 
-    public void unsetCallbacks(Callbacks callbacks) {
+    public void unsetCallbacks(Controller.Callbacks callbacks) {
         mCallbacks.remove(callbacks);
     }
 
@@ -175,100 +343,266 @@ public class Service extends android.app.Service implements Callbacks {
         super.onDestroy();
     }
 
+    public void play(final String uris, final String contextUri, final int position,
+                     final boolean shuffleState, final String repeatState, final int positionMs) {
+        getController(new Callback<Controller>() {
+            @Override
+            public void onSuccess(Controller controller) {
+                controller.play(uris, contextUri, position, shuffleState, repeatState, positionMs);
+            }
+
+            @Override
+            public void onError() {
+                Intent intent = new Intent(Service.this, DeviceActivity.class);
+                intent.putExtra("uris", uris);
+                intent.putExtra("contextUri", contextUri);
+                intent.putExtra("position", position);
+                intent.putExtra("shuffleState", shuffleState);
+                intent.putExtra("repeatState", repeatState);
+                intent.putExtra("positionMs", positionMs);
+                startActivity(intent);
+            }
+        });
+    }
+
     public Controller getController() {
-        return mCurrentController;
+        switch (mCurrentControllerId) {
+            case NATIVE_CONTROLLER:
+                return mNativeController;
+            case CONNECT_CONTROLLER:
+                return mConnectController;
+            case BLUETOOTH_CONTROLLER:
+                //TODO: implement bluetooth controller
+                return null;
+        }
+        return null;
     }
 
-    public void onPlaybackBind(CurrentlyPlaying currentlyPlaying) {
-        for (Callbacks callbacks : mCallbacks) {
-            callbacks.onPlaybackState(currentlyPlaying);
-            callbacks.onPlaybackShuffle(currentlyPlaying);
-            callbacks.onPlaybackRepeat(currentlyPlaying);
-            callbacks.onPlaybackPrevious(currentlyPlaying);
-            callbacks.onPlaybackNext(currentlyPlaying);
-            callbacks.onPlaybackVolume(currentlyPlaying);
-            callbacks.onPlaybackSeek(currentlyPlaying);
-            callbacks.onPlaybackMetaData(currentlyPlaying);
-            callbacks.onPlaybackDevice(currentlyPlaying);
+    public void getController(Callback<Controller> callback) {
+        Controller controller = getController();
+        if (controller != null) {
+            callback.onSuccess(controller);
+            return;
         }
+        callback.onError();
     }
 
-    @Override
-    public void onPlaybackState(CurrentlyPlaying currentlyPlaying) {
-        mPlaybackStateBuilder.setState(currentlyPlaying.is_playing ?
-                PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED, 0, 1);
-        mSession.setPlaybackState(mPlaybackStateBuilder.build());
-        mNotificationBuilder.setOngoing(currentlyPlaying.is_playing);
-        mNotificationManager.notify(1337, mNotificationBuilder.build());
-        if (currentlyPlaying.is_playing) {
-            mSession.setActive(true);
-            startService(new Intent(getApplicationContext(), Service.class));
-            startForeground(0, null);
+    public void setController(final int controllerId, final String deviceId,
+                              final Callback<Controller> callback) {
+        if (controllerId == NATIVE_CONTROLLER && mCurrentControllerId == NATIVE_CONTROLLER) {
+            //Transferring from current device to current device...
+            if(callback != null) {
+                callback.onSuccess(getController());
+            }
+            return;
+        } else if (controllerId == CONNECT_CONTROLLER && mCurrentControllerId == CONNECT_CONTROLLER) {
+            //Transferring between connected devices
+            if (deviceId == null) {
+                return;
+            }
+            getService(this, new Callback<com.seapip.thomas.wearify.Spotify.Service>() {
+                @Override
+                public void onSuccess(com.seapip.thomas.wearify.Spotify.Service service) {
+                    Transfer transfer = new Transfer();
+                    transfer.device_ids = new String[1];
+                    transfer.device_ids[0] = deviceId;
+                    Call<Void> call = service.transfer(transfer);
+                    call.enqueue(new retrofit2.Callback<Void>() {
+                        @Override
+                        public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
+                            mCurrentControllerId = CONNECT_CONTROLLER;
+                            callback.onSuccess(getController());
+                        }
+
+                        @Override
+                        public void onFailure(Call<Void> call, Throwable t) {
+                            callback.onError();
+                        }
+                    });
+                }
+            });
+            if(callback != null) {
+                callback.onSuccess(getController());
+            }
+            return;
         }
-        for (Callbacks callbacks : mCallbacks) {
-            callbacks.onPlaybackState(currentlyPlaying);
-        }
+
+        getController(new Callback<Controller>() {
+            @Override
+            public void onSuccess(final Controller controller) {
+                //Transferring to a different controller
+                controller.getPlayback(new Callback<CurrentlyPlaying>() {
+                    @Override
+                    public void onSuccess(final CurrentlyPlaying currentlyPlaying) {
+                        controller.pause();
+                        mConnectController.setInterval(0);
+                        mCurrentControllerId = controllerId;
+                        getController(new Callback<Controller>() {
+                            @Override
+                            public void onSuccess(final Controller controller) {
+                                if (currentlyPlaying.context == null) {
+                                    //Workaround: https://github.com/spotify/web-api/issues/565
+                                    if (currentlyPlaying.item != null) {
+                                        controller.play(currentlyPlaying.item.uri, null, 0,
+                                                currentlyPlaying.shuffle_state,
+                                                currentlyPlaying.repeat_state,
+                                                currentlyPlaying.progress_ms);
+                                    } else {
+                                        //Let's resume playback with whatever is on the current controller...
+                                        controller.resume();
+                                    }
+                                    controller.bind();
+                                } else if (currentlyPlaying.context.uri.contains(":playlist:")) {
+                                    getPlaylistTrackNumber(Service.this, currentlyPlaying.context.uri,
+                                            currentlyPlaying.item.uri, 50, 0,
+                                            new Callback<Integer>() {
+                                                @Override
+                                                public void onSuccess(final Integer position) {
+                                                    controller.play(null, currentlyPlaying.context.uri,
+                                                            position,
+                                                            currentlyPlaying.shuffle_state,
+                                                            currentlyPlaying.repeat_state,
+                                                            currentlyPlaying.progress_ms);
+                                                }
+                                            });
+                                } else if (currentlyPlaying.context.uri.contains(":album:")) {
+                                    getAlbumTrackNumber(Service.this, currentlyPlaying.context.uri,
+                                            currentlyPlaying.item.uri, 50, 0,
+                                            new Callback<Integer>() {
+                                                @Override
+                                                public void onSuccess(Integer position) {
+                                                    controller.play(null, currentlyPlaying.context.uri, position,
+                                                            currentlyPlaying.shuffle_state,
+                                                            currentlyPlaying.repeat_state,
+                                                            currentlyPlaying.progress_ms);
+                                                }
+                                            });
+                                }
+
+                                if (mCurrentControllerId == CONNECT_CONTROLLER) {
+                                    mConnectController.setInterval(3000);
+                                }
+                                if(callback != null) {
+                                    callback.onSuccess(getController());
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
+            @Override
+            public void onError() {
+                //Transferring to a new controller
+                mCurrentControllerId = controllerId;
+                if (callback != null) {
+                    callback.onSuccess(getController());
+                }
+            }
+        });
     }
 
-    @Override
-    public void onPlaybackShuffle(CurrentlyPlaying currentlyPlaying) {
-        for (Callbacks callbacks : mCallbacks) {
-            callbacks.onPlaybackShuffle(currentlyPlaying);
-        }
+    private void getPlaylistTrackNumber(final Context context, final String contextUri,
+                                        final String trackUri, final int limit,
+                                        final int offset, final Callback<Integer> callback) {
+        getService(context, new Callback<com.seapip.thomas.wearify.Spotify.Service>() {
+            @Override
+            public void onSuccess(com.seapip.thomas.wearify.Spotify.Service service) {
+                Call<Paging<PlaylistTrack>> call = service.getPlaylistTracks(
+                        contextUri.split(":")[2], contextUri.split(":")[4],
+                        "items(track.uri),total,offset", limit, offset, "from_token");
+                call.enqueue(new retrofit2.Callback<Paging<PlaylistTrack>>() {
+                    @Override
+                    public void onResponse(Call<Paging<PlaylistTrack>> call,
+                                           retrofit2.Response<Paging<PlaylistTrack>> response) {
+                        if (response.isSuccessful()) {
+                            Paging<PlaylistTrack> playlistTracks = response.body();
+                            int x = 0;
+                            for (PlaylistTrack playlistTrack : playlistTracks.items) {
+                                if (playlistTrack.track.uri.equals(trackUri)) {
+                                    callback.onSuccess(playlistTracks.offset + x);
+                                    return;
+                                }
+                                x++;
+                            }
+                            if (playlistTracks.total > playlistTracks.offset + 50) {
+                                getPlaylistTrackNumber(context, contextUri, trackUri, limit,
+                                        playlistTracks.offset + limit, callback);
+                                return;
+                            }
+                            callback.onError();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Paging<PlaylistTrack>> call, Throwable t) {
+
+                    }
+                });
+            }
+        });
     }
 
-    @Override
-    public void onPlaybackRepeat(CurrentlyPlaying currentlyPlaying) {
-        for (Callbacks callbacks : mCallbacks) {
-            callbacks.onPlaybackRepeat(currentlyPlaying);
-        }
+    private void getAlbumTrackNumber(final Context context, final String contextUri,
+                                     final String trackUri, final int limit,
+                                     final int offset, final Callback<Integer> callback) {
+        getService(context, new Callback<com.seapip.thomas.wearify.Spotify.Service>() {
+            @Override
+            public void onSuccess(com.seapip.thomas.wearify.Spotify.Service service) {
+                Call<Paging<Track>> call = service.getAlbumTracks(contextUri.split(":")[2], limit,
+                        offset, "from_token");
+                call.enqueue(new retrofit2.Callback<Paging<Track>>() {
+                    @Override
+                    public void onResponse(Call<Paging<Track>> call,
+                                           retrofit2.Response<Paging<Track>> response) {
+                        if (response.isSuccessful()) {
+                            Paging<Track> albumTracks = response.body();
+                            int x = 0;
+                            for (Track track : albumTracks.items) {
+                                if (track.uri.equals(trackUri)) {
+                                    callback.onSuccess(albumTracks.offset + x);
+                                    return;
+                                }
+                                x++;
+                            }
+                            if (albumTracks.total > albumTracks.offset + 50) {
+                                getPlaylistTrackNumber(context, contextUri, trackUri, limit,
+                                        albumTracks.offset + limit, callback);
+                                return;
+                            }
+                            callback.onError();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Paging<Track>> call, Throwable t) {
+
+                    }
+                });
+            }
+        });
     }
 
-    @Override
-    public void onPlaybackPrevious(CurrentlyPlaying currentlyPlaying) {
-        for (Callbacks callbacks : mCallbacks) {
-            callbacks.onPlaybackPrevious(currentlyPlaying);
-        }
-    }
+    interface Callbacks {
+        void onPlaybackBind(CurrentlyPlaying currentlyPlaying, int controllerId);
 
-    @Override
-    public void onPlaybackNext(CurrentlyPlaying currentlyPlaying) {
-        for (Callbacks callbacks : mCallbacks) {
-            callbacks.onPlaybackNext(currentlyPlaying);
-        }
-    }
+        void onPlaybackState(CurrentlyPlaying currentlyPlaying, int controllerId);
 
-    @Override
-    public void onPlaybackVolume(CurrentlyPlaying currentlyPlaying) {
-        for (Callbacks callbacks : mCallbacks) {
-            callbacks.onPlaybackVolume(currentlyPlaying);
-        }
-    }
+        void onPlaybackShuffle(CurrentlyPlaying currentlyPlaying, int controllerId);
 
-    @Override
-    public void onPlaybackSeek(CurrentlyPlaying currentlyPlaying) {
-        for (Callbacks callbacks : mCallbacks) {
-            callbacks.onPlaybackSeek(currentlyPlaying);
-        }
-    }
+        void onPlaybackRepeat(CurrentlyPlaying currentlyPlaying, int controllerId);
 
-    @Override
-    public void onPlaybackMetaData(CurrentlyPlaying currentlyPlaying) {
-        mMediaMetadataBuilder.putString(MediaMetadata.METADATA_KEY_TITLE, currentlyPlaying.item.name.trim());
-        mMediaMetadataBuilder.putString(MediaMetadata.METADATA_KEY_ARTIST, Util.names(currentlyPlaying.item.artists).trim());
-        mMediaMetadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ART, null);
-        mSession.setMetadata(mMediaMetadataBuilder.build());
-        Picasso.with(getApplicationContext()).load(Util.smallestImageUrl(currentlyPlaying.item.album.images)).into(mMediaMetadataTarget);
-        for (Callbacks callbacks : mCallbacks) {
-            callbacks.onPlaybackMetaData(currentlyPlaying);
-        }
-    }
+        void onPlaybackPrevious(CurrentlyPlaying currentlyPlaying, int controllerId);
 
-    @Override
-    public void onPlaybackDevice(CurrentlyPlaying currentlyPlaying) {
-        for (Callbacks callbacks : mCallbacks) {
-            callbacks.onPlaybackDevice(currentlyPlaying);
-        }
+        void onPlaybackNext(CurrentlyPlaying currentlyPlaying, int controllerId);
+
+        void onPlaybackVolume(CurrentlyPlaying currentlyPlaying, int controllerId);
+
+        void onPlaybackSeek(CurrentlyPlaying currentlyPlaying, int controllerId);
+
+        void onPlaybackMetaData(CurrentlyPlaying currentlyPlaying, int controllerId);
+
+        void onPlaybackDevice(CurrentlyPlaying currentlyPlaying, int controllerId);
     }
 
     public class ControllerBinder extends Binder {

@@ -41,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.seapip.thomas.wearify.Spotify.Controller.Service.NATIVE_CONTROLLER;
+
 public class NativeController implements Controller, Player.NotificationCallback, ConnectionStateCallback {
 
     private static final String CLIENT_ID = "59fb3493386b4a6f8db44f3df59e5a34";
@@ -49,6 +51,7 @@ public class NativeController implements Controller, Player.NotificationCallback
     private static final int MIN_NETWORK_BANDWIDTH_KBPS = 3000;
 
     private Context mContext;
+    private Service.Callbacks mCallbacks;
     private SpotifyPlayer mPlayer;
     private PlaybackState mCurrentPlaybackState;
     private Metadata mMetadata;
@@ -62,8 +65,9 @@ public class NativeController implements Controller, Player.NotificationCallback
     private CurrentlyPlaying mCurrentlyPlaying;
 
 
-    public NativeController(Context context) {
+    public NativeController(Context context, Service.Callbacks callbacks) {
         mContext = context;
+        mCallbacks = callbacks;
         mAudioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
         mVolume = 100 * mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
                 / mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
@@ -225,7 +229,7 @@ public class NativeController implements Controller, Player.NotificationCallback
             mCurrentlyPlaying.device.is_active = true;
             mCurrentlyPlaying.device.id = "native_playback";
             mCurrentlyPlaying.device.name = Build.MODEL;
-            mCurrentlyPlaying.device.type = "Watch";
+            mCurrentlyPlaying.device.type = "Native";
             mCurrentlyPlaying.device.volume_percent = mVolume;
             mCurrentlyPlaying.is_playing = mCurrentPlaybackState.isPlaying;
             mCurrentlyPlaying.shuffle_state = mShuffle;
@@ -234,11 +238,19 @@ public class NativeController implements Controller, Player.NotificationCallback
         }
     }
 
-    private void play(final String contextUri, final int position) {
+    @Override
+    public void getPlayback(Callback<CurrentlyPlaying> callback) {
+        updateCurrentlyPlaying();
+        callback.onSuccess(mCurrentlyPlaying);
+    }
+
+    private void play(final String contextUri, final int position, final int positionMs) {
         mPlayer.playUri(new Player.OperationCallback() {
             @Override
             public void onSuccess() {
                 mPlayer.setShuffle(null, mShuffle);
+                mPlayer.setRepeat(null, !mRepeat.equals("off"));
+                mPlayer.seekToPosition(null, positionMs);
             }
 
             @Override
@@ -249,8 +261,10 @@ public class NativeController implements Controller, Player.NotificationCallback
     }
 
     @Override
-    public void play(final String uris, final String contextUri, final int position) {
-        Log.e("WEARIFY", "U WANNA PLAY???");
+    public void play(final String uris, final String contextUri, final int position,
+                     boolean shuffleState, String repeatState, final int positionMs) {
+        shuffle(shuffleState);
+        repeat(repeatState);
         getHighBandwidthNetwork(new Callback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -270,7 +284,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                                         if (response.isSuccessful()) {
                                             Playlist playlist = response.body();
                                             int position = ThreadLocalRandom.current().nextInt(0, playlist.tracks.total);
-                                            play(contextUri, position);
+                                            play(contextUri, position, positionMs);
                                         }
                                     }
 
@@ -287,7 +301,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                                         if (response.isSuccessful()) {
                                             Album album = response.body();
                                             int position = ThreadLocalRandom.current().nextInt(0, album.tracks.total);
-                                            play(contextUri, position);
+                                            play(contextUri, position, positionMs);
                                         }
                                     }
 
@@ -301,7 +315,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                     });
                     return;
                 }
-                play(contextUri, position);
+                play(contextUri, position, positionMs);
             }
         });
     }
@@ -364,7 +378,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                 volume * mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) / 100 : 0, 0);
         mVolume = volume;
         updateCurrentlyPlaying();
-        ((Service) mContext).onPlaybackVolume(mCurrentlyPlaying);
+        mCallbacks.onPlaybackVolume(mCurrentlyPlaying, NATIVE_CONTROLLER);
     }
 
     @Override
@@ -382,7 +396,7 @@ public class NativeController implements Controller, Player.NotificationCallback
         mCurrentPlaybackState = mPlayer.getPlaybackState();
         mMetadata = mPlayer.getMetadata();
         updateCurrentlyPlaying();
-        ((Service) mContext).onPlaybackBind(mCurrentlyPlaying);
+        mCallbacks.onPlaybackBind(mCurrentlyPlaying, NATIVE_CONTROLLER);
     }
 
     @Override
@@ -412,29 +426,29 @@ public class NativeController implements Controller, Player.NotificationCallback
         mCurrentPlaybackState = mPlayer.getPlaybackState();
         mMetadata = mPlayer.getMetadata();
         updateCurrentlyPlaying();
-        Service service = ((Service) mContext);
         switch (playerEvent) {
             case kSpPlaybackNotifyPlay:
             case kSpPlaybackNotifyPause:
-                service.onPlaybackState(mCurrentlyPlaying);
+                mCallbacks.onPlaybackState(mCurrentlyPlaying, NATIVE_CONTROLLER);
+                mCallbacks.onPlaybackDevice(mCurrentlyPlaying, NATIVE_CONTROLLER);
                 break;
             case kSpPlaybackNotifyNext:
-                service.onPlaybackNext(mCurrentlyPlaying);
+                mCallbacks.onPlaybackNext(mCurrentlyPlaying, NATIVE_CONTROLLER);
                 break;
             case kSpPlaybackNotifyPrev:
-                service.onPlaybackPrevious(mCurrentlyPlaying);
+                mCallbacks.onPlaybackPrevious(mCurrentlyPlaying, NATIVE_CONTROLLER);
                 break;
             case kSpPlaybackNotifyShuffleOn:
             case kSpPlaybackNotifyShuffleOff:
-                service.onPlaybackShuffle(mCurrentlyPlaying);
+                mCallbacks.onPlaybackShuffle(mCurrentlyPlaying, NATIVE_CONTROLLER);
                 break;
             case kSpPlaybackNotifyRepeatOn:
             case kSpPlaybackNotifyRepeatOff:
-                service.onPlaybackRepeat(mCurrentlyPlaying);
+                mCallbacks.onPlaybackRepeat(mCurrentlyPlaying, NATIVE_CONTROLLER);
                 break;
             case kSpPlaybackNotifyTrackChanged:
             case kSpPlaybackNotifyMetadataChanged:
-                service.onPlaybackMetaData(mCurrentlyPlaying);
+                mCallbacks.onPlaybackMetaData(mCurrentlyPlaying, NATIVE_CONTROLLER);
                 break;
         }
     }

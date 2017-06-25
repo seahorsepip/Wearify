@@ -26,6 +26,18 @@ public class Manager {
         return mService;
     }
 
+    public static Service getService(Callback callback) {
+        if(mService == null) {
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl("https://wearify.seapip.com/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+            mService = retrofit.create(Service.class);
+            callback.onError();
+        }
+        return mService;
+    }
+
     static public void getToken(Context context, Callback callback) {
         if (mToken == null) {
             mToken = new Token();
@@ -55,7 +67,7 @@ public class Manager {
     }
 
     static private void refresh(final Context context, final Callback callback) {
-        Call<Token> call = getService().getToken(mToken.refresh_token);
+        Call<Token> call = getService(callback).getToken(mToken.refresh_token);
         call.enqueue(new retrofit2.Callback<Token>() {
             @Override
             public void onResponse(Call<Token> call, Response<Token> response) {

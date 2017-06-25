@@ -2,6 +2,7 @@ package com.seapip.thomas.wearify.Spotify.Controller;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import com.seapip.thomas.wearify.Spotify.Callback;
 import com.seapip.thomas.wearify.Spotify.Manager;
@@ -14,50 +15,62 @@ import com.seapip.thomas.wearify.Spotify.Service;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.seapip.thomas.wearify.Spotify.Controller.Service.CONNECT_CONTROLLER;
 import static com.seapip.thomas.wearify.Spotify.Manager.getService;
 
 public class ConnectController implements Controller {
 
     private String mDeviceId;
     private Context mContext;
-    private com.seapip.thomas.wearify.Spotify.Controller.Service mService;
+    private com.seapip.thomas.wearify.Spotify.Controller.Service.Callbacks mCallbacks;
     private Handler mPlaybackHandler;
     private CurrentlyPlaying mCurrentlyPlaying;
 
-    public ConnectController(Context context) {
+    public ConnectController(Context context, com.seapip.thomas.wearify.Spotify.Controller.Service.Callbacks callbacks) {
         mContext = context;
-        mService = (com.seapip.thomas.wearify.Spotify.Controller.Service) context;
+        mCallbacks = callbacks;
         mPlaybackHandler = new Handler();
         mCurrentlyPlaying = new CurrentlyPlaying();
         mCurrentlyPlaying.context = new com.seapip.thomas.wearify.Spotify.Objects.Context();
         mCurrentlyPlaying.device = new Device();
     }
-
     @Override
-    public void play(final String uris, final String contextUri, final int position) {
-        getService(mContext, new Callback<Service>() {
+    public void play(final String uris, final String contextUri, final int position,
+                     boolean shuffleState, final String repeatState, final int positionMs) {
+        shuffle(shuffleState, new Callback<Void>() {
             @Override
-            public void onSuccess(Service service) {
-                Play play = new Play();
-                play.uris = uris;
-                play.context_uri = contextUri;
-                if (position > -1) {
-                    play.offset = new Offset();
-                    play.offset.position = position;
-                }
-                Call<Void> call = service.play(mDeviceId, play);
-                call.enqueue(new retrofit2.Callback<Void>() {
+            public void onSuccess(Void aVoid) {
+                repeat(repeatState, new Callback<Void>() {
                     @Override
-                    public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
-                        if (response.isSuccessful()) {
-                            mCurrentlyPlaying.is_playing = true;
-                            mService.onPlaybackState(mCurrentlyPlaying);
-                        }
-                    }
+                    public void onSuccess(Void aVoid) {
+                        getService(mContext, new Callback<Service>() {
+                            @Override
+                            public void onSuccess(Service service) {
+                                Play play = new Play();
+                                play.uris = uris;
+                                play.context_uri = contextUri;
+                                if (position > -1) {
+                                    play.offset = new Offset();
+                                    play.offset.position = position;
+                                }
+                                Call<Void> call = service.play(mDeviceId, play);
+                                call.enqueue(new retrofit2.Callback<Void>() {
+                                    @Override
+                                    public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
+                                        if (response.isSuccessful()) {
+                                            mCurrentlyPlaying.is_playing = true;
+                                            mCallbacks.onPlaybackState(mCurrentlyPlaying, CONNECT_CONTROLLER);
+                                            seek(positionMs);
+                                        }
+                                    }
 
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
+                                    @Override
+                                    public void onFailure(Call<Void> call, Throwable t) {
 
+                                    }
+                                });
+                            }
+                        });
                     }
                 });
             }
@@ -76,7 +89,7 @@ public class ConnectController implements Controller {
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
                             mCurrentlyPlaying.is_playing = false;
-                            mService.onPlaybackState(mCurrentlyPlaying);
+                            mCallbacks.onPlaybackState(mCurrentlyPlaying, CONNECT_CONTROLLER);
                         }
                     }
 
@@ -101,7 +114,7 @@ public class ConnectController implements Controller {
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
                             mCurrentlyPlaying.is_playing = true;
-                            mService.onPlaybackState(mCurrentlyPlaying);
+                            mCallbacks.onPlaybackState(mCurrentlyPlaying, CONNECT_CONTROLLER);
                         }
                     }
 
@@ -115,7 +128,11 @@ public class ConnectController implements Controller {
     }
 
     @Override
-    public void shuffle(final boolean state) {
+    public void shuffle(boolean state) {
+        shuffle(state, null);
+    }
+
+    private void shuffle(final boolean state, final Callback<Void> callback) {
         Manager.cancelAll();
         getService(mContext, new Callback<Service>() {
             @Override
@@ -126,7 +143,10 @@ public class ConnectController implements Controller {
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
                             mCurrentlyPlaying.shuffle_state = state;
-                            mService.onPlaybackShuffle(mCurrentlyPlaying);
+                            mCallbacks.onPlaybackShuffle(mCurrentlyPlaying, CONNECT_CONTROLLER);
+                            if(callback != null) {
+                                callback.onSuccess(null);
+                            }
                         }
                     }
 
@@ -140,7 +160,11 @@ public class ConnectController implements Controller {
     }
 
     @Override
-    public void repeat(final String state) {
+    public void repeat(String state) {
+        repeat(state, null);
+    }
+
+    private void repeat(final String state, final Callback<Void> callback) {
         Manager.cancelAll();
         getService(mContext, new Callback<Service>() {
             @Override
@@ -151,20 +175,26 @@ public class ConnectController implements Controller {
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
                             mCurrentlyPlaying.repeat_state = state;
-                            mService.onPlaybackRepeat(mCurrentlyPlaying);
+                            mCallbacks.onPlaybackRepeat(mCurrentlyPlaying, CONNECT_CONTROLLER);
+                            if(callback != null) {
+                                callback.onSuccess(null);
+                            }
                         }
                     }
 
                     @Override
                     public void onFailure(Call<Void> call, Throwable t) {
-
+                        if(callback != null) {
+                            callback.onError();
+                        }
                     }
                 });
             }
         });
     }
 
-    public void getPlayback() {
+    @Override
+    public void getPlayback(final Callback<CurrentlyPlaying> callback) {
         getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
@@ -173,23 +203,13 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<CurrentlyPlaying> call, Response<CurrentlyPlaying> response) {
                         if (response.isSuccessful()) {
-                            CurrentlyPlaying currentlyPlaying = response.body();
-                            if (currentlyPlaying != null) {
-                                mService.onPlaybackState(currentlyPlaying);
-                                mService.onPlaybackShuffle(currentlyPlaying);
-                                mService.onPlaybackRepeat(currentlyPlaying);
-                                mService.onPlaybackDevice(currentlyPlaying);
-                                if (currentlyPlaying.item == null || mCurrentlyPlaying.item == null
-                                        || !currentlyPlaying.item.uri.equals(mCurrentlyPlaying.item.uri)) {
-                                    mService.onPlaybackMetaData(currentlyPlaying);
-                                }
-                                mCurrentlyPlaying = currentlyPlaying;
-                            }
+                            callback.onSuccess(response.body());
                         }
                     }
 
                     @Override
                     public void onFailure(Call<CurrentlyPlaying> call, Throwable t) {
+                        callback.onError();
                     }
                 });
             }
@@ -202,7 +222,22 @@ public class ConnectController implements Controller {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    getPlayback();
+                    getPlayback(new Callback<CurrentlyPlaying>() {
+                        @Override
+                        public void onSuccess(CurrentlyPlaying currentlyPlaying) {
+                            if (currentlyPlaying != null) {
+                                mCallbacks.onPlaybackState(currentlyPlaying, CONNECT_CONTROLLER);
+                                mCallbacks.onPlaybackShuffle(currentlyPlaying, CONNECT_CONTROLLER);
+                                mCallbacks.onPlaybackRepeat(currentlyPlaying, CONNECT_CONTROLLER);
+                                mCallbacks.onPlaybackDevice(currentlyPlaying, CONNECT_CONTROLLER);
+                                if (currentlyPlaying.item == null || mCurrentlyPlaying.item == null
+                                        || !currentlyPlaying.item.uri.equals(mCurrentlyPlaying.item.uri)) {
+                                    mCallbacks.onPlaybackMetaData(currentlyPlaying, CONNECT_CONTROLLER);
+                                }
+                                mCurrentlyPlaying = currentlyPlaying;
+                            }
+                        }
+                    });
                     mPlaybackHandler.postDelayed(this, interval);
                 }
             };
@@ -221,7 +256,7 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            mService.onPlaybackPrevious(mCurrentlyPlaying);
+                            mCallbacks.onPlaybackPrevious(mCurrentlyPlaying, CONNECT_CONTROLLER);
                         }
                     }
 
@@ -245,7 +280,7 @@ public class ConnectController implements Controller {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
-                            mService.onPlaybackNext(mCurrentlyPlaying);
+                            mCallbacks.onPlaybackNext(mCurrentlyPlaying, CONNECT_CONTROLLER);
                         }
                     }
 
@@ -270,7 +305,7 @@ public class ConnectController implements Controller {
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
                         if (response.isSuccessful()) {
                             mCurrentlyPlaying.device.volume_percent = volume;
-                            mService.onPlaybackVolume(mCurrentlyPlaying);
+                            mCallbacks.onPlaybackVolume(mCurrentlyPlaying, CONNECT_CONTROLLER);
                         }
                     }
 
@@ -284,7 +319,11 @@ public class ConnectController implements Controller {
     }
 
     @Override
-    public void seek(final int positionMs) {
+    public void seek(int positionMs) {
+        seek(positionMs, null);
+    }
+
+    private void seek(final int positionMs, final Callback<Void> callback) {
         getService(mContext, new Callback<Service>() {
             @Override
             public void onSuccess(Service service) {
@@ -294,7 +333,10 @@ public class ConnectController implements Controller {
                     public void onResponse(Call<Void> call, Response<Void> response) {
                         if (response.isSuccessful()) {
                             mCurrentlyPlaying.progress_ms = positionMs;
-                            mService.onPlaybackSeek(mCurrentlyPlaying);
+                            mCallbacks.onPlaybackSeek(mCurrentlyPlaying, CONNECT_CONTROLLER);
+                            if(callback != null) {
+                                callback.onSuccess(null);
+                            }
                         }
                     }
 
@@ -314,6 +356,6 @@ public class ConnectController implements Controller {
 
     @Override
     public void bind() {
-        mService.onPlaybackBind(mCurrentlyPlaying);
+        mCallbacks.onPlaybackBind(mCurrentlyPlaying, CONNECT_CONTROLLER);
     }
 }
