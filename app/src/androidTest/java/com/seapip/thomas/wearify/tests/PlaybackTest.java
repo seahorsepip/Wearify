@@ -22,7 +22,6 @@ import java.util.concurrent.TimeoutException;
 public class PlaybackTest {
     private static final String accessToken = "<snip>";
     private static final String deviceId = "<snip>";
-    private static final int controller = Service.NATIVE_CONTROLLER;
 
     @Rule
     public final ServiceTestRule mServiceRule = new ServiceTestRule();
