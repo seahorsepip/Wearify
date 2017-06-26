@@ -4,12 +4,12 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ServiceTestRule;
 
-import com.seapip.thomas.wearify.Spotify.Callback;
-import com.seapip.thomas.wearify.Spotify.Controller.Controller;
-import com.seapip.thomas.wearify.Spotify.Controller.Service;
-import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
-import com.seapip.thomas.wearify.Wearify.Manager;
-import com.seapip.thomas.wearify.Wearify.Token;
+import com.seapip.thomas.wearify.spotify.Callback;
+import com.seapip.thomas.wearify.spotify.controller.Controller;
+import com.seapip.thomas.wearify.spotify.controller.Service;
+import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
+import com.seapip.thomas.wearify.wearify.Manager;
+import com.seapip.thomas.wearify.wearify.Token;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -108,6 +108,21 @@ public class PlaybackTest {
         Thread.sleep(2000);
 
         controller = setController(Service.CONNECT_CONTROLLER, deviceId);
+        Assert.assertEquals("Playback didn't transfer between devices", getPlayback(controller).device.id, deviceId);
+        Assert.assertEquals("Track state didn't transfer between devices", getPlayback(controller).item.name, "Despacito - Remix");
+        Assert.assertEquals("Shuffle state didn't transfer between devices", getPlayback(controller).shuffle_state, true);
+        Assert.assertEquals("Repeat state didn't transfer between devices", getPlayback(controller).repeat_state, "track");
+        Assert.assertTrue("Progress didn't transfer between devices", getPlayback(controller).progress_ms > 30000);
+    }
+
+    @Test
+    public void testConnectedToNativePlaybackTransfer() throws TimeoutException, InterruptedException {
+        Controller controller = setController(Service.CONNECT_CONTROLLER, deviceId);
+        controller.play(null, "spotify:album:3smvpv7CdrhVcGYaNDLOqn",
+                -1, true, "track", 30000);
+        Thread.sleep(2000);
+
+        controller = setController(Service.NATIVE_CONTROLLER, deviceId);
         Assert.assertEquals("Playback didn't transfer between devices", getPlayback(controller).device.id, deviceId);
         Assert.assertEquals("Track state didn't transfer between devices", getPlayback(controller).item.name, "Despacito - Remix");
         Assert.assertEquals("Shuffle state didn't transfer between devices", getPlayback(controller).shuffle_state, true);

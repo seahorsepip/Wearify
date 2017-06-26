@@ -9,18 +9,18 @@ import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
 
-import com.seapip.thomas.wearify.Browse.ActionButtonSmall;
-import com.seapip.thomas.wearify.Browse.Activity;
-import com.seapip.thomas.wearify.Browse.Adapter;
-import com.seapip.thomas.wearify.Browse.Header;
-import com.seapip.thomas.wearify.Browse.Item;
-import com.seapip.thomas.wearify.Browse.Loading;
-import com.seapip.thomas.wearify.Browse.OnClick;
-import com.seapip.thomas.wearify.Spotify.Callback;
-import com.seapip.thomas.wearify.Spotify.Manager;
-import com.seapip.thomas.wearify.Spotify.Objects.Paging;
-import com.seapip.thomas.wearify.Spotify.Objects.SavedTrack;
-import com.seapip.thomas.wearify.Spotify.Service;
+import com.seapip.thomas.wearify.browse.ActionButtonSmall;
+import com.seapip.thomas.wearify.browse.Activity;
+import com.seapip.thomas.wearify.browse.Adapter;
+import com.seapip.thomas.wearify.browse.Header;
+import com.seapip.thomas.wearify.browse.Item;
+import com.seapip.thomas.wearify.browse.Loading;
+import com.seapip.thomas.wearify.browse.OnClick;
+import com.seapip.thomas.wearify.spotify.Callback;
+import com.seapip.thomas.wearify.spotify.Manager;
+import com.seapip.thomas.wearify.spotify.objects.Paging;
+import com.seapip.thomas.wearify.spotify.objects.SavedTrack;
+import com.seapip.thomas.wearify.spotify.Service;
 
 import java.util.ArrayList;
 

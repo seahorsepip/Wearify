@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.support.wearable.activity.WearableActivity;
-import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.widget.ImageView;
@@ -28,8 +27,8 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import com.seapip.thomas.wearify.Wearify.Token;
-import com.seapip.thomas.wearify.Wearify.Manager;
+import com.seapip.thomas.wearify.wearify.Token;
+import com.seapip.thomas.wearify.wearify.Manager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -128,7 +127,7 @@ public class LoginActivity extends WearableActivity {
         final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.parseColor("#00ffe0"),
                 PorterDuff.Mode.SRC_ATOP);
-        Manager.getToken(this, new com.seapip.thomas.wearify.Wearify.Callback() {
+        Manager.getToken(this, new com.seapip.thomas.wearify.wearify.Callback() {
             @Override
             public void onSuccess(Token token) {
                 Intent intent = new Intent(LoginActivity.this, LibraryActivity.class);
@@ -173,7 +172,7 @@ public class LoginActivity extends WearableActivity {
                 Paint paint = new Paint();
                 paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
                 Canvas canvas = new Canvas(bmp);
-                canvas.drawCircle(mSize / 2, mSize / 2, mSize / 8, paint);
+                canvas.drawCircle(mSize / 2f, mSize / 2f, mSize / 8f, paint);
                 Drawable logo = ambient ? mLogoBurnIn : mLogo;
                 logo.setBounds(mSize / 2 - mSize / 10, mSize / 2 - mSize / 10,
                         mSize / 2 + mSize / 10, mSize / 2 + mSize / 10);

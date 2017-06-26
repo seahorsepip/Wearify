@@ -1,18 +1,13 @@
 package com.seapip.thomas.wearify;
 
-import android.app.Dialog;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.wearable.view.WearableRecyclerView;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
@@ -23,29 +18,16 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.seapip.thomas.wearify.Browse.Activity;
-import com.seapip.thomas.wearify.Browse.Adapter;
-import com.seapip.thomas.wearify.Browse.Header;
-import com.seapip.thomas.wearify.Browse.Item;
-import com.seapip.thomas.wearify.Browse.OnClick;
-import com.seapip.thomas.wearify.Spotify.Callback;
-import com.seapip.thomas.wearify.Spotify.Controller.Controller;
-import com.seapip.thomas.wearify.Spotify.Controller.Service;
-import com.seapip.thomas.wearify.Spotify.Manager;
-import com.seapip.thomas.wearify.Spotify.Objects.CurrentlyPlaying;
-import com.seapip.thomas.wearify.Spotify.Objects.Device;
-import com.seapip.thomas.wearify.Spotify.Objects.Devices;
-import com.seapip.thomas.wearify.Spotify.Util;
+import com.seapip.thomas.wearify.browse.Activity;
+import com.seapip.thomas.wearify.spotify.controller.Controller;
+import com.seapip.thomas.wearify.spotify.controller.Service;
+import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
+import com.seapip.thomas.wearify.spotify.Util;
 import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
-
-import retrofit2.Call;
-import retrofit2.Response;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-import static com.seapip.thomas.wearify.Spotify.Util.largestImageUrl;
+import static com.seapip.thomas.wearify.spotify.Util.largestImageUrl;
 
 public class NowPlayingActivity extends Activity implements Controller.Callbacks {
 
@@ -208,7 +190,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
 
     private void setLoading(boolean loading) {
         mBackgroundImage.setVisibility(loading ? GONE : VISIBLE);
-        if(loading) {
+        if (loading) {
             mTitle.setText("");
             mSubTitle.setText("");
             mProgress.setVisibility(GONE);

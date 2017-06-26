@@ -22,6 +22,8 @@ sonarqube {
         property "sonar.sources", "src/main/java"
         property "sonar.language", "java"
         property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.exclusions", "src/main/java/com/seapip/thomas/wearify/spotify/objects/*.java, " +
+                "src/androidTest/java/com/seapip/thomas/wearify/tests/*.java"
     }
 }
 

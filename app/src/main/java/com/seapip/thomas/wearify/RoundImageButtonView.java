@@ -80,9 +80,9 @@ public class RoundImageButtonView extends ImageView {
     protected void onDraw(Canvas canvas) {
         int width = getWidth();
         int height = getHeight();
-        canvas.drawCircle(width / 2, height / 2, width / 2, mBackgroundPaint);
-        canvas.drawCircle(width / 2, height / 2, width / 2 - 4, mBorderPaint);
-        canvas.drawCircle(width / 2, height / 2, width / 2, mTouchPaint);
+        canvas.drawCircle(width / 2f, height / 2f, width / 2f, mBackgroundPaint);
+        canvas.drawCircle(width / 2f, height / 2f, width / 2f - 4f, mBorderPaint);
+        canvas.drawCircle(width / 2f, height / 2f, width / 2f, mTouchPaint);
         Drawable drawable = getDrawable();
         if (drawable != null) {
             int size = width / 10 * 6;

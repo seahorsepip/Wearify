@@ -10,19 +10,19 @@ import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
 import android.widget.ImageView;
 
-import com.seapip.thomas.wearify.Browse.ActionButtonSmall;
-import com.seapip.thomas.wearify.Browse.Activity;
-import com.seapip.thomas.wearify.Browse.Adapter;
-import com.seapip.thomas.wearify.Browse.Header;
-import com.seapip.thomas.wearify.Browse.Item;
-import com.seapip.thomas.wearify.Browse.Loading;
-import com.seapip.thomas.wearify.Browse.OnClick;
-import com.seapip.thomas.wearify.Spotify.Objects.Album;
-import com.seapip.thomas.wearify.Spotify.Callback;
-import com.seapip.thomas.wearify.Spotify.Manager;
-import com.seapip.thomas.wearify.Spotify.Objects.Paging;
-import com.seapip.thomas.wearify.Spotify.Service;
-import com.seapip.thomas.wearify.Spotify.Objects.Track;
+import com.seapip.thomas.wearify.browse.ActionButtonSmall;
+import com.seapip.thomas.wearify.browse.Activity;
+import com.seapip.thomas.wearify.browse.Adapter;
+import com.seapip.thomas.wearify.browse.Header;
+import com.seapip.thomas.wearify.browse.Item;
+import com.seapip.thomas.wearify.browse.Loading;
+import com.seapip.thomas.wearify.browse.OnClick;
+import com.seapip.thomas.wearify.spotify.objects.Album;
+import com.seapip.thomas.wearify.spotify.Callback;
+import com.seapip.thomas.wearify.spotify.Manager;
+import com.seapip.thomas.wearify.spotify.objects.Paging;
+import com.seapip.thomas.wearify.spotify.Service;
+import com.seapip.thomas.wearify.spotify.objects.Track;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -30,9 +30,9 @@ import java.util.ArrayList;
 import retrofit2.Call;
 import retrofit2.Response;
 
-import static com.seapip.thomas.wearify.Spotify.Util.largestImageUrl;
-import static com.seapip.thomas.wearify.Spotify.Util.names;
-import static com.seapip.thomas.wearify.Spotify.Util.songCount;
+import static com.seapip.thomas.wearify.spotify.Util.largestImageUrl;
+import static com.seapip.thomas.wearify.spotify.Util.names;
+import static com.seapip.thomas.wearify.spotify.Util.songCount;
 
 public class AlbumActivity extends Activity {
 
@@ -156,13 +156,7 @@ public class AlbumActivity extends Activity {
             item.onClick = new OnClick() {
                 @Override
                 public void run(final Context context) {
-                    /*
-                    Manager.getController(context).shuffle(false, new Callback<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Manager.getController(context).play(null, mUri, position, null);
-                        }
-                    });*/
+                    getService().play(null, mUri, position, false, "off", 0);
                 }
             };
             mItems.add(item);
