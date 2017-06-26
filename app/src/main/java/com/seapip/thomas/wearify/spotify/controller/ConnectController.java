@@ -4,28 +4,29 @@ import android.content.Context;
 import android.os.Handler;
 
 import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.Manager;
+import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
 import com.seapip.thomas.wearify.spotify.objects.Device;
 import com.seapip.thomas.wearify.spotify.objects.Offset;
 import com.seapip.thomas.wearify.spotify.objects.Play;
-import com.seapip.thomas.wearify.spotify.Service;
+import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
 
 import retrofit2.Call;
 import retrofit2.Response;
 
-import static com.seapip.thomas.wearify.spotify.controller.Service.CONNECT_CONTROLLER;
-import static com.seapip.thomas.wearify.spotify.Manager.getService;
+import static com.seapip.thomas.wearify.spotify.Service.CONNECT_CONTROLLER;
+import static com.seapip.thomas.wearify.spotify.Service.cancelAllWebAPICalls;
+import static com.seapip.thomas.wearify.spotify.Service.getWebAPI;
 
 public class ConnectController implements Controller {
 
     private String mDeviceId;
     private Context mContext;
-    private com.seapip.thomas.wearify.spotify.controller.Service.Callbacks mCallbacks;
+    private Service.Callbacks mCallbacks;
     private Handler mPlaybackHandler;
     private CurrentlyPlaying mCurrentlyPlaying;
 
-    public ConnectController(Context context, com.seapip.thomas.wearify.spotify.controller.Service.Callbacks callbacks) {
+    public ConnectController(Context context, Service.Callbacks callbacks) {
         mContext = context;
         mCallbacks = callbacks;
         mPlaybackHandler = new Handler();
@@ -42,9 +43,9 @@ public class ConnectController implements Controller {
                 repeat(repeatState, new Callback<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        getService(mContext, new Callback<Service>() {
+                        getWebAPI(mContext, new Callback<WebAPI>() {
                             @Override
-                            public void onSuccess(Service service) {
+                            public void onSuccess(WebAPI webAPI) {
                                 Play play = new Play();
                                 play.uris = uris;
                                 play.context_uri = contextUri;
@@ -52,7 +53,7 @@ public class ConnectController implements Controller {
                                     play.offset = new Offset();
                                     play.offset.position = position;
                                 }
-                                Call<Void> call = service.play(mDeviceId, play);
+                                Call<Void> call = webAPI.play(mDeviceId, play);
                                 call.enqueue(new retrofit2.Callback<Void>() {
                                     @Override
                                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
@@ -78,11 +79,11 @@ public class ConnectController implements Controller {
 
     @Override
     public void pause() {
-        Manager.cancelAll();
-        getService(mContext, new Callback<Service>() {
+        cancelAllWebAPICalls();
+        getWebAPI(mContext, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Void> call = service.pause(mDeviceId);
+            public void onSuccess(WebAPI webAPI) {
+                Call<Void> call = webAPI.pause(mDeviceId);
                 call.enqueue(new retrofit2.Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
@@ -103,11 +104,11 @@ public class ConnectController implements Controller {
 
     @Override
     public void resume() {
-        Manager.cancelAll();
-        getService(mContext, new Callback<Service>() {
+        cancelAllWebAPICalls();
+        getWebAPI(mContext, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Void> call = service.resume(mDeviceId);
+            public void onSuccess(WebAPI webAPI) {
+                Call<Void> call = webAPI.resume(mDeviceId);
                 call.enqueue(new retrofit2.Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
@@ -132,11 +133,11 @@ public class ConnectController implements Controller {
     }
 
     private void shuffle(final boolean state, final Callback<Void> callback) {
-        Manager.cancelAll();
-        getService(mContext, new Callback<Service>() {
+        cancelAllWebAPICalls();
+        getWebAPI(mContext, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Void> call = service.shuffle(state, mDeviceId);
+            public void onSuccess(WebAPI webAPI) {
+                Call<Void> call = webAPI.shuffle(state, mDeviceId);
                 call.enqueue(new retrofit2.Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
@@ -164,11 +165,11 @@ public class ConnectController implements Controller {
     }
 
     private void repeat(final String state, final Callback<Void> callback) {
-        Manager.cancelAll();
-        getService(mContext, new Callback<Service>() {
+        cancelAllWebAPICalls();
+        getWebAPI(mContext, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Void> call = service.repeat(state, mDeviceId);
+            public void onSuccess(WebAPI webAPI) {
+                Call<Void> call = webAPI.repeat(state, mDeviceId);
                 call.enqueue(new retrofit2.Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
@@ -194,10 +195,10 @@ public class ConnectController implements Controller {
 
     @Override
     public void getPlayback(final Callback<CurrentlyPlaying> callback) {
-        getService(mContext, new Callback<Service>() {
+        getWebAPI(mContext, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<CurrentlyPlaying> call = service.playback("from_token");
+            public void onSuccess(WebAPI webAPI) {
+                Call<CurrentlyPlaying> call = webAPI.playback("from_token");
                 call.enqueue(new retrofit2.Callback<CurrentlyPlaying>() {
                     @Override
                     public void onResponse(Call<CurrentlyPlaying> call, Response<CurrentlyPlaying> response) {
@@ -246,11 +247,11 @@ public class ConnectController implements Controller {
 
     @Override
     public void previous() {
-        Manager.cancelAll();
-        getService(mContext, new Callback<Service>() {
+        cancelAllWebAPICalls();
+        getWebAPI(mContext, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Void> call = service.prev(mDeviceId);
+            public void onSuccess(WebAPI webAPI) {
+                Call<Void> call = webAPI.prev(mDeviceId);
                 call.enqueue(new retrofit2.Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
@@ -270,11 +271,11 @@ public class ConnectController implements Controller {
 
     @Override
     public void next() {
-        Manager.cancelAll();
-        getService(mContext, new Callback<Service>() {
+       cancelAllWebAPICalls();
+        getWebAPI(mContext, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Void> call = service.next(mDeviceId);
+            public void onSuccess(WebAPI webAPI) {
+                Call<Void> call = webAPI.next(mDeviceId);
                 call.enqueue(new retrofit2.Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
@@ -294,11 +295,11 @@ public class ConnectController implements Controller {
 
     @Override
     public void volume(final int volume) {
-        Manager.cancelAll();
-        getService(mContext, new Callback<Service>() {
+        cancelAllWebAPICalls();
+        getWebAPI(mContext, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Void> call = service.volume(volume, mDeviceId);
+            public void onSuccess(WebAPI webAPI) {
+                Call<Void> call = webAPI.volume(volume, mDeviceId);
                 call.enqueue(new retrofit2.Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
@@ -323,10 +324,10 @@ public class ConnectController implements Controller {
     }
 
     private void seek(final int positionMs, final Callback<Void> callback) {
-        getService(mContext, new Callback<Service>() {
+        getWebAPI(mContext, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Void> call = service.seek(positionMs, mDeviceId);
+            public void onSuccess(WebAPI webAPI) {
+                Call<Void> call = webAPI.seek(positionMs, mDeviceId);
                 call.enqueue(new retrofit2.Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {

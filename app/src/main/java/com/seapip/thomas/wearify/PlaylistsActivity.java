@@ -17,16 +17,19 @@ import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
 import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.Manager;
+import com.seapip.thomas.wearify.spotify.Service;
+import com.seapip.thomas.wearify.spotify.webapi.Manager;
 import com.seapip.thomas.wearify.spotify.objects.Paging;
 import com.seapip.thomas.wearify.spotify.objects.Playlist;
-import com.seapip.thomas.wearify.spotify.Service;
+import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
 import com.seapip.thomas.wearify.spotify.objects.User;
 
 import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.seapip.thomas.wearify.spotify.Service.getWebAPI;
 
 public class PlaylistsActivity extends Activity {
 
@@ -54,10 +57,10 @@ public class PlaylistsActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(this, new Callback<Service>() {
+        getWebAPI(this, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Paging<Playlist>> call = service.getPlaylists(limit, offset);
+            public void onSuccess(WebAPI webAPI) {
+                Call<Paging<Playlist>> call = webAPI.getPlaylists(limit, offset);
                 call.enqueue(new retrofit2.Callback<Paging<Playlist>>() {
                     @Override
                     public void onResponse(Call<Paging<Playlist>> call, Response<Paging<Playlist>> response) {
@@ -78,10 +81,10 @@ public class PlaylistsActivity extends Activity {
                                     }
                                 };
                                 mItems.add(item);
-                                Manager.getService(PlaylistsActivity.this, new Callback<Service>() {
+                                getWebAPI(PlaylistsActivity.this, new Callback<WebAPI>() {
                                     @Override
-                                    public void onSuccess(Service service) {
-                                        Call<User> call = service.getUser(playlist.owner.id);
+                                    public void onSuccess(WebAPI webAPI) {
+                                        Call<User> call = webAPI.getUser(playlist.owner.id);
                                         call.enqueue(new retrofit2.Callback<User>() {
                                             @Override
                                             public void onResponse(Call<User> call, Response<User> response) {

@@ -18,12 +18,13 @@ import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
 import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.Manager;
+import com.seapip.thomas.wearify.spotify.Service;
+import com.seapip.thomas.wearify.spotify.webapi.Manager;
 import com.seapip.thomas.wearify.spotify.objects.Paging;
 import com.seapip.thomas.wearify.spotify.objects.Playlist;
 import com.seapip.thomas.wearify.spotify.objects.PlaylistTrack;
 import com.seapip.thomas.wearify.spotify.objects.User;
-import com.seapip.thomas.wearify.spotify.Service;
+import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.seapip.thomas.wearify.spotify.Service.getWebAPI;
 import static com.seapip.thomas.wearify.spotify.Util.largestImageUrl;
 import static com.seapip.thomas.wearify.spotify.Util.songCount;
 
@@ -75,10 +77,10 @@ public class PlaylistActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(this, new Callback<Service>() {
+        getWebAPI(this, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Playlist> call = service.getPlaylist(mUri.split(":")[2], mUri.split(":")[4],
+            public void onSuccess(WebAPI webAPI) {
+                Call<Playlist> call = webAPI.getPlaylist(mUri.split(":")[2], mUri.split(":")[4],
                         "name,images,uri,owner.id,tracks.items(track.artists(name),track.name,track.uri,track.is_playable),tracks.total,tracks.offset",
                         "from_token");
                 call.enqueue(new retrofit2.Callback<Playlist>() {
@@ -89,10 +91,10 @@ public class PlaylistActivity extends Activity {
                             mItems.remove(loading);
                             mItems.get(0).title = playlist.name;
                             mItems.get(0).subTitle = "Playlist";
-                            Manager.getService(PlaylistActivity.this, new Callback<Service>() {
+                            getWebAPI(PlaylistActivity.this, new Callback<WebAPI>() {
                                 @Override
-                                public void onSuccess(Service service) {
-                                    Call<User> call = service.getUser(playlist.owner.id);
+                                public void onSuccess(WebAPI webAPI) {
+                                    Call<User> call = webAPI.getUser(playlist.owner.id);
                                     call.enqueue(new retrofit2.Callback<User>() {
                                         @Override
                                         public void onResponse(Call<User> call, Response<User> response) {
@@ -140,10 +142,10 @@ public class PlaylistActivity extends Activity {
     private void getTracks(final int limit, final int offset, final boolean charts) {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
-        Manager.getService(this, new Callback<Service>() {
+        getWebAPI(this, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Paging<PlaylistTrack>> call = service.getPlaylistTracks(mUri.split(":")[2],
+            public void onSuccess(WebAPI webAPI) {
+                Call<Paging<PlaylistTrack>> call = webAPI.getPlaylistTracks(mUri.split(":")[2],
                         mUri.split(":")[4],
                         "items(track.artists(name),track.name,track.uri,track.is_playable),total,offset", limit,
                         offset, "from_token");

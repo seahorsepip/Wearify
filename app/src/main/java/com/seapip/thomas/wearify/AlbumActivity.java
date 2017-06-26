@@ -17,11 +17,12 @@ import com.seapip.thomas.wearify.browse.Header;
 import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
+import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.Album;
 import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.Manager;
+import com.seapip.thomas.wearify.spotify.webapi.Manager;
 import com.seapip.thomas.wearify.spotify.objects.Paging;
-import com.seapip.thomas.wearify.spotify.Service;
+import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
 import com.seapip.thomas.wearify.spotify.objects.Track;
 import com.squareup.picasso.Picasso;
 
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import retrofit2.Call;
 import retrofit2.Response;
 
+import static com.seapip.thomas.wearify.spotify.Service.getWebAPI;
 import static com.seapip.thomas.wearify.spotify.Util.largestImageUrl;
 import static com.seapip.thomas.wearify.spotify.Util.names;
 import static com.seapip.thomas.wearify.spotify.Util.songCount;
@@ -82,10 +84,10 @@ public class AlbumActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(this, new Callback<Service>() {
+        getWebAPI(this, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Album> call = service.getAlbum(mUri.split(":")[2], "from_token");
+            public void onSuccess(WebAPI webAPI) {
+                Call<Album> call = webAPI.getAlbum(mUri.split(":")[2], "from_token");
                 call.enqueue(new retrofit2.Callback<Album>() {
                     @Override
                     public void onResponse(Call<Album> call, Response<Album> response) {
@@ -120,10 +122,10 @@ public class AlbumActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(this, new Callback<Service>() {
+        getWebAPI(this, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Paging<Track>> call = service.getAlbumTracks(mUri.split(":")[2], limit, offset,
+            public void onSuccess(WebAPI webAPI) {
+                Call<Paging<Track>> call = webAPI.getAlbumTracks(mUri.split(":")[2], limit, offset,
                         "from_token");
                 call.enqueue(new retrofit2.Callback<Paging<Track>>() {
                     @Override

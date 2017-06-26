@@ -1,7 +1,9 @@
-package com.seapip.thomas.wearify.spotify;
+package com.seapip.thomas.wearify.spotify.webapi;
 
 import android.content.Context;
 
+import com.seapip.thomas.wearify.spotify.Callback;
+import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
 import com.seapip.thomas.wearify.wearify.Token;
 
 import java.io.IOException;
@@ -16,12 +18,12 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class Manager {
-    static private Token mToken;
-    static private Retrofit.Builder mBuilder;
-    static private Dispatcher mDispatcher;
-    static private Service mService;
+    private Token mToken;
+    private Retrofit.Builder mBuilder;
+    private Dispatcher mDispatcher;
+    private WebAPI mWebAPI;
 
-    public static void getService(Context context, final Callback<Service> callback) {
+    public void getWebAPI(Context context, final Callback<WebAPI> callback) {
         com.seapip.thomas.wearify.wearify.Manager.getToken(context, new com.seapip.thomas.wearify.wearify.Callback() {
             @Override
             public void onSuccess(final Token token) {
@@ -52,9 +54,9 @@ public class Manager {
                         mDispatcher.setMaxRequests(10);
                         httpClient.dispatcher(mDispatcher);
                         mBuilder = mBuilder.client(httpClient.build());
-                        mService = mBuilder.build().create(Service.class);
+                        mWebAPI = mBuilder.build().create(WebAPI.class);
                     }
-                    callback.onSuccess(mService);
+                    callback.onSuccess(mWebAPI);
                 } catch (Exception e) {
                     callback.onError();
                 }
@@ -67,7 +69,7 @@ public class Manager {
         });
     }
 
-    public static void cancelAll() {
-        //mDispatcher.cancelAll();
+    public void cancelAll() {
+        mDispatcher.cancelAll();
     }
 }

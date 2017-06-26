@@ -70,7 +70,7 @@
             android:name=".DeviceActivity"
             android:label="@string/app_name" />
 
-        <service android:name=".spotify.controller.Service">
+        <service android:name=".spotify.Service">
             <intent-filter android:label="@string/app_name">
                 <action android:name="com.seapip.thomas.wearify.service.intent" />
             </intent-filter>

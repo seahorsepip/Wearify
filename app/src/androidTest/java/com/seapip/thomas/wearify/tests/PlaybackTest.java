@@ -6,7 +6,7 @@ import android.support.test.rule.ServiceTestRule;
 
 import com.seapip.thomas.wearify.spotify.Callback;
 import com.seapip.thomas.wearify.spotify.controller.Controller;
-import com.seapip.thomas.wearify.spotify.controller.Service;
+import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
 import com.seapip.thomas.wearify.wearify.Manager;
 import com.seapip.thomas.wearify.wearify.Token;
@@ -178,42 +178,4 @@ public class PlaybackTest {
         }
         return currentlyPlaying[0];
     }
-
-    /*
-    @Test
-    public void testManager() throws InterruptedException {
-        final Context context = InstrumentationRegistry.getContext();
-        com.seapip.thomas.wearify.Spotify.Manager.getService(context, new Callback<com.seapip.thomas.wearify.Spotify.Service>() {
-            @Override
-            public void onSuccess(com.seapip.thomas.wearify.Spotify.Service service) {
-                Call<Album> call = service.getAlbum("74EKsgjD5GJOJpthJ59dhQ", "from_token");
-                call.enqueue(new retrofit2.Callback<Album>() {
-                    @Override
-                    public void onResponse(Call<Album> call, Response<Album> response) {
-                        if (response.isSuccessful()) {
-                            Assert.assertEquals("The 1975 (Deluxe)", response.body().name);
-                            latch.countDown();
-                        } else {
-                            Assert.fail();
-                            latch.countDown();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<Album> call, Throwable t) {
-                        Assert.fail();
-                        latch.countDown();
-                    }
-                });
-            }
-
-            @Override
-            public void onError() {
-                Assert.fail();
-                latch.countDown();
-            }
-        });
-        latch.await();
-    }
-     */
 }

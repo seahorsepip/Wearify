@@ -33,7 +33,7 @@ import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.R;
 import com.seapip.thomas.wearify.spotify.Callback;
 import com.seapip.thomas.wearify.spotify.controller.Controller;
-import com.seapip.thomas.wearify.spotify.controller.Service;
+import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
 
 import static android.view.View.INVISIBLE;

@@ -20,7 +20,7 @@ import android.widget.TextView;
 
 import com.seapip.thomas.wearify.browse.Activity;
 import com.seapip.thomas.wearify.spotify.controller.Controller;
-import com.seapip.thomas.wearify.spotify.controller.Service;
+import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
 import com.seapip.thomas.wearify.spotify.Util;
 import com.squareup.picasso.Picasso;
@@ -331,7 +331,6 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mPrev.setImageDrawable(getDrawable(R.drawable.ic_skip_previous_black_burn_in_24dp));
         mVolDown.setImageDrawable(getDrawable(R.drawable.ic_volume_down_black_burn_in_24dp));
         mVolUp.setImageDrawable(getDrawable(R.drawable.ic_volume_up_black_burn_in_24dp));
-        //Manager.destroy();
     }
 
     @Override
@@ -358,7 +357,6 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
 
     @Override
     protected void onDestroy() {
-        //Manager.destroy();
         super.onDestroy();
         if (mIsBound) {
             mController.unsetCallbacks(this);

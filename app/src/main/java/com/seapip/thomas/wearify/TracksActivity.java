@@ -17,15 +17,17 @@ import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
 import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.Manager;
+import com.seapip.thomas.wearify.spotify.webapi.Manager;
 import com.seapip.thomas.wearify.spotify.objects.Paging;
 import com.seapip.thomas.wearify.spotify.objects.SavedTrack;
-import com.seapip.thomas.wearify.spotify.Service;
+import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
 
 import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Response;
+
+import static com.seapip.thomas.wearify.spotify.Service.getWebAPI;
 
 public class TracksActivity extends Activity {
 
@@ -59,10 +61,10 @@ public class TracksActivity extends Activity {
         final Loading loading = new Loading(Color.parseColor("#00ffe0"));
         mItems.add(loading);
         mRecyclerView.getAdapter().notifyDataSetChanged();
-        Manager.getService(this, new Callback<Service>() {
+        getWebAPI(this, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(Service service) {
-                Call<Paging<SavedTrack>> call = service.getTracks(limit, offset, "from_token");
+            public void onSuccess(WebAPI webAPI) {
+                Call<Paging<SavedTrack>> call = webAPI.getTracks(limit, offset, "from_token");
                 call.enqueue(new retrofit2.Callback<Paging<SavedTrack>>() {
                     @Override
                     public void onResponse(Call<Paging<SavedTrack>> call, Response<Paging<SavedTrack>> response) {

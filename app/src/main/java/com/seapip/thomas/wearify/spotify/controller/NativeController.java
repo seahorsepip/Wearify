@@ -13,7 +13,8 @@ import android.widget.Toast;
 
 import com.seapip.thomas.wearify.AddWifiActivity;
 import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.Manager;
+import com.seapip.thomas.wearify.spotify.webapi.Manager;
+import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.Album;
 import com.seapip.thomas.wearify.spotify.objects.Artist;
 import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
@@ -21,6 +22,7 @@ import com.seapip.thomas.wearify.spotify.objects.Device;
 import com.seapip.thomas.wearify.spotify.objects.Image;
 import com.seapip.thomas.wearify.spotify.objects.Playlist;
 import com.seapip.thomas.wearify.spotify.objects.Track;
+import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
 import com.seapip.thomas.wearify.wearify.Token;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
@@ -40,7 +42,8 @@ import java.util.concurrent.TimeUnit;
 import retrofit2.Call;
 import retrofit2.Response;
 
-import static com.seapip.thomas.wearify.spotify.controller.Service.NATIVE_CONTROLLER;
+import static com.seapip.thomas.wearify.spotify.Service.NATIVE_CONTROLLER;
+import static com.seapip.thomas.wearify.spotify.Service.getWebAPI;
 
 public class NativeController implements Controller, Player.NotificationCallback, ConnectionStateCallback {
 
@@ -268,14 +271,14 @@ public class NativeController implements Controller, Player.NotificationCallback
             @Override
             public void onSuccess(Void aVoid) {
                 if (mShuffle) {
-                    Manager.getService(mContext, new Callback<com.seapip.thomas.wearify.spotify.Service>() {
+                    getWebAPI(mContext, new Callback<WebAPI>() {
                         @Override
-                        public void onSuccess(com.seapip.thomas.wearify.spotify.Service service) {
+                        public void onSuccess(WebAPI webAPI) {
                             if (contextUri == null) {
                                 resume();
                                 return;
                             } else if (contextUri.contains(":playlist:")) {
-                                Call<Playlist> call = service.getPlaylist(contextUri.split(":")[2],
+                                Call<Playlist> call = webAPI.getPlaylist(contextUri.split(":")[2],
                                         contextUri.split(":")[4], "tracks.total", "from_token");
                                 call.enqueue(new retrofit2.Callback<Playlist>() {
                                     @Override
@@ -293,7 +296,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                                     }
                                 });
                             } else if (contextUri.contains(":album:")) {
-                                Call<Album> call = service.getAlbum(contextUri.split(":")[2], "from_token");
+                                Call<Album> call = webAPI.getAlbum(contextUri.split(":")[2], "from_token");
                                 call.enqueue(new retrofit2.Callback<Album>() {
                                     @Override
                                     public void onResponse(Call<Album> call, Response<Album> response) {

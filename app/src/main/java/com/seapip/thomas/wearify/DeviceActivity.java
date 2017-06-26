@@ -19,11 +19,12 @@ import com.seapip.thomas.wearify.browse.Header;
 import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.OnClick;
 import com.seapip.thomas.wearify.spotify.Callback;
+import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.controller.Controller;
-import com.seapip.thomas.wearify.spotify.Manager;
+import com.seapip.thomas.wearify.spotify.webapi.Manager;
 import com.seapip.thomas.wearify.spotify.objects.Device;
 import com.seapip.thomas.wearify.spotify.objects.Devices;
-import com.seapip.thomas.wearify.spotify.Service;
+import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
 
 import java.util.ArrayList;
 
@@ -31,13 +32,14 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 import static android.view.View.GONE;
-import static com.seapip.thomas.wearify.spotify.controller.Service.CONNECT_CONTROLLER;
-import static com.seapip.thomas.wearify.spotify.controller.Service.NATIVE_CONTROLLER;
+import static com.seapip.thomas.wearify.spotify.Service.CONNECT_CONTROLLER;
+import static com.seapip.thomas.wearify.spotify.Service.NATIVE_CONTROLLER;
+import static com.seapip.thomas.wearify.spotify.Service.getWebAPI;
 
 public class DeviceActivity extends WearableActivity {
 
     private boolean mIsBound;
-    private com.seapip.thomas.wearify.spotify.controller.Service mController;
+    private Service mController;
     private ServiceConnection mConnection = new ServiceConnection() {
 
         public void onServiceDisconnected(ComponentName name) {
@@ -47,7 +49,7 @@ public class DeviceActivity extends WearableActivity {
 
         public void onServiceConnected(ComponentName name, IBinder service) {
             mIsBound = true;
-            mController = ((com.seapip.thomas.wearify.spotify.controller.Service.ControllerBinder) service).getServiceInstance();
+            mController = ((Service.ControllerBinder) service).getServiceInstance();
         }
     };
 
@@ -70,10 +72,10 @@ public class DeviceActivity extends WearableActivity {
         Adapter adapter = new Adapter(this, items);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
-        Manager.getService(this, new Callback<Service>() {
+        getWebAPI(this, new Callback<WebAPI>() {
             @Override
-            public void onSuccess(com.seapip.thomas.wearify.spotify.Service service) {
-                Call<Devices> call = service.devices();
+            public void onSuccess(WebAPI webAPI) {
+                Call<Devices> call = webAPI.devices();
                 call.enqueue(new retrofit2.Callback<Devices>() {
                     @Override
                     public void onResponse(Call<Devices> call, Response<Devices> response) {
@@ -158,7 +160,7 @@ public class DeviceActivity extends WearableActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Intent mIntent = new Intent(this, com.seapip.thomas.wearify.spotify.controller.Service.class);
+        Intent mIntent = new Intent(this, Service.class);
         bindService(mIntent, mConnection, BIND_AUTO_CREATE);
     }
 
