@@ -3,7 +3,6 @@ package com.seapip.thomas.wearify.browse;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -20,10 +19,10 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.seapip.thomas.wearify.R;
 import com.seapip.thomas.wearify.RoundImageButtonView;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -172,19 +171,19 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
             viewHolder.subTitle.setVisibility(View.GONE);
         }
         if (item.imageUrl != null) {
-            Picasso.with(mContext).load(item.imageUrl).fit().into(viewHolder.image, new Callback() {
-                @Override
-                public void onSuccess() {
-                    Bitmap bitmap = ((BitmapDrawable) viewHolder.image.getDrawable()).getBitmap();
-                    RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(mContext.getResources(), bitmap);
-                    drawable.setCircular(true);
-                    drawable.setCornerRadius(Math.max(bitmap.getWidth(), bitmap.getHeight()) / 2.0f);
-                    viewHolder.image.setImageDrawable(drawable);
-                }
+            Glide.with(mContext).load(item.imageUrl).asBitmap().fitCenter().into(new BitmapImageViewTarget(viewHolder.image) {
+                /*
+                Album art shouldn't be altered, according to Spotify guidelines.
+                This includes making it circular.
 
                 @Override
-                public void onError() {
+                protected void setResource(Bitmap resource) {
+                    super.setResource(resource);
+                    RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(mContext.getResources(), resource);
+                    roundedBitmapDrawable.setCircular(true);
+                    viewHolder.image.setImageDrawable(roundedBitmapDrawable);
                 }
+                */
             });
             viewHolder.image.setVisibility(View.VISIBLE);
         } else if (item.image != null) {

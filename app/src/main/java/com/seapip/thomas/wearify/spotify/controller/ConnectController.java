@@ -35,7 +35,7 @@ public class ConnectController implements Controller {
         mCurrentlyPlaying.device = new Device();
     }
     @Override
-    public void play(final String uris, final String contextUri, final int position,
+    public void play(final String[] uris, final String contextUri, final int position,
                      boolean shuffleState, final String repeatState, final int positionMs) {
         shuffle(shuffleState, new Callback<Void>() {
             @Override

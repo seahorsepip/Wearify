@@ -18,12 +18,12 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.seapip.thomas.wearify.browse.Activity;
 import com.seapip.thomas.wearify.spotify.controller.Controller;
 import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
 import com.seapip.thomas.wearify.spotify.Util;
-import com.squareup.picasso.Picasso;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -32,21 +32,6 @@ import static com.seapip.thomas.wearify.spotify.Util.largestImageUrl;
 public class NowPlayingActivity extends Activity implements Controller.Callbacks {
 
     private boolean mIsBound;
-    private Service mController;
-    private ServiceConnection mConnection = new ServiceConnection() {
-
-        public void onServiceDisconnected(ComponentName name) {
-            mIsBound = false;
-            mController = null;
-        }
-
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mIsBound = true;
-            mController = ((Service.ControllerBinder) service).getServiceInstance();
-            mController.setCallbacks(NowPlayingActivity.this);
-            mController.getController().bind();
-        }
-    };
     private boolean mAmbient;
     private WearableDrawerLayout mDrawerLayout;
     private WearableNavigationDrawer mNavigationDrawer;
@@ -102,9 +87,9 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
             @Override
             public void onClick(View v) {
                 if (mIsPlaying) {
-                    mController.getController().pause();
+                    getService().getController().pause();
                 } else {
-                    mController.getController().resume();
+                    getService().getController().resume();
                 }
             }
         });
@@ -113,7 +98,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mController.getController().previous();
+                getService().getController().previous();
             }
         });
         mPrev.setClickAlpha(20);
@@ -121,7 +106,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mController.getController().next();
+                getService().getController().next();
             }
         });
         mNext.setClickAlpha(20);
@@ -129,7 +114,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mVolDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mController.getController().volume(Math.max(0, mVolume - 5));
+                getService().getController().volume(Math.max(0, mVolume - 5));
             }
         });
         mVolDown.setClickAlpha(20);
@@ -137,7 +122,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mVolUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mController.getController().volume(Math.min(100, mVolume + 5));
+                getService().getController().volume(Math.min(100, mVolume + 5));
             }
         });
         mVolUp.setClickAlpha(20);
@@ -147,7 +132,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mShuffleMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(final MenuItem item) {
-                mController.getController().shuffle(!mShuffle);
+                getService().getController().shuffle(!mShuffle);
                 return false;
             }
         });
@@ -166,7 +151,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
                         mRepeat = "off";
                         break;
                 }
-                mController.getController().repeat(mRepeat);
+                getService().getController().repeat(mRepeat);
                 return false;
             }
         });
@@ -179,13 +164,6 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
             }
         });
         onProgress();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Intent mIntent = new Intent(this, Service.class);
-        bindService(mIntent, mConnection, BIND_AUTO_CREATE);
     }
 
     private void setLoading(boolean loading) {
@@ -283,11 +261,13 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
 
     @Override
     public void onPlaybackMetaData(CurrentlyPlaying currentlyPlaying) {
-        Picasso.with(getApplicationContext())
+        Glide.with(getApplicationContext())
                 .load(largestImageUrl(currentlyPlaying.item.album.images))
-                .fit().into(mBackgroundImage);
+                .fitCenter()
+                .into(mBackgroundImage);
         mTitle.setText(currentlyPlaying.item.name);
         mSubTitle.setText(Util.names(currentlyPlaying.item.artists));
+        setLoading(false);
     }
 
     @Override
@@ -308,6 +288,11 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
                 mDeviceMenuItem.setIcon(R.drawable.ic_computer_black_24dp);
                 break;
         }
+    }
+
+    @Override
+    public void onPlaybackBuffering() {
+        setLoading(true);
     }
 
     @Override
@@ -353,14 +338,5 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
     @Override
     public void onUpdateAmbient() {
         super.onUpdateAmbient();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mIsBound) {
-            mController.unsetCallbacks(this);
-            unbindService(mConnection);
-        }
     }
 }

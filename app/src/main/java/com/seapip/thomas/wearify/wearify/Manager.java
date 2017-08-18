@@ -73,8 +73,6 @@ public class Manager {
                 if (response.isSuccessful()) {
                     setToken(context, response.body());
                     callback.onSuccess(mToken);
-                } else {
-                    callback.onError();
                 }
             }
 

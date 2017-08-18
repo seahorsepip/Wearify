@@ -7,7 +7,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.media.MediaMetadata;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
@@ -18,6 +17,9 @@ import android.support.annotation.NonNull;
 import android.support.wearable.media.MediaControlConstants;
 import android.view.KeyEvent;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.seapip.thomas.wearify.DeviceActivity;
 import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.R;
@@ -31,8 +33,6 @@ import com.seapip.thomas.wearify.spotify.objects.Track;
 import com.seapip.thomas.wearify.spotify.objects.Transfer;
 import com.seapip.thomas.wearify.spotify.webapi.Manager;
 import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 
@@ -56,7 +56,7 @@ public class Service extends android.app.Service {
     private MediaSession mSession;
     private PlaybackState.Builder mPlaybackStateBuilder;
     private MediaMetadata.Builder mMediaMetadataBuilder;
-    private Target mMediaMetadataTarget;
+    private SimpleTarget<Bitmap> mMediaMetadataTarget;
 
     public static void getWebAPI(Context context, final Callback<WebAPI> callback) {
         webApiManager.getWebAPI(context, callback);
@@ -145,21 +145,11 @@ public class Service extends android.app.Service {
         mSession.setPlaybackState(mPlaybackStateBuilder.build());
         mMediaMetadataBuilder = new MediaMetadata.Builder();
         mSession.setMetadata(mMediaMetadataBuilder.build());
-        mMediaMetadataTarget = new Target() {
+        mMediaMetadataTarget = new SimpleTarget<Bitmap>() {
             @Override
-            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                mMediaMetadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ART, bitmap);
+            public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                mMediaMetadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ART, resource);
                 mSession.setMetadata(mMediaMetadataBuilder.build());
-            }
-
-            @Override
-            public void onBitmapFailed(Drawable errorDrawable) {
-
-            }
-
-            @Override
-            public void onPrepareLoad(Drawable placeHolderDrawable) {
-
             }
         };
         Bundle sessionExtras = new Bundle();
@@ -237,6 +227,7 @@ public class Service extends android.app.Service {
                 if (mCurrentControllerId == controllerId) {
                     for (Controller.Callbacks callbacks : mCallbacks) {
                         callbacks.onPlaybackPrevious(currentlyPlaying);
+                        callbacks.onPlaybackBuffering();
                     }
                 }
             }
@@ -246,6 +237,7 @@ public class Service extends android.app.Service {
                 if (mCurrentControllerId == controllerId) {
                     for (Controller.Callbacks callbacks : mCallbacks) {
                         callbacks.onPlaybackNext(currentlyPlaying);
+                        callbacks.onPlaybackBuffering();
                     }
                 }
             }
@@ -276,7 +268,11 @@ public class Service extends android.app.Service {
                         mMediaMetadataBuilder.putString(MediaMetadata.METADATA_KEY_ARTIST, Util.names(currentlyPlaying.item.artists).trim());
                         mMediaMetadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ART, null);
                         mSession.setMetadata(mMediaMetadataBuilder.build());
-                        Picasso.with(getApplicationContext()).load(Util.smallestImageUrl(currentlyPlaying.item.album.images)).into(mMediaMetadataTarget);
+                        Glide.with(getApplicationContext())
+                                .load(Util.largestImageUrl(currentlyPlaying.item.album.images))
+                                .asBitmap()
+                                .fitCenter()
+                                .into(mMediaMetadataTarget);
                     }
                     for (Controller.Callbacks callbacks : mCallbacks) {
                         callbacks.onPlaybackMetaData(currentlyPlaying);
@@ -323,6 +319,7 @@ public class Service extends android.app.Service {
                         ((Activity) callbacks).finish();
                     }
                     stopSelf();
+                    System.exit(1);
                 }
             }
         }
@@ -351,12 +348,15 @@ public class Service extends android.app.Service {
         super.onDestroy();
     }
 
-    public void play(final String uris, final String contextUri, final int position,
+    public void play(final String[] uris, final String contextUri, final int position,
                      final boolean shuffleState, final String repeatState, final int positionMs) {
         getController(new Callback<Controller>() {
             @Override
             public void onSuccess(Controller controller) {
                 controller.play(uris, contextUri, position, shuffleState, repeatState, positionMs);
+                for (Controller.Callbacks callbacks : mCallbacks) {
+                    callbacks.onPlaybackBuffering();
+                }
             }
 
             @Override
@@ -452,7 +452,8 @@ public class Service extends android.app.Service {
                                 if (currentlyPlaying.context == null) {
                                     //Workaround: https://github.com/spotify/web-api/issues/565
                                     if (currentlyPlaying.item != null) {
-                                        controller.play(currentlyPlaying.item.uri, null, 0,
+                                        controller.play(
+                                                new String[]{currentlyPlaying.item.uri}, null, 0,
                                                 currentlyPlaying.shuffle_state,
                                                 currentlyPlaying.repeat_state,
                                                 currentlyPlaying.progress_ms);
@@ -472,6 +473,7 @@ public class Service extends android.app.Service {
                                                             currentlyPlaying.shuffle_state,
                                                             currentlyPlaying.repeat_state,
                                                             currentlyPlaying.progress_ms);
+                                                    controller.bind();
                                                 }
                                             });
                                 } else if (currentlyPlaying.context.uri.contains(":album:")) {
@@ -484,6 +486,7 @@ public class Service extends android.app.Service {
                                                             currentlyPlaying.shuffle_state,
                                                             currentlyPlaying.repeat_state,
                                                             currentlyPlaying.progress_ms);
+                                                    controller.bind();
                                                 }
                                             });
                                 }

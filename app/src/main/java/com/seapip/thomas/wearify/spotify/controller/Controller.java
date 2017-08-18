@@ -5,7 +5,7 @@ import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
 
 public interface Controller {
 
-    void play(String uris, String contextUri, int position,
+    void play(String[] uris, String contextUri, int position,
               boolean shuffleState, final String repeatState, final int positionMs);
 
     void pause();
@@ -49,5 +49,7 @@ public interface Controller {
         void onPlaybackMetaData(CurrentlyPlaying currentlyPlaying);
 
         void onPlaybackDevice(CurrentlyPlaying currentlyPlaying);
+
+        void onPlaybackBuffering();
     }
 }

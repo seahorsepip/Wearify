@@ -10,6 +10,7 @@ import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.seapip.thomas.wearify.browse.ActionButtonSmall;
 import com.seapip.thomas.wearify.browse.Activity;
 import com.seapip.thomas.wearify.browse.Adapter;
@@ -18,14 +19,11 @@ import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
 import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.Service;
-import com.seapip.thomas.wearify.spotify.webapi.Manager;
 import com.seapip.thomas.wearify.spotify.objects.Paging;
 import com.seapip.thomas.wearify.spotify.objects.Playlist;
 import com.seapip.thomas.wearify.spotify.objects.PlaylistTrack;
 import com.seapip.thomas.wearify.spotify.objects.User;
 import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -62,7 +60,7 @@ public class PlaylistActivity extends Activity {
         mItems.add(new Header(""));
         final ActionButtonSmall shuffle = new ActionButtonSmall();
         shuffle.icon = getDrawable(R.drawable.ic_shuffle_black_24dp);
-        shuffle.iconColor = Color.argb(180, 0, 0, 0);
+        shuffle.iconColor = Color.argb(200, 0, 0, 0);
         shuffle.backgroundColor = Color.parseColor("#00ffe0");
         shuffle.text = "Shuffle Play";
         shuffle.onClick = new OnClick() {
@@ -121,9 +119,10 @@ public class PlaylistActivity extends Activity {
                             shuffle.subTitle = playlist.tracks.items[0].track.uri;
                             boolean charts = playlist.owner.id.equals("spotifycharts");
                             addTracks(playlist.tracks.items, 0, charts);
-                            Picasso.with(getApplicationContext())
+                            Glide.with(getApplicationContext())
                                     .load(largestImageUrl(playlist.images))
-                                    .fit().into(backgroundImage);
+                                    .fitCenter()
+                                    .into(backgroundImage);
                             if (playlist.tracks.total > playlist.tracks.items.length) {
                                 getTracks(100, playlist.tracks.items.length, charts);
                             }

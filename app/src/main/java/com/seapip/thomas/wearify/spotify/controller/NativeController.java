@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import com.seapip.thomas.wearify.AddWifiActivity;
 import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.webapi.Manager;
 import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.Album;
 import com.seapip.thomas.wearify.spotify.objects.Artist;
@@ -50,7 +49,7 @@ public class NativeController implements Controller, Player.NotificationCallback
     private static final String CLIENT_ID = "59fb3493386b4a6f8db44f3df59e5a34";
     private static final long NETWORK_CONNECTIVITY_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(5);
     private static final long NETWORK_CONNECTIVITY_RELEASE_MS = TimeUnit.SECONDS.toMillis(100);
-    private static final int MIN_NETWORK_BANDWIDTH_KBPS = 3000;
+    private static final int MIN_NETWORK_BANDWIDTH_KBPS = 300;
 
     private Context mContext;
     private Service.Callbacks mCallbacks;
@@ -151,9 +150,10 @@ public class NativeController implements Controller, Player.NotificationCallback
         // network on the user's watch or phone; however, unless you explicitly ask for permission
         // to a access the user's cellular network, you should request an unmetered network.
         NetworkRequest request = new NetworkRequest.Builder()
-                .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET)
+                .addTransportType(NetworkCapabilities.TRANSPORT_BLUETOOTH)
                 .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
                 .build();
 
@@ -246,10 +246,25 @@ public class NativeController implements Controller, Player.NotificationCallback
         callback.onSuccess(mCurrentlyPlaying);
     }
 
-    private void play(final String contextUri, final int position, final int positionMs) {
+    private void play(final String[] uris, final String contextUri,
+                      final int position, final int positionMs) {
         mPlayer.playUri(new Player.OperationCallback() {
             @Override
             public void onSuccess() {
+                if (uris != null) {
+                    queue(uris, 1);
+                    /*
+                    Handler handler = new Handler();
+                    for (int i = 1; i < uris.length; i++) {
+                        final int offset = i;
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                mPlayer.queue(null, uris[offset]);
+                            }
+                        }, 500 * i);
+                    }*/
+                }
                 mPlayer.setShuffle(null, mShuffle);
                 mPlayer.setRepeat(null, !mRepeat.equals("off"));
                 mPlayer.seekToPosition(null, positionMs);
@@ -259,11 +274,23 @@ public class NativeController implements Controller, Player.NotificationCallback
             public void onError(Error error) {
 
             }
-        }, contextUri, position, 0);
+        }, contextUri != null ? contextUri : uris[0], contextUri != null ? position : 0, 0);
+    }
+
+    private void queue(final String[] uris, final int offset) {
+        if (offset > uris.length - 1) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mPlayer.queue(null, uris[offset]);
+                    queue(uris, offset + 1);
+                }
+            }, 500);
+        }
     }
 
     @Override
-    public void play(final String uris, final String contextUri, final int position,
+    public void play(final String[] uris, final String contextUri, final int position,
                      boolean shuffleState, String repeatState, final int positionMs) {
         shuffle(shuffleState);
         repeat(repeatState);
@@ -275,7 +302,8 @@ public class NativeController implements Controller, Player.NotificationCallback
                         @Override
                         public void onSuccess(WebAPI webAPI) {
                             if (contextUri == null) {
-                                resume();
+                                int position = ThreadLocalRandom.current().nextInt(0, uris.length);
+                                play(uris, null, position, positionMs);
                                 return;
                             } else if (contextUri.contains(":playlist:")) {
                                 Call<Playlist> call = webAPI.getPlaylist(contextUri.split(":")[2],
@@ -286,7 +314,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                                         if (response.isSuccessful()) {
                                             Playlist playlist = response.body();
                                             int position = ThreadLocalRandom.current().nextInt(0, playlist.tracks.total);
-                                            play(contextUri, position, positionMs);
+                                            play(null, contextUri, position, positionMs);
                                         }
                                     }
 
@@ -303,7 +331,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                                         if (response.isSuccessful()) {
                                             Album album = response.body();
                                             int position = ThreadLocalRandom.current().nextInt(0, album.tracks.total);
-                                            play(contextUri, position, positionMs);
+                                            play(null, contextUri, position, positionMs);
                                         }
                                     }
 
@@ -317,7 +345,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                     });
                     return;
                 }
-                play(contextUri, position, positionMs);
+                play(uris, contextUri, position, positionMs);
             }
         });
     }

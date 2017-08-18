@@ -11,6 +11,7 @@ import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.seapip.thomas.wearify.browse.ActionButtonSmall;
 import com.seapip.thomas.wearify.browse.Activity;
 import com.seapip.thomas.wearify.browse.Adapter;
@@ -18,16 +19,13 @@ import com.seapip.thomas.wearify.browse.Header;
 import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
-import com.seapip.thomas.wearify.spotify.Service;
+import com.seapip.thomas.wearify.spotify.Callback;
+import com.seapip.thomas.wearify.spotify.Util;
 import com.seapip.thomas.wearify.spotify.objects.Artist;
 import com.seapip.thomas.wearify.spotify.objects.Artists;
-import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.webapi.Manager;
 import com.seapip.thomas.wearify.spotify.objects.Paging;
 import com.seapip.thomas.wearify.spotify.objects.SavedTrack;
 import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
-import com.seapip.thomas.wearify.spotify.Util;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -60,7 +58,7 @@ public class ArtistActivity extends Activity {
         mItems.add(new Header("Artists"));
         ActionButtonSmall shuffle = new ActionButtonSmall();
         shuffle.icon = getDrawable(R.drawable.ic_shuffle_black_24dp);
-        shuffle.iconColor = Color.argb(180, 0, 0, 0);
+        shuffle.iconColor = Color.argb(200, 0, 0, 0);
         shuffle.backgroundColor = Color.parseColor("#00ffe0");
         shuffle.text = "Shuffle Play";
         mItems.add(shuffle);
@@ -79,9 +77,10 @@ public class ArtistActivity extends Activity {
                             mItems.get(0).title = artist.name;
                             mItems.get(0).subTitle = "Artist";
                             mRecyclerView.getAdapter().notifyDataSetChanged();
-                            Picasso.with(getApplicationContext())
+                            Glide.with(getApplicationContext())
                                     .load(largestImageUrl(artist.images))
-                                    .fit().into(backgroundImage);
+                                    .fitCenter()
+                                    .into(backgroundImage);
                         }
                     }
 

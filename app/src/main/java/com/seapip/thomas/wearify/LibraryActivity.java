@@ -52,7 +52,7 @@ public class LibraryActivity extends Activity {
         mItems = new ArrayList<>();
         ActionButton search = new ActionButton();
         search.icon = getDrawable(R.drawable.ic_search_black_24dp);
-        search.iconColor = Color.argb(180, 0, 0, 0);
+        search.iconColor = Color.argb(200, 0, 0, 0);
         search.backgroundColor = Color.parseColor("#00ffe0");
         mItems.add(search);
         mItems.add(new Category("Playlists", getDrawable(R.drawable.ic_playlist_black_24px),

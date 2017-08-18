@@ -17,7 +17,6 @@ import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
 import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.webapi.Manager;
 import com.seapip.thomas.wearify.spotify.objects.Paging;
 import com.seapip.thomas.wearify.spotify.objects.SavedTrack;
 import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
@@ -33,6 +32,8 @@ public class TracksActivity extends Activity {
 
     private WearableRecyclerView mRecyclerView;
     private ArrayList<Item> mItems;
+    private ArrayList<String> mUris;
+    private int mPosition;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -48,12 +49,13 @@ public class TracksActivity extends Activity {
         mItems.add(new Header("Songs"));
         ActionButtonSmall shuffle = new ActionButtonSmall();
         shuffle.icon = getDrawable(R.drawable.ic_shuffle_black_24dp);
-        shuffle.iconColor = Color.argb(180, 0, 0, 0);
+        shuffle.iconColor = Color.argb(200, 0, 0, 0);
         shuffle.backgroundColor = Color.parseColor("#00ffe0");
         shuffle.text = "Shuffle Play";
         mItems.add(shuffle);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(new Adapter(this, mItems));
+        mUris = new ArrayList<>();
         getTracks(50, 0);
     }
 
@@ -74,19 +76,16 @@ public class TracksActivity extends Activity {
                             for (SavedTrack savedTrack : savedTracks.items) {
                                 Item item = new Item();
                                 item.setTrack(savedTrack.track);
+                                final int position = mPosition++;
                                 item.onClick = new OnClick() {
                                     @Override
                                     public void run(Context context) {
-                                        /*
-                                        Manager.getController(context).shuffle(false, new Callback<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                //Manager.play(null, contextUri, position, null);
-                                            }
-                                        });*/
+                                        getService().play(mUris.toArray(new String[mUris.size()]), null,
+                                                position, false, "off", 0);
                                     }
                                 };
                                 mItems.add(item);
+                                mUris.add(savedTrack.track.uri);
                             }
                             mRecyclerView.getAdapter().notifyDataSetChanged();
                             if (savedTracks.total > savedTracks.offset + limit) {

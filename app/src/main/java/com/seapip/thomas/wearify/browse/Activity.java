@@ -32,8 +32,8 @@ import com.seapip.thomas.wearify.NavigationDrawerAdapter;
 import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.R;
 import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.controller.Controller;
 import com.seapip.thomas.wearify.spotify.Service;
+import com.seapip.thomas.wearify.spotify.controller.Controller;
 import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
 
 import static android.view.View.INVISIBLE;
@@ -42,19 +42,19 @@ import static android.view.View.VISIBLE;
 public class Activity extends WearableActivity implements Controller.Callbacks {
 
     private boolean mIsBound;
-    private Service mController;
+    private Service mService;
     private ServiceConnection mConnection = new ServiceConnection() {
 
         public void onServiceDisconnected(ComponentName name) {
             mIsBound = false;
-            mController = null;
+            mService = null;
         }
 
         public void onServiceConnected(ComponentName name, IBinder service) {
             mIsBound = true;
-            mController = ((Service.ControllerBinder) service).getServiceInstance();
-            mController.setCallbacks(Activity.this);
-            mController.getController(new Callback<Controller>() {
+            mService = ((Service.ControllerBinder) service).getServiceInstance();
+            mService.setCallbacks(Activity.this);
+            mService.getController(new Callback<Controller>() {
                 @Override
                 public void onSuccess(Controller controller) {
                     controller.bind();
@@ -148,11 +148,7 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
     }
 
     public Service getService() {
-        return mController;
-    }
-
-    public Controller getController() {
-        return mController.getController();
+        return mService;
     }
 
     @Override
@@ -165,7 +161,7 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
     @Override
     protected void onDestroy() {
         if (mIsBound) {
-            mController.unsetCallbacks(this);
+            mService.unsetCallbacks(this);
             unbindService(mConnection);
         }
         super.onDestroy();
@@ -230,5 +226,11 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
         } else {
             mActionDrawer.setVisibility(INVISIBLE);
         }
+    }
+
+    @Override
+    public void onPlaybackBuffering() {
+        mActionDrawer.setVisibility(VISIBLE);
+        mLayout.peekDrawer(Gravity.BOTTOM);
     }
 }
