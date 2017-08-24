@@ -124,5 +124,16 @@
         android:background="#222222"
         app:show_overflow_in_peek="true" />
 
+    <TextClock
+        android:id="@+id/textClock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="6pt"
+        android:typeface="normal"
+        android:layout_marginBottom="12dp"
+        android:textColor="@color/white"
+        android:layout_gravity="bottom"/>
+
 
 </android.support.wearable.view.drawer.WearableDrawerLayout>

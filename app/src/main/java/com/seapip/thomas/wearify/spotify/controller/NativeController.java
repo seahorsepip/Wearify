@@ -48,7 +48,7 @@ public class NativeController implements Controller, Player.NotificationCallback
 
     private static final String CLIENT_ID = "59fb3493386b4a6f8db44f3df59e5a34";
     private static final long NETWORK_CONNECTIVITY_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(5);
-    private static final long NETWORK_CONNECTIVITY_RELEASE_MS = TimeUnit.SECONDS.toMillis(100);
+    private static final long NETWORK_CONNECTIVITY_RELEASE_MS = TimeUnit.SECONDS.toMillis(10);
     private static final int MIN_NETWORK_BANDWIDTH_KBPS = 300;
 
     private Context mContext;
@@ -418,6 +418,7 @@ public class NativeController implements Controller, Player.NotificationCallback
 
     @Override
     public void destroy() {
+        releaseHighBandwidthNetwork();
         Spotify.destroyPlayer(this);
     }
 

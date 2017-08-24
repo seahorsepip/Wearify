@@ -12,6 +12,7 @@ import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.wearable.media.MediaControlConstants;
@@ -141,7 +142,9 @@ public class Service extends android.app.Service {
         PendingIntent sessionActivity = PendingIntent.getActivity(getApplicationContext(), 0,
                 new Intent(getApplicationContext(), NowPlayingActivity.class), 0);
         mSession.setSessionActivity(sessionActivity);
-        mPlaybackStateBuilder = new PlaybackState.Builder().setActions(PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_SKIP_TO_PREVIOUS | PlaybackState.ACTION_SKIP_TO_NEXT);
+        mPlaybackStateBuilder = new PlaybackState.Builder().setActions(PlaybackState.ACTION_PLAY |
+                PlaybackState.ACTION_PAUSE | PlaybackState.ACTION_SKIP_TO_PREVIOUS |
+                PlaybackState.ACTION_SKIP_TO_NEXT);
         mSession.setPlaybackState(mPlaybackStateBuilder.build());
         mMediaMetadataBuilder = new MediaMetadata.Builder();
         mSession.setMetadata(mMediaMetadataBuilder.build());
@@ -180,9 +183,19 @@ public class Service extends android.app.Service {
                             PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED, 0, 1);
                     mSession.setPlaybackState(mPlaybackStateBuilder.build());
                     mNotificationBuilder.setOngoing(currentlyPlaying.is_playing);
-                    mNotificationManager.notify(1337, mNotificationBuilder.build());
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            mNotificationManager.notify(1337, mNotificationBuilder.build());
+                        }
+                    }, 500);
                     if (currentlyPlaying.is_playing) {
-                        mSession.setActive(true);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                mSession.setActive(true);
+                            }
+                        }, 500);
                         startService(new Intent(getApplicationContext(), Service.class));
                         startForeground(0, null);
                     }
@@ -300,7 +313,7 @@ public class Service extends android.app.Service {
                 .setSmallIcon(R.drawable.ic_logo)
                 .setCategory(Notification.CATEGORY_TRANSPORT)
                 .setPriority(Notification.PRIORITY_MAX)
-                .setStyle(new Notification.MediaStyle().setShowActionsInCompactView(0, 1, 2).setMediaSession(mSession.getSessionToken()))
+                .setStyle(new Notification.MediaStyle().setMediaSession(mSession.getSessionToken()))
                 .setDeleteIntent(PendingIntent.getService(getApplicationContext(), 0, destroyIntent, 0));
     }
 
@@ -439,9 +452,9 @@ public class Service extends android.app.Service {
             @Override
             public void onSuccess(final Controller controller) {
                 //Transferring to a different controller
-                controller.pause();
                 mConnectController.setInterval(0);
                 cancelAllWebAPICalls();
+                controller.pause();
                 controller.getPlayback(new Callback<CurrentlyPlaying>() {
                     @Override
                     public void onSuccess(final CurrentlyPlaying currentlyPlaying) {
