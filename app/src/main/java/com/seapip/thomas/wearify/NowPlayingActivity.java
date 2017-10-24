@@ -1,41 +1,42 @@
 package com.seapip.thomas.wearify;
 
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.seapip.thomas.wearify.browse.Activity;
-import com.seapip.thomas.wearify.spotify.controller.Controller;
-import com.seapip.thomas.wearify.spotify.Service;
-import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
 import com.seapip.thomas.wearify.spotify.Util;
+import com.seapip.thomas.wearify.spotify.controller.Controller;
+import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
 
 import static android.view.View.GONE;
+import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
+import static com.seapip.thomas.wearify.spotify.Service.INTERVAL;
 import static com.seapip.thomas.wearify.spotify.Util.largestImageUrl;
 
 public class NowPlayingActivity extends Activity implements Controller.Callbacks {
 
-    private boolean mIsBound;
     private boolean mAmbient;
     private WearableDrawerLayout mDrawerLayout;
     private WearableNavigationDrawer mNavigationDrawer;
     private ImageView mBackgroundImage;
+    private FrameLayout mControls;
     private ProgressBar mProgressBar;
     private RoundImageButtonView mPlay;
     private RoundImageButtonView mPrev;
@@ -46,7 +47,6 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
     private TextView mSubTitle;
     private CircularProgressView mProgress;
     private Handler mProgressHandler;
-    private CurrentlyPlaying mCurrentlyPlaying;
     private WearableActionDrawer mActionDrawer;
     private MenuItem mShuffleMenuItem;
     private MenuItem mRepeatMenuItem;
@@ -66,6 +66,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mActionDrawer = (WearableActionDrawer) findViewById(R.id.bottom_action_drawer);
         mDrawerLayout = (WearableDrawerLayout) findViewById(R.id.drawer_layout);
         mBackgroundImage = (ImageView) findViewById(R.id.background_image);
+        mControls = (FrameLayout) findViewById(R.id.controls);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         mProgressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
         mProgressBar.setVisibility(GONE);
@@ -82,6 +83,19 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         setDrawers(mDrawerLayout, null, null, 1);
 
         mNavigationDrawer.setVisibility(GONE);
+
+        //Chin workaround
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        mBackgroundImage.getLayoutParams().height = displayMetrics.widthPixels;
+        mControls.getLayoutParams().height = displayMetrics.widthPixels;
+        int chin = displayMetrics.widthPixels - displayMetrics.heightPixels;
+        mVolDown.getLayoutParams().height -= chin;
+        mVolUp.getLayoutParams().height -= chin;
+        mVolDown.setPadding(mVolDown.getPaddingLeft(), mVolDown.getPaddingTop(),
+                mVolDown.getPaddingRight(), mVolDown.getPaddingBottom() + chin);
+        mVolUp.setPadding(mVolUp.getPaddingLeft(), mVolUp.getPaddingTop(),
+                mVolUp.getPaddingRight(), mVolUp.getPaddingBottom() + chin);
 
         mPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -163,31 +177,16 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
                 return false;
             }
         });
-        onProgress();
     }
 
     private void setLoading(boolean loading) {
-        mBackgroundImage.setVisibility(loading ? GONE : VISIBLE);
+        mBackgroundImage.setVisibility(loading || mAmbient ? INVISIBLE : VISIBLE);
         if (loading) {
             mTitle.setText("");
             mSubTitle.setText("");
             mProgress.setVisibility(GONE);
         }
         mProgressBar.setVisibility(loading ? VISIBLE : GONE);
-    }
-
-    private void onProgress() {
-        (new Runnable() {
-            @Override
-            public void run() {
-                if (mCurrentlyPlaying != null && mCurrentlyPlaying.item.duration_ms > 0 && mCurrentlyPlaying.is_playing) {
-                    mProgress.setProgress((float) mCurrentlyPlaying.progress_ms
-                            / (float) mCurrentlyPlaying.item.duration_ms * 100f);
-                    mBackgroundImage.invalidate();
-                }
-                mProgressHandler.postDelayed(this, 20);
-            }
-        }).run();
     }
 
     private void setPlayButton() {
@@ -264,6 +263,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         Glide.with(getApplicationContext())
                 .load(largestImageUrl(currentlyPlaying.item.album.images))
                 .fitCenter()
+                .dontAnimate()
                 .into(mBackgroundImage);
         mTitle.setText(currentlyPlaying.item.name);
         mSubTitle.setText(Util.names(currentlyPlaying.item.artists));
@@ -308,7 +308,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mProgressHandler.removeCallbacksAndMessages(null);
         mDrawerLayout.setBackgroundColor(Color.BLACK);
         mNavigationDrawer.setVisibility(GONE);
-        mBackgroundImage.setVisibility(GONE);
+        mBackgroundImage.setVisibility(INVISIBLE);
         mProgress.setVisibility(GONE);
         mActionDrawer.setVisibility(GONE);
         setPlayButton();
@@ -316,14 +316,15 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mPrev.setImageDrawable(getDrawable(R.drawable.ic_skip_previous_black_burn_in_24dp));
         mVolDown.setImageDrawable(getDrawable(R.drawable.ic_volume_down_black_burn_in_24dp));
         mVolUp.setImageDrawable(getDrawable(R.drawable.ic_volume_up_black_burn_in_24dp));
+        getService().getController().setInterval(30000);
     }
 
     @Override
     public void onExitAmbient() {
         super.onExitAmbient();
         mAmbient = false;
-        onProgress();
         mDrawerLayout.setBackgroundColor(Color.parseColor("#141414"));
+        mBackgroundImage.setVisibility(VISIBLE);
         mNavigationDrawer.setVisibility(VISIBLE);
         mBackgroundImage.setVisibility(VISIBLE);
         mProgress.setVisibility(VISIBLE);
@@ -333,6 +334,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mPrev.setImageDrawable(getDrawable(R.drawable.ic_skip_previous_black_24dp));
         mVolDown.setImageDrawable(getDrawable(R.drawable.ic_volume_down_black_24dp));
         mVolUp.setImageDrawable(getDrawable(R.drawable.ic_volume_up_black_24dp));
+        getService().getController().setInterval(INTERVAL);
     }
 
     @Override

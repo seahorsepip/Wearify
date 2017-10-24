@@ -241,6 +241,11 @@ public class NativeController implements Controller, Player.NotificationCallback
     }
 
     @Override
+    public void requestPlayback() {
+        //Do nothing since playback data is not interval based
+    }
+
+    @Override
     public void getPlayback(Callback<CurrentlyPlaying> callback) {
         updateCurrentlyPlaying();
         callback.onSuccess(mCurrentlyPlaying);
@@ -414,6 +419,11 @@ public class NativeController implements Controller, Player.NotificationCallback
     @Override
     public void seek(int positionMs) {
         mPlayer.seekToPosition(null, positionMs);
+    }
+
+    @Override
+    public void setInterval(int interval) {
+        //Do nothing
     }
 
     @Override

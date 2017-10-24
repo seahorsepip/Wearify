@@ -24,9 +24,13 @@ public interface Controller {
 
     void seek(int positionMs);
 
+    void setInterval(final int interval);
+
     void destroy();
 
     void bind();
+
+    void requestPlayback();
 
     void getPlayback(Callback<CurrentlyPlaying> callback);
 

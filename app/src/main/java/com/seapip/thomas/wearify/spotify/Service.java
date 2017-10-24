@@ -43,6 +43,7 @@ public class Service extends android.app.Service {
     final public static int NATIVE_CONTROLLER = 1;
     final public static int CONNECT_CONTROLLER = 2;
     final public static int BLUETOOTH_CONTROLLER = 3;
+    final public static int INTERVAL = 3000;
     final private static Manager webApiManager = new Manager();
     final private static String ACTION_CMD = "com.seapip.thomas.wearify.ACTION_CMD";
     final private static String CMD_NAME = "CMD_NAME";
@@ -204,7 +205,7 @@ public class Service extends android.app.Service {
                     }
 
                     if (mCurrentControllerId != CONNECT_CONTROLLER) {
-                        mConnectController.setInterval(currentlyPlaying.is_playing ? 0 : 3000);
+                        mConnectController.setInterval(currentlyPlaying.is_playing ? 0 : INTERVAL);
                     }
                 } else if (controllerId == CONNECT_CONTROLLER && currentlyPlaying.device != null
                         && currentlyPlaying.device.is_active && currentlyPlaying.is_playing) {
@@ -304,7 +305,7 @@ public class Service extends android.app.Service {
         };
         mNativeController = new NativeController(this, callbacks);
         mConnectController = new ConnectController(this, callbacks);
-        mConnectController.setInterval(3000);
+        mConnectController.setInterval(INTERVAL);
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         Intent destroyIntent = new Intent(getApplicationContext(), Service.class);
         destroyIntent.setAction(ACTION_CMD);
@@ -505,7 +506,7 @@ public class Service extends android.app.Service {
                                 }
 
                                 if (mCurrentControllerId == CONNECT_CONTROLLER) {
-                                    mConnectController.setInterval(3000);
+                                    mConnectController.setInterval(INTERVAL);
                                 }
                                 if (callback != null) {
                                     callback.onSuccess(getController());

@@ -38,6 +38,7 @@ import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
 
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
+import static com.seapip.thomas.wearify.spotify.Service.INTERVAL;
 
 public class Activity extends WearableActivity implements Controller.Callbacks {
 
@@ -156,6 +157,18 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
         super.onStart();
         Intent mIntent = new Intent(this, Service.class);
         bindService(mIntent, mConnection, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mService != null) mService.getController().setInterval(INTERVAL);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mService != null) mService.getController().setInterval(30000);
     }
 
     @Override

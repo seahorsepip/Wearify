@@ -216,28 +216,34 @@ public class ConnectController implements Controller {
         });
     }
 
+    @Override
+    public void requestPlayback() {
+        getPlayback(new Callback<CurrentlyPlaying>() {
+            @Override
+            public void onSuccess(CurrentlyPlaying currentlyPlaying) {
+                if (currentlyPlaying != null) {
+                    mCallbacks.onPlaybackState(currentlyPlaying, CONNECT_CONTROLLER);
+                    mCallbacks.onPlaybackShuffle(currentlyPlaying, CONNECT_CONTROLLER);
+                    mCallbacks.onPlaybackRepeat(currentlyPlaying, CONNECT_CONTROLLER);
+                    mCallbacks.onPlaybackDevice(currentlyPlaying, CONNECT_CONTROLLER);
+                    if (currentlyPlaying.item == null || mCurrentlyPlaying.item == null
+                            || !currentlyPlaying.item.uri.equals(mCurrentlyPlaying.item.uri)) {
+                        mCallbacks.onPlaybackMetaData(currentlyPlaying, CONNECT_CONTROLLER);
+                    }
+                    mCurrentlyPlaying = currentlyPlaying;
+                }
+            }
+        });
+    }
+
+    @Override
     public void setInterval(final int interval) {
         mPlaybackHandler.removeCallbacksAndMessages(null);
         if (interval > 0) {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    getPlayback(new Callback<CurrentlyPlaying>() {
-                        @Override
-                        public void onSuccess(CurrentlyPlaying currentlyPlaying) {
-                            if (currentlyPlaying != null) {
-                                mCallbacks.onPlaybackState(currentlyPlaying, CONNECT_CONTROLLER);
-                                mCallbacks.onPlaybackShuffle(currentlyPlaying, CONNECT_CONTROLLER);
-                                mCallbacks.onPlaybackRepeat(currentlyPlaying, CONNECT_CONTROLLER);
-                                mCallbacks.onPlaybackDevice(currentlyPlaying, CONNECT_CONTROLLER);
-                                if (currentlyPlaying.item == null || mCurrentlyPlaying.item == null
-                                        || !currentlyPlaying.item.uri.equals(mCurrentlyPlaying.item.uri)) {
-                                    mCallbacks.onPlaybackMetaData(currentlyPlaying, CONNECT_CONTROLLER);
-                                }
-                                mCurrentlyPlaying = currentlyPlaying;
-                            }
-                        }
-                    });
+                    requestPlayback();
                     mPlaybackHandler.postDelayed(this, interval);
                 }
             };
