@@ -73,13 +73,7 @@ public class AlbumActivity extends Activity {
         shuffle.onClick = new OnClick() {
             @Override
             public void run(final Context context) {
-                /*
-                Manager.getController(context).shuffle(true, new Callback<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Manager.getController(context).play(null, mUri, -1, null);
-                    }
-                });*/
+                getService().play(null, mUri, -1, true, "off", 0);
             }
         };
         mItems.add(shuffle);

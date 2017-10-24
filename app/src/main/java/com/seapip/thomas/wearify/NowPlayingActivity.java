@@ -87,15 +87,17 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         //Chin workaround
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        mBackgroundImage.getLayoutParams().height = displayMetrics.widthPixels;
-        mControls.getLayoutParams().height = displayMetrics.widthPixels;
         int chin = displayMetrics.widthPixels - displayMetrics.heightPixels;
-        mVolDown.getLayoutParams().height -= chin;
-        mVolUp.getLayoutParams().height -= chin;
-        mVolDown.setPadding(mVolDown.getPaddingLeft(), mVolDown.getPaddingTop(),
-                mVolDown.getPaddingRight(), mVolDown.getPaddingBottom() + chin);
-        mVolUp.setPadding(mVolUp.getPaddingLeft(), mVolUp.getPaddingTop(),
-                mVolUp.getPaddingRight(), mVolUp.getPaddingBottom() + chin);
+        if(chin > 0) {
+            mBackgroundImage.getLayoutParams().height = displayMetrics.widthPixels;
+            mControls.getLayoutParams().height = displayMetrics.widthPixels;
+            mVolDown.getLayoutParams().height -= chin / 2;
+            mVolUp.getLayoutParams().height -= chin / 2;
+            mVolDown.getLayoutParams().width -= chin / 2;
+            mVolUp.getLayoutParams().width -= chin / 2;
+            ((FrameLayout.LayoutParams) mVolDown.getLayoutParams()).bottomMargin += chin;
+            ((FrameLayout.LayoutParams) mVolUp.getLayoutParams()).bottomMargin += chin;
+        }
 
         mPlay.setOnClickListener(new View.OnClickListener() {
             @Override

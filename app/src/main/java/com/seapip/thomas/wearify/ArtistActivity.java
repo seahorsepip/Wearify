@@ -9,6 +9,7 @@ import android.support.wearable.view.WearableRecyclerView;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
+import android.util.DisplayMetrics;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -54,6 +55,12 @@ public class ArtistActivity extends Activity {
         setGradientOverlay(mRecyclerView, (ImageView) findViewById(R.id.background_overlay));
 
         final ImageView backgroundImage = (ImageView) findViewById(R.id.background_image);
+
+        //Chin workaround
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        backgroundImage.getLayoutParams().height = displayMetrics.widthPixels;
+
         mItems = new ArrayList<>();
         mItems.add(new Header("Artists"));
         ActionButtonSmall shuffle = new ActionButtonSmall();
