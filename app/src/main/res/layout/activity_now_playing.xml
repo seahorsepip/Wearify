@@ -6,16 +6,16 @@
     android:layout_height="match_parent"
     android:background="#141414">
 
-    <ImageView
-        android:id="@+id/background_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:foreground="@drawable/now_playing_gradient" />
-
     <FrameLayout
         android:id="@+id/controls"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/background_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:foreground="@drawable/now_playing_gradient" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -57,8 +57,8 @@
 
         <com.seapip.thomas.wearify.CircularProgressView
             android:id="@+id/circle_progress"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
             android:layout_gravity="center"
             android:clickable="true" />
 

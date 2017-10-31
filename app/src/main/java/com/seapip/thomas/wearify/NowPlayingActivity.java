@@ -99,7 +99,6 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int chin = displayMetrics.widthPixels - displayMetrics.heightPixels;
         if (chin > 0) {
-            mBackgroundImage.getLayoutParams().height = displayMetrics.widthPixels;
             mControls.getLayoutParams().height = displayMetrics.widthPixels;
             mVolDown.getLayoutParams().height -= chin / 2;
             mVolUp.getLayoutParams().height -= chin / 2;
@@ -226,7 +225,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mIsPlaying = currentlyPlaying.is_playing;
         setPlayButton();
         if (currentlyPlaying.item != null) {
-            mProgressTimestamp = System.currentTimeMillis() - currentlyPlaying.progress_ms;
+            mProgressTimestamp = currentlyPlaying.timestamp - currentlyPlaying.progress_ms;
         }
         mProgress.setProgress(System.currentTimeMillis() - mProgressTimestamp);
         mProgressHandler.removeCallbacksAndMessages(null);

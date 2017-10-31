@@ -54,6 +54,6 @@ public class CircularProgressView extends ImageView {
         int width = getWidth();
         int height = getHeight();
         canvas.drawCircle(width / 2f, height / 2f, width / 2f, backgroundCirclePaint);
-        canvas.drawArc(0, 0, width, height, -90, 360f * mProgress / mDuration, true, foregroundArcPaint);
+        canvas.drawArc(1, 1, width - 1f, height - 1f, -90, 360f * mProgress / mDuration, true, foregroundArcPaint);
     }
 }

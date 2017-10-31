@@ -238,6 +238,7 @@ public class NativeController implements Controller, Player.NotificationCallback
             mCurrentlyPlaying.repeat_state = mRepeat;
             mCurrentlyPlaying.progress_ms = (int) mCurrentPlaybackState.positionMs;
         }
+        mCurrentlyPlaying.timestamp = System.currentTimeMillis();
     }
 
     @Override
