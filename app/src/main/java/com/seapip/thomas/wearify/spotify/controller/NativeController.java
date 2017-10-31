@@ -243,6 +243,7 @@ public class NativeController implements Controller, Player.NotificationCallback
     @Override
     public void requestPlayback() {
         //Do nothing since playback data is not interval based
+        mCallbacks.onPlaybackState(mCurrentlyPlaying, NATIVE_CONTROLLER);
     }
 
     @Override

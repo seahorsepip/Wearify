@@ -34,6 +34,7 @@ public class ConnectController implements Controller {
         mCurrentlyPlaying.context = new com.seapip.thomas.wearify.spotify.objects.Context();
         mCurrentlyPlaying.device = new Device();
     }
+
     @Override
     public void play(final String[] uris, final String contextUri, final int position,
                      boolean shuffleState, final String repeatState, final int positionMs) {
@@ -144,7 +145,7 @@ public class ConnectController implements Controller {
                         if (response.isSuccessful()) {
                             mCurrentlyPlaying.shuffle_state = state;
                             mCallbacks.onPlaybackShuffle(mCurrentlyPlaying, CONNECT_CONTROLLER);
-                            if(callback != null) {
+                            if (callback != null) {
                                 callback.onSuccess(null);
                             }
                         }
@@ -176,7 +177,7 @@ public class ConnectController implements Controller {
                         if (response.isSuccessful()) {
                             mCurrentlyPlaying.repeat_state = state;
                             mCallbacks.onPlaybackRepeat(mCurrentlyPlaying, CONNECT_CONTROLLER);
-                            if(callback != null) {
+                            if (callback != null) {
                                 callback.onSuccess(null);
                             }
                         }
@@ -184,7 +185,7 @@ public class ConnectController implements Controller {
 
                     @Override
                     public void onFailure(Call<Void> call, Throwable t) {
-                        if(callback != null) {
+                        if (callback != null) {
                             callback.onError();
                         }
                     }
@@ -240,14 +241,13 @@ public class ConnectController implements Controller {
     public void setInterval(final int interval) {
         mPlaybackHandler.removeCallbacksAndMessages(null);
         if (interval > 0) {
-            Runnable runnable = new Runnable() {
+            new Runnable() {
                 @Override
                 public void run() {
                     requestPlayback();
                     mPlaybackHandler.postDelayed(this, interval);
                 }
-            };
-            runnable.run();
+            }.run();
         }
     }
 
@@ -277,7 +277,7 @@ public class ConnectController implements Controller {
 
     @Override
     public void next() {
-       cancelAllWebAPICalls();
+        cancelAllWebAPICalls();
         getWebAPI(mContext, new Callback<WebAPI>() {
             @Override
             public void onSuccess(WebAPI webAPI) {
@@ -340,7 +340,7 @@ public class ConnectController implements Controller {
                         if (response.isSuccessful()) {
                             mCurrentlyPlaying.progress_ms = positionMs;
                             mCallbacks.onPlaybackSeek(mCurrentlyPlaying, CONNECT_CONTROLLER);
-                            if(callback != null) {
+                            if (callback != null) {
                                 callback.onSuccess(null);
                             }
                         }

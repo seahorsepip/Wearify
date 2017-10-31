@@ -5,11 +5,11 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -55,6 +55,8 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
     private boolean mShuffle;
     private String mRepeat;
     private int mVolume;
+    private Runnable mProgressRunnable;
+    private long mProgressTimestamp;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,6 +81,14 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mSubTitle = (TextView) findViewById(R.id.sub_title);
         mProgress = (CircularProgressView) findViewById(R.id.circle_progress);
         mProgressHandler = new Handler();
+        mProgressRunnable = new Runnable() {
+            @Override
+            public void run() {
+                mProgress.setProgress(System.currentTimeMillis() - mProgressTimestamp);
+                mProgressHandler.postDelayed(this, 32);
+            }
+        };
+        mProgressTimestamp = System.currentTimeMillis();
 
         setDrawers(mDrawerLayout, null, null, 1);
 
@@ -88,7 +98,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int chin = displayMetrics.widthPixels - displayMetrics.heightPixels;
-        if(chin > 0) {
+        if (chin > 0) {
             mBackgroundImage.getLayoutParams().height = displayMetrics.widthPixels;
             mControls.getLayoutParams().height = displayMetrics.widthPixels;
             mVolDown.getLayoutParams().height -= chin / 2;
@@ -186,9 +196,9 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         if (loading) {
             mTitle.setText("");
             mSubTitle.setText("");
-            mProgress.setVisibility(GONE);
         }
-        mProgressBar.setVisibility(loading ? VISIBLE : GONE);
+        mProgress.setVisibility(loading || mAmbient ? INVISIBLE : VISIBLE);
+        mProgressBar.setVisibility(loading && !mAmbient ? VISIBLE : INVISIBLE);
     }
 
     private void setPlayButton() {
@@ -215,6 +225,14 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
     public void onPlaybackState(CurrentlyPlaying currentlyPlaying) {
         mIsPlaying = currentlyPlaying.is_playing;
         setPlayButton();
+        if (currentlyPlaying.item != null) {
+            mProgressTimestamp = System.currentTimeMillis() - currentlyPlaying.progress_ms;
+        }
+        mProgress.setProgress(System.currentTimeMillis() - mProgressTimestamp);
+        mProgressHandler.removeCallbacksAndMessages(null);
+        if(mIsPlaying && !mAmbient) {
+            mProgressRunnable.run();
+        }
     }
 
     @Override
@@ -269,6 +287,9 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
                 .into(mBackgroundImage);
         mTitle.setText(currentlyPlaying.item.name);
         mSubTitle.setText(Util.names(currentlyPlaying.item.artists));
+        mProgress.setProgress(currentlyPlaying.progress_ms);
+        mProgress.setDuration(currentlyPlaying.item.duration_ms);
+        mProgressTimestamp = System.currentTimeMillis() - currentlyPlaying.progress_ms;
         setLoading(false);
     }
 
@@ -298,8 +319,8 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         mProgressHandler.removeCallbacksAndMessages(null);
     }
 
@@ -311,7 +332,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mDrawerLayout.setBackgroundColor(Color.BLACK);
         mNavigationDrawer.setVisibility(GONE);
         mBackgroundImage.setVisibility(INVISIBLE);
-        mProgress.setVisibility(GONE);
+        mProgress.setVisibility(INVISIBLE);
         mActionDrawer.setVisibility(GONE);
         setPlayButton();
         mNext.setImageDrawable(getDrawable(R.drawable.ic_skip_next_black_burn_in_24dp));
@@ -330,6 +351,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mNavigationDrawer.setVisibility(VISIBLE);
         mBackgroundImage.setVisibility(VISIBLE);
         mProgress.setVisibility(VISIBLE);
+        mProgressRunnable.run();
         mActionDrawer.setVisibility(VISIBLE);
         setPlayButton();
         mNext.setImageDrawable(getDrawable(R.drawable.ic_skip_next_black_24dp));
@@ -337,10 +359,5 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mVolDown.setImageDrawable(getDrawable(R.drawable.ic_volume_down_black_24dp));
         mVolUp.setImageDrawable(getDrawable(R.drawable.ic_volume_up_black_24dp));
         getService().getController().setInterval(INTERVAL);
-    }
-
-    @Override
-    public void onUpdateAmbient() {
-        super.onUpdateAmbient();
     }
 }

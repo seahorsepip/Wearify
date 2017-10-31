@@ -162,13 +162,28 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
     @Override
     protected void onResume() {
         super.onResume();
-        setInterval(INTERVAL);
+        if(mIsBound) {
+            getService().getController(new Callback<Controller>() {
+                @Override
+                public void onSuccess(Controller controller) {
+                    controller.setInterval(INTERVAL);
+                    controller.requestPlayback();
+                }
+            });
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        setInterval(30000);
+        if(mIsBound) {
+            getService().getController(new Callback<Controller>() {
+                @Override
+                public void onSuccess(Controller controller) {
+                    controller.setInterval(30000);
+                }
+            });
+        }
     }
 
     @Override
@@ -178,12 +193,6 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
             unbindService(mConnection);
         }
         super.onDestroy();
-    }
-
-    private void setInterval(int interval) {
-        if (mService != null && mService.getController() != null) {
-            mService.getController().setInterval(interval);
-        }
     }
 
     @Override

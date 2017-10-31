@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.ImageView;
 
 public class CircularProgressView extends ImageView {
@@ -14,6 +13,7 @@ public class CircularProgressView extends ImageView {
     private Paint backgroundCirclePaint;
     private Paint foregroundArcPaint;
     private float mProgress;
+    private float mDuration;
 
     public CircularProgressView(Context context) {
         super(context);
@@ -28,6 +28,7 @@ public class CircularProgressView extends ImageView {
         foregroundArcPaint.setColor(Color.WHITE);
         foregroundArcPaint.setAntiAlias(true);
         mProgress = 0;
+        mDuration = 1000;
     }
 
     public CircularProgressView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -43,11 +44,16 @@ public class CircularProgressView extends ImageView {
         invalidate();
     }
 
+    public void setDuration(float duration) {
+        mDuration = duration;
+        invalidate();
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         int width = getWidth();
         int height = getHeight();
         canvas.drawCircle(width / 2f, height / 2f, width / 2f, backgroundCirclePaint);
-        canvas.drawArc(0, 0, width, height, -90, 3.6f * mProgress, true, foregroundArcPaint);
+        canvas.drawArc(0, 0, width, height, -90, 360f * mProgress / mDuration, true, foregroundArcPaint);
     }
 }
