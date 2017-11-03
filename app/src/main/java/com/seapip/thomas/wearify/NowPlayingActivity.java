@@ -80,6 +80,10 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mTitle = (TextView) findViewById(R.id.title);
         mSubTitle = (TextView) findViewById(R.id.sub_title);
         mProgress = (CircularProgressView) findViewById(R.id.circle_progress);
+        mTitle.setSelected(true);
+        mTitle.setSingleLine(true);
+        mSubTitle.setSelected(true);
+        mSubTitle.setSingleLine(true);
         mProgressHandler = new Handler();
         mProgressRunnable = new Runnable() {
             @Override
@@ -225,7 +229,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mIsPlaying = currentlyPlaying.is_playing;
         setPlayButton();
         if (currentlyPlaying.item != null) {
-            mProgressTimestamp = currentlyPlaying.timestamp - currentlyPlaying.progress_ms;
+            mProgressTimestamp = System.currentTimeMillis() - currentlyPlaying.progress_ms;
         }
         mProgress.setProgress(System.currentTimeMillis() - mProgressTimestamp);
         mProgressHandler.removeCallbacksAndMessages(null);
@@ -331,6 +335,8 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mDrawerLayout.setBackgroundColor(Color.BLACK);
         mNavigationDrawer.setVisibility(GONE);
         mBackgroundImage.setVisibility(INVISIBLE);
+        mTitle.setSelected(false);
+        mSubTitle.setSelected(false);
         mProgress.setVisibility(INVISIBLE);
         mActionDrawer.setVisibility(GONE);
         setPlayButton();
@@ -349,6 +355,8 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mBackgroundImage.setVisibility(VISIBLE);
         mNavigationDrawer.setVisibility(VISIBLE);
         mBackgroundImage.setVisibility(VISIBLE);
+        mTitle.setSelected(true);
+        mSubTitle.setSelected(true);
         mProgress.setVisibility(VISIBLE);
         mProgressRunnable.run();
         mActionDrawer.setVisibility(VISIBLE);

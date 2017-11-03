@@ -30,7 +30,10 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"
-                android:ellipsize="end"
+                android:requiresFadingEdge="horizontal"
+                android:fadingEdgeLength="40dp"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit ="marquee_forever"
                 android:fontFamily="sans-serif-semi-bold"
                 android:maxLines="1"
                 android:textAlignment="center"
@@ -45,7 +48,10 @@
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
                 android:layout_alignWithParentIfMissing="true"
-                android:ellipsize="end"
+                android:requiresFadingEdge="horizontal"
+                android:fadingEdgeLength="40dp"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit ="marquee_forever"
                 android:fontFamily="sans-serif-semi-bold"
                 android:gravity="top"
                 android:maxLines="1"
@@ -57,10 +63,9 @@
 
         <com.seapip.thomas.wearify.CircularProgressView
             android:id="@+id/circle_progress"
-            android:layout_width="65dp"
-            android:layout_height="65dp"
-            android:layout_gravity="center"
-            android:clickable="true" />
+            android:layout_width="66dp"
+            android:layout_height="66dp"
+            android:layout_gravity="center" />
 
         <ProgressBar
             android:id="@+id/progress_bar"
