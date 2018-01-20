@@ -10,6 +10,7 @@ import android.support.wearable.phone.PhoneDeviceType.DEVICE_TYPE_ERROR_UNKNOWN
 import android.support.wearable.phone.PhoneDeviceType.getPhoneDeviceType
 import android.support.wearable.view.ConfirmationOverlay
 import android.support.wearable.view.ConfirmationOverlay.OPEN_ON_PHONE_ANIMATION
+import android.util.Log
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks
@@ -91,9 +92,9 @@ class LoginAltActivity : WearableActivity(), ConnectionCallbacks, OnConnectionFa
     }
 
     private fun onSuccess(node: Node) {
-        info_login.text = "Login on your ${node.displayName}."
+        info_login.text = "Continue on your ${node.displayName} to login."
         button_login.setImageDrawable(getDrawable(ic_smartphone_black_24dp))
-        button_login_text.text = "Open login"
+        button_login_text.text = "Open on phone"
 
         var uri = Uri.EMPTY
 
@@ -158,7 +159,7 @@ class LoginAltActivity : WearableActivity(), ConnectionCallbacks, OnConnectionFa
     }
 
     private fun onFailure() {
-        info_login.text = "Scan the QR code with another device to sign in."
+        info_login.text = "Scan the QR code with another device to login."
         button_login.setImageDrawable(getDrawable(ic_qr_code_black_24px))
         button_login_text.text = "Show QR code"
 
