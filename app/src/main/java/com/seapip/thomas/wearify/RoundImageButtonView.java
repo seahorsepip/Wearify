@@ -85,7 +85,7 @@ public class RoundImageButtonView extends ImageView {
         canvas.drawCircle(width / 2f, height / 2f, width / 2f, mTouchPaint);
         Drawable drawable = getDrawable();
         if (drawable != null) {
-            int size = width / 10 * 6;
+            int size = (int) Math.round(width / 10 * 6.2f);
             drawable.setTint(mTint);
             drawable.setAlpha(Color.alpha(mTint));
             drawable.setBounds(width / 2 - size / 2, height / 2 - size / 2,

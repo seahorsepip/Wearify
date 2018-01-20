@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.wearable.view.drawer.WearableDrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -15,7 +16,8 @@
             android:id="@+id/background_image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:foreground="@drawable/now_playing_gradient" />
+            android:foreground="@drawable/now_playing_gradient"
+            tools:ignore="ContentDescription" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -35,10 +37,10 @@
                 android:ellipsize="marquee"
                 android:marqueeRepeatLimit ="marquee_forever"
                 android:fontFamily="sans-serif-semi-bold"
-                android:maxLines="1"
                 android:textAlignment="center"
                 android:textColor="#aaaaaa"
-                android:textSize="13sp" />
+                android:textSize="13sp"
+                android:singleLine="true" />
 
             <TextView
                 android:id="@+id/title"
@@ -54,10 +56,10 @@
                 android:marqueeRepeatLimit ="marquee_forever"
                 android:fontFamily="sans-serif-semi-bold"
                 android:gravity="top"
-                android:maxLines="1"
                 android:textAlignment="center"
                 android:textColor="@color/white"
-                android:textSize="15sp" />
+                android:textSize="15sp"
+                android:singleLine="true" />
 
         </RelativeLayout>
 

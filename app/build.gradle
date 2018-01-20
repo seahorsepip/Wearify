@@ -1,12 +1,14 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    compileSdkVersion 27
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "com.seapip.thomas.wearify"
         minSdkVersion 25
-        targetSdkVersion 25
+        targetSdkVersion 27
         versionCode 5
         versionName "0.0.5"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -21,8 +23,11 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.google.android.support:wearable:2.0.3'
-    provided 'com.google.android.wearable:wearable:2.0.3'
+    compile 'com.android.support:wear:27.0.2'
+    compile 'com.google.android.gms:play-services-wearable:11.8.0'
+    compile 'com.android.support:support-v13:27.0.2'
+    provided 'com.google.android.wearable:wearable:2.1.0'
+    compile 'com.google.android.support:wearable:2.1.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.spotify.sdk:spotify-player-24-noconnect-2.20b@aar'
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
@@ -34,4 +39,8 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+}
+repositories {
+    mavenCentral()
 }

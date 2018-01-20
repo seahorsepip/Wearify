@@ -19,6 +19,24 @@ public class LaunchActivity extends WearableActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launch);
+        getToken(LaunchActivity.this, new com.seapip.thomas.wearify.wearify.Callback() {
+            @Override
+            public void onSuccess(Token token) {
+                Intent intent = new Intent(LaunchActivity.this, LibraryActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+                finish();
+                startActivity(intent);
+            }
+
+            @Override
+            public void onError() {
+                Intent intent = new Intent(LaunchActivity.this, LoginAltActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+                finish();
+                startActivity(intent);
+            }
+        });
+        /*
         boolean isRunning = isServiceRunning(Service.class);
         if (!isRunning) {
             findViewById(R.id.logo).setVisibility(View.VISIBLE);
@@ -44,7 +62,8 @@ public class LaunchActivity extends WearableActivity {
                     }
                 });
             }
-        }, isRunning ? 0 : 2000);
+        }, isRunning ? 0 : 1000);
+        */
     }
 
     private boolean isServiceRunning(Class<?> serviceClass) {

@@ -22,7 +22,7 @@
             android:fontFamily="sans-serif-semi-bold"
             android:gravity="top"
             android:maxLines="1"
-            android:text="Sign in"
+            android:text="Login"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="16sp" />
@@ -30,16 +30,16 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/info_login"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/list_padding"
         android:layout_marginRight="@dimen/list_padding"
-        android:text="Scan the QR code with another device to sign in."
         android:textColor="#dddddd"
         android:textSize="16sp" />
 
     <LinearLayout
-        android:id="@+id/button_show_qr_code"
+        android:id="@+id/button_login_wrapper"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -48,17 +48,19 @@
         android:paddingBottom="8dp"
         android:paddingLeft="@dimen/list_padding"
         android:paddingRight="@dimen/list_padding"
-        android:paddingTop="8dp">
+        android:paddingTop="8dp"
+        android:focusable="true">
 
         <com.seapip.thomas.wearify.RoundImageButtonView
+            android:id="@+id/button_login"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:background="#00ffe0"
             android:clickable="false"
-            android:src="@drawable/ic_qr_code_black_24px"
             android:tint="#b4000000" />
 
         <TextView
+            android:id="@+id/button_login_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -66,7 +68,7 @@
             android:fontFamily="sans-serif-semi-bold"
             android:maxLines="1"
             android:paddingStart="10dp"
-            android:text="Show QR code"
+            android:paddingEnd="10dp"
             android:textColor="@color/white"
             android:textSize="16sp" />
     </LinearLayout>

@@ -11,11 +11,12 @@ public class LoginActivity extends WearableActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        /*
         findViewById(R.id.button_show_qr_code).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(LoginActivity.this, QRActivity.class));
             }
-        });
+        });*/
     }
 }
