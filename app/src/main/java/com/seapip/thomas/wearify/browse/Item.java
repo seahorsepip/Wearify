@@ -24,11 +24,11 @@ public class Item {
     public int number;
     public boolean disabled;
 
-    public void setPlaylist(final Playlist playlist, WearableRecyclerView recyclerView) {
-        setPlaylist(playlist, recyclerView, false);
+    public void setPlaylist(final Playlist playlist) {
+        setPlaylist(playlist, false);
     }
 
-    public void setPlaylist(final Playlist playlist, final WearableRecyclerView recyclerView, final boolean songCount) {
+    public void setPlaylist(final Playlist playlist, final boolean songCount) {
         uri = playlist.uri;
         title = playlist.name;
         subTitle = songCount ? Util.songCount(playlist.tracks.total) : "Playlist";

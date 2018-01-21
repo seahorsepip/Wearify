@@ -2,7 +2,6 @@ package com.seapip.thomas.wearify.browse;
 
 import android.content.Context;
 
-public class OnClick {
-    public void run(Context context) {
-    }
+public interface OnClick {
+    void run(Context context);
 }

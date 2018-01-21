@@ -3,7 +3,7 @@ package com.seapip.thomas.wearify.spotify.controller;
 import android.content.Context;
 import android.os.Handler;
 
-import com.seapip.thomas.wearify.spotify.Callback;
+import com.seapip.thomas.wearify.Callback;
 import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
 import com.seapip.thomas.wearify.spotify.objects.Device;
@@ -71,9 +71,24 @@ public class ConnectController implements Controller {
                                     }
                                 });
                             }
+
+                            @Override
+                            public void onError() {
+
+                            }
                         });
                     }
+
+                    @Override
+                    public void onError() {
+
+                    }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }
@@ -100,6 +115,11 @@ public class ConnectController implements Controller {
                     }
                 });
             }
+
+            @Override
+            public void onError() {
+
+            }
         });
     }
 
@@ -124,6 +144,11 @@ public class ConnectController implements Controller {
 
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }
@@ -156,6 +181,11 @@ public class ConnectController implements Controller {
 
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }
@@ -191,6 +221,11 @@ public class ConnectController implements Controller {
                     }
                 });
             }
+
+            @Override
+            public void onError() {
+
+            }
         });
     }
 
@@ -214,6 +249,11 @@ public class ConnectController implements Controller {
                     }
                 });
             }
+
+            @Override
+            public void onError() {
+
+            }
         });
     }
 
@@ -233,6 +273,11 @@ public class ConnectController implements Controller {
                     }
                     mCurrentlyPlaying = currentlyPlaying;
                 }
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }
@@ -272,6 +317,11 @@ public class ConnectController implements Controller {
                     }
                 });
             }
+
+            @Override
+            public void onError() {
+
+            }
         });
     }
 
@@ -295,6 +345,11 @@ public class ConnectController implements Controller {
 
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }
@@ -320,6 +375,11 @@ public class ConnectController implements Controller {
 
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }
@@ -351,6 +411,11 @@ public class ConnectController implements Controller {
 
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }

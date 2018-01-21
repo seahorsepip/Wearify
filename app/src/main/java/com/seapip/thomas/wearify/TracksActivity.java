@@ -16,7 +16,6 @@ import com.seapip.thomas.wearify.browse.Header;
 import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
-import com.seapip.thomas.wearify.spotify.Callback;
 import com.seapip.thomas.wearify.spotify.objects.Paging;
 import com.seapip.thomas.wearify.spotify.objects.SavedTrack;
 import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
@@ -99,6 +98,11 @@ public class TracksActivity extends Activity {
 
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }

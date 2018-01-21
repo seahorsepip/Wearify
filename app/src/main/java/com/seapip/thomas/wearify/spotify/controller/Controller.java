@@ -1,6 +1,6 @@
 package com.seapip.thomas.wearify.spotify.controller;
 
-import com.seapip.thomas.wearify.spotify.Callback;
+import com.seapip.thomas.wearify.Callback;
 import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
 
 public interface Controller {

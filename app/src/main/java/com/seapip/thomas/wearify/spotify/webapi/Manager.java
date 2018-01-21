@@ -1,9 +1,10 @@
 package com.seapip.thomas.wearify.spotify.webapi;
 
 import android.content.Context;
+import android.content.Intent;
 
-import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
+import com.seapip.thomas.wearify.AddWifiActivity;
+import com.seapip.thomas.wearify.Callback;
 import com.seapip.thomas.wearify.wearify.Token;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class Manager {
     private Dispatcher mDispatcher;
     private WebAPI mWebAPI;
 
-    public void getWebAPI(Context context, final Callback<WebAPI> callback) {
+    public void getWebAPI(final Context context, final Callback<WebAPI> callback) {
         com.seapip.thomas.wearify.wearify.Manager.getToken(context, new com.seapip.thomas.wearify.wearify.Callback() {
             @Override
             public void onSuccess(final Token token) {
@@ -47,9 +48,9 @@ public class Manager {
                                         .build());
                             }
                         });
-                        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-                        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-                        httpClient.addInterceptor(interceptor);
+                        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+                        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+                        httpClient.addInterceptor(loggingInterceptor);
                         mDispatcher = new Dispatcher();
                         mDispatcher.setMaxRequests(10);
                         httpClient.dispatcher(mDispatcher);
@@ -58,12 +59,14 @@ public class Manager {
                     }
                     callback.onSuccess(mWebAPI);
                 } catch (Exception e) {
+                    context.startActivity(new Intent(context, AddWifiActivity.class));
                     callback.onError();
                 }
             }
 
             @Override
             public void onError() {
+                context.startActivity(new Intent(context, AddWifiActivity.class));
                 callback.onError();
             }
         });

@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ServiceTestRule;
 
-import com.seapip.thomas.wearify.spotify.Callback;
+import com.seapip.thomas.wearify.Callback;
 import com.seapip.thomas.wearify.spotify.controller.Controller;
 import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;

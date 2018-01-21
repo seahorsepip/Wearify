@@ -12,7 +12,7 @@ import android.os.Handler;
 import android.widget.Toast;
 
 import com.seapip.thomas.wearify.AddWifiActivity;
-import com.seapip.thomas.wearify.spotify.Callback;
+import com.seapip.thomas.wearify.Callback;
 import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.Album;
 import com.seapip.thomas.wearify.spotify.objects.Artist;
@@ -174,6 +174,11 @@ public class NativeController implements Controller, Player.NotificationCallback
                         @Override
                         public void onSuccess(Void aVoid) {
                             mPlayer.resume(null);
+                        }
+
+                        @Override
+                        public void onError() {
+
                         }
                     };
                     mPlayer.pause(null);
@@ -349,10 +354,20 @@ public class NativeController implements Controller, Player.NotificationCallback
                                 });
                             }
                         }
+
+                        @Override
+                        public void onError() {
+
+                        }
                     });
                     return;
                 }
                 play(uris, contextUri, position, positionMs);
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }
@@ -369,6 +384,11 @@ public class NativeController implements Controller, Player.NotificationCallback
             @Override
             public void onSuccess(Void aVoid) {
                 mPlayer.resume(null);
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }
@@ -396,6 +416,11 @@ public class NativeController implements Controller, Player.NotificationCallback
             public void onSuccess(Void aVoid) {
                 mPlayer.skipToPrevious(null);
             }
+
+            @Override
+            public void onError() {
+
+            }
         });
     }
 
@@ -405,6 +430,11 @@ public class NativeController implements Controller, Player.NotificationCallback
             @Override
             public void onSuccess(Void aVoid) {
                 mPlayer.skipToNext(null);
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }

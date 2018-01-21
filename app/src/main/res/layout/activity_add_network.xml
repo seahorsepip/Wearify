@@ -34,7 +34,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/list_padding"
         android:layout_marginRight="@dimen/list_padding"
-        android:text="No high-bandwidth network is available. You must add a Wi-Fi network to continue."
+        android:text="No network is available. You must add a Wi-Fi network to continue."
         android:textColor="#dddddd"
         android:textSize="15sp" />
 

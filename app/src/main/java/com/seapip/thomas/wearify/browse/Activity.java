@@ -31,7 +31,7 @@ import android.widget.LinearLayout;
 import com.seapip.thomas.wearify.NavigationDrawerAdapter;
 import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.R;
-import com.seapip.thomas.wearify.spotify.Callback;
+import com.seapip.thomas.wearify.Callback;
 import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.controller.Controller;
 import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
@@ -59,6 +59,11 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
                 @Override
                 public void onSuccess(Controller controller) {
                     controller.bind();
+                }
+
+                @Override
+                public void onError() {
+
                 }
             });
         }
@@ -169,6 +174,11 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
                     controller.setInterval(INTERVAL);
                     controller.requestPlayback();
                 }
+
+                @Override
+                public void onError() {
+
+                }
             });
         }
     }
@@ -181,6 +191,11 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
                 @Override
                 public void onSuccess(Controller controller) {
                     controller.setInterval(30000);
+                }
+
+                @Override
+                public void onError() {
+
                 }
             });
         }

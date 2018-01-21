@@ -20,7 +20,6 @@ import com.seapip.thomas.wearify.browse.Header;
 import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
-import com.seapip.thomas.wearify.spotify.Callback;
 import com.seapip.thomas.wearify.spotify.Util;
 import com.seapip.thomas.wearify.spotify.objects.Artist;
 import com.seapip.thomas.wearify.spotify.objects.Artists;
@@ -97,6 +96,11 @@ public class ArtistActivity extends Activity {
                     }
                 });
             }
+
+            @Override
+            public void onError() {
+
+            }
         });
         getTracks(50, 0);
     }
@@ -163,6 +167,11 @@ public class ArtistActivity extends Activity {
 
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }

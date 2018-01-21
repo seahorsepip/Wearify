@@ -17,7 +17,6 @@ import com.seapip.thomas.wearify.browse.Header;
 import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
-import com.seapip.thomas.wearify.spotify.Callback;
 import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.controller.Controller;
 import com.seapip.thomas.wearify.spotify.objects.Device;
@@ -84,6 +83,11 @@ public class DeviceActivity extends WearableActivity {
                                             repeatState, positionMs);
                                 }
                             }
+
+                            @Override
+                            public void onError() {
+
+                            }
                         });
                 finish();
             }
@@ -134,6 +138,11 @@ public class DeviceActivity extends WearableActivity {
                                                                         repeatState, positionMs);
                                                             }
                                                         }
+
+                                                        @Override
+                                                        public void onError() {
+
+                                                        }
                                                     });
                                             finish();
                                         }
@@ -152,6 +161,11 @@ public class DeviceActivity extends WearableActivity {
                         recyclerView.getAdapter().notifyDataSetChanged();
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }

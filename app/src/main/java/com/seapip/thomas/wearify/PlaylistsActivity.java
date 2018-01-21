@@ -16,9 +16,6 @@ import com.seapip.thomas.wearify.browse.Header;
 import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
-import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.Service;
-import com.seapip.thomas.wearify.spotify.webapi.Manager;
 import com.seapip.thomas.wearify.spotify.objects.Paging;
 import com.seapip.thomas.wearify.spotify.objects.Playlist;
 import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
@@ -69,7 +66,7 @@ public class PlaylistsActivity extends Activity {
                             Paging<Playlist> playlists = response.body();
                             for (final Playlist playlist : playlists.items) {
                                 final Item item = new Item();
-                                item.setPlaylist(playlist, mRecyclerView, true);
+                                item.setPlaylist(playlist, true);
                                 if (item.imageUrl == null) {
                                     item.image = getDrawable(R.drawable.ic_playlist_black_24px);
                                 }
@@ -107,6 +104,11 @@ public class PlaylistsActivity extends Activity {
                                             }
                                         });
                                     }
+
+                                    @Override
+                                    public void onError() {
+
+                                    }
                                 });
                             }
                             mRecyclerView.getAdapter().notifyDataSetChanged();
@@ -121,6 +123,11 @@ public class PlaylistsActivity extends Activity {
 
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }

@@ -18,11 +18,8 @@ import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.LetterGroupHeader;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
-import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.Artist;
 import com.seapip.thomas.wearify.spotify.objects.Artists;
-import com.seapip.thomas.wearify.spotify.Callback;
-import com.seapip.thomas.wearify.spotify.webapi.Manager;
 import com.seapip.thomas.wearify.spotify.objects.Paging;
 import com.seapip.thomas.wearify.spotify.objects.SavedTrack;
 import com.seapip.thomas.wearify.spotify.webapi.WebAPI;
@@ -138,6 +135,11 @@ public class ArtistsActivity extends Activity {
                                             }
                                         });
                                     }
+
+                                    @Override
+                                    public void onError() {
+
+                                    }
                                 });
                             }
                         }
@@ -148,6 +150,11 @@ public class ArtistsActivity extends Activity {
 
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }

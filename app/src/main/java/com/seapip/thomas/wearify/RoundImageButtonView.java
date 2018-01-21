@@ -42,7 +42,7 @@ public class RoundImageButtonView extends ImageView {
         mBorderPaint.setStyle(Paint.Style.STROKE);
         mBorderPaint.setStrokeWidth(4);
         mBorderPaint.setAntiAlias(true);
-        if(getImageTintList() != null) {
+        if (getImageTintList() != null) {
             mTint = getImageTintList().getDefaultColor();
         }
     }
@@ -85,7 +85,9 @@ public class RoundImageButtonView extends ImageView {
         canvas.drawCircle(width / 2f, height / 2f, width / 2f, mTouchPaint);
         Drawable drawable = getDrawable();
         if (drawable != null) {
-            int size = (int) Math.round(width / 10 * 6.2f);
+            //int size = Math.round(width / 10 * 6.2f);
+            int size = (int) (Math.floor((float) width / 16f) * 8);
+
             drawable.setTint(mTint);
             drawable.setAlpha(Color.alpha(mTint));
             drawable.setBounds(width / 2 - size / 2, height / 2 - size / 2,
@@ -98,7 +100,7 @@ public class RoundImageButtonView extends ImageView {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if(isClickable()) {
+                if (isClickable()) {
                     mTouchPaint.setColor(Color.argb(mClickAlpha, Color.red(mTint), Color.green(mTint), Color.blue(mTint)));
                 }
                 invalidate();

@@ -19,7 +19,6 @@ import com.seapip.thomas.wearify.browse.Header;
 import com.seapip.thomas.wearify.browse.Item;
 import com.seapip.thomas.wearify.browse.Loading;
 import com.seapip.thomas.wearify.browse.OnClick;
-import com.seapip.thomas.wearify.spotify.Callback;
 import com.seapip.thomas.wearify.spotify.objects.Paging;
 import com.seapip.thomas.wearify.spotify.objects.Playlist;
 import com.seapip.thomas.wearify.spotify.objects.PlaylistTrack;
@@ -122,6 +121,11 @@ public class PlaylistActivity extends Activity {
                                         }
                                     });
                                 }
+
+                                @Override
+                                public void onError() {
+
+                                }
                             });
                             shuffle.subTitle = playlist.tracks.items[0].track.uri;
                             boolean charts = playlist.owner.id.equals("spotifycharts");
@@ -141,6 +145,11 @@ public class PlaylistActivity extends Activity {
 
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }
@@ -173,6 +182,11 @@ public class PlaylistActivity extends Activity {
 
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }

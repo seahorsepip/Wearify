@@ -9,19 +9,12 @@ import android.support.wearable.activity.WearableActivity
 import android.support.wearable.phone.PhoneDeviceType.DEVICE_TYPE_ERROR_UNKNOWN
 import android.support.wearable.phone.PhoneDeviceType.getPhoneDeviceType
 import android.support.wearable.view.ConfirmationOverlay
+import android.support.wearable.view.ConfirmationOverlay.FAILURE_ANIMATION
 import android.support.wearable.view.ConfirmationOverlay.OPEN_ON_PHONE_ANIMATION
-import android.util.Log
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener
-import com.google.android.gms.wearable.Node
-import com.google.android.gms.wearable.Wearable
-import com.google.android.gms.wearable.Wearable.NodeApi
+import android.view.View.GONE
+import android.widget.TextView
 import com.google.android.wearable.intent.RemoteIntent
 import com.google.android.wearable.intent.RemoteIntent.startRemoteActivity
-import com.seapip.thomas.wearify.R.drawable.ic_qr_code_black_24px
-import com.seapip.thomas.wearify.R.drawable.ic_smartphone_black_24dp
 import com.seapip.thomas.wearify.R.layout.activity_login
 import com.seapip.thomas.wearify.wearify.Manager
 import com.seapip.thomas.wearify.wearify.Token
@@ -30,7 +23,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class LoginAltActivity : WearableActivity(), ConnectionCallbacks, OnConnectionFailedListener {
+class LoginAltActivity : WearableActivity() {
 
     private val mResultReceiver = object : ResultReceiver(Handler()) {
         override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
@@ -38,22 +31,15 @@ class LoginAltActivity : WearableActivity(), ConnectionCallbacks, OnConnectionFa
                 RemoteIntent.RESULT_OK -> ConfirmationOverlay()
                         .setType(OPEN_ON_PHONE_ANIMATION)
                         .showOn(this@LoginAltActivity)
-                else -> ConfirmationOverlay()
-                        .setType(ConfirmationOverlay.FAILURE_ANIMATION)
-                        .setFinishedAnimationListener {
-                            onFailure()
-                        }
-                        .showOn(this@LoginAltActivity)
+                else -> {
+                    info_login.text = "To sign in, ensure \nyour phone is on and \nnearby.";
+                    (button_login_phone.getChildAt(1) as TextView).text = "Retry"
+                    ConfirmationOverlay()
+                            .setType(FAILURE_ANIMATION)
+                            .showOn(this@LoginAltActivity)
+                }
             }
         }
-    }
-
-    private val mGoogleApiClient by lazy {
-        GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build()
     }
 
     private val mLoginStateHandler = Handler()
@@ -61,40 +47,6 @@ class LoginAltActivity : WearableActivity(), ConnectionCallbacks, OnConnectionFa
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(activity_login)
-
-        @Suppress("DEPRECATION")
-        if (getPhoneDeviceType(applicationContext) == DEVICE_TYPE_ERROR_UNKNOWN) onFailure()
-        else NodeApi.getConnectedNodes(mGoogleApiClient).setResultCallback { result ->
-            if (result.status.isSuccess && result.nodes.size > 0) {
-                result.nodes.forEach { node ->
-                    if (node.isNearby) {
-                        onSuccess(node)
-                        return@setResultCallback
-                    }
-                }
-                onFailure()
-            } else onFailure()
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        if (mGoogleApiClient.isConnected) mGoogleApiClient.disconnect()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        mGoogleApiClient.connect()
-    }
-
-    override fun onConnectionFailed(connectionResult: ConnectionResult) {
-        onFailure()
-    }
-
-    private fun onSuccess(node: Node) {
-        info_login.text = "Continue on your ${node.displayName} to login."
-        button_login.setImageDrawable(getDrawable(ic_smartphone_black_24dp))
-        button_login_text.text = "Open on phone"
 
         var uri = Uri.EMPTY
 
@@ -118,17 +70,29 @@ class LoginAltActivity : WearableActivity(), ConnectionCallbacks, OnConnectionFa
             }
         }
 
-        button_login_wrapper.setOnClickListener {
-            if (Uri.EMPTY == uri) getToken({
-                with(it) {
-                    uri = Uri.parse("https://wearify.seapip.com/login/$token/$key")
-                    checkLoginState(token, key).run()
-                }
-            })
+        val openOnPhone = {
             startRemoteActivity(
                     applicationContext,
                     Intent(Intent.ACTION_VIEW).addCategory(Intent.CATEGORY_BROWSABLE).setData(uri),
                     mResultReceiver)
+        }
+
+        if (getPhoneDeviceType(applicationContext) == DEVICE_TYPE_ERROR_UNKNOWN) {
+            button_login_phone.visibility = GONE
+        }
+
+        button_login_phone.setOnClickListener {
+            if (Uri.EMPTY == uri) getToken({
+                with(it) {
+                    uri = Uri.parse("https://wearify.seapip.com/login/$token/$key")
+                    checkLoginState(token, key).run()
+                    openOnPhone()
+                }
+            }) else openOnPhone()
+        }
+
+        button_login_qr.setOnClickListener {
+            startActivity(Intent(this@LoginAltActivity, QRActivity::class.java))
         }
     }
 
@@ -156,24 +120,6 @@ class LoginAltActivity : WearableActivity(), ConnectionCallbacks, OnConnectionFa
                 failure()
             }
         })
-    }
-
-    private fun onFailure() {
-        info_login.text = "Scan the QR code with another device to login."
-        button_login.setImageDrawable(getDrawable(ic_qr_code_black_24px))
-        button_login_text.text = "Show QR code"
-
-        button_login_wrapper.setOnClickListener {
-            startActivity(Intent(this@LoginAltActivity, QRActivity::class.java))
-        }
-    }
-
-    override fun onConnected(bundle: Bundle?) {
-
-    }
-
-    override fun onConnectionSuspended(i: Int) {
-
     }
 
     override fun onStop() {

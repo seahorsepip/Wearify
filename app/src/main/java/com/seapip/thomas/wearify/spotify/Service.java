@@ -21,6 +21,7 @@ import android.view.KeyEvent;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.seapip.thomas.wearify.Callback;
 import com.seapip.thomas.wearify.DeviceActivity;
 import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.R;
@@ -81,6 +82,11 @@ public class Service extends android.app.Service {
                     public void onSuccess(Controller controller) {
                         controller.resume();
                     }
+
+                    @Override
+                    public void onError() {
+
+                    }
                 });
             }
 
@@ -90,6 +96,11 @@ public class Service extends android.app.Service {
                     @Override
                     public void onSuccess(Controller controller) {
                         controller.pause();
+                    }
+
+                    @Override
+                    public void onError() {
+
                     }
                 });
             }
@@ -104,6 +115,11 @@ public class Service extends android.app.Service {
                             public void onSuccess(Controller controller) {
                                 controller.resume();
                             }
+
+                            @Override
+                            public void onError() {
+
+                            }
                         });
                         return false;
                     } else if (event.getKeyCode() == KeyEvent.KEYCODE_MEDIA_PAUSE) {
@@ -111,6 +127,11 @@ public class Service extends android.app.Service {
                             @Override
                             public void onSuccess(Controller controller) {
                                 controller.pause();
+                            }
+
+                            @Override
+                            public void onError() {
+
                             }
                         });
                         return false;
@@ -127,6 +148,11 @@ public class Service extends android.app.Service {
                     public void onSuccess(Controller controller) {
                         controller.previous();
                     }
+
+                    @Override
+                    public void onError() {
+
+                    }
                 });
             }
 
@@ -136,6 +162,11 @@ public class Service extends android.app.Service {
                     @Override
                     public void onSuccess(Controller controller) {
                         controller.next();
+                    }
+
+                    @Override
+                    public void onError() {
+
                     }
                 });
             }
@@ -442,6 +473,11 @@ public class Service extends android.app.Service {
                         }
                     });
                 }
+
+                @Override
+                public void onError() {
+
+                }
             });
             if (callback != null) {
                 callback.onSuccess(getController());
@@ -489,6 +525,11 @@ public class Service extends android.app.Service {
                                                             currentlyPlaying.progress_ms);
                                                     controller.bind();
                                                 }
+
+                                                @Override
+                                                public void onError() {
+
+                                                }
                                             });
                                 } else if (currentlyPlaying.context.uri.contains(":album:")) {
                                     getAlbumTrackNumber(Service.this, currentlyPlaying.context.uri,
@@ -502,6 +543,11 @@ public class Service extends android.app.Service {
                                                             currentlyPlaying.progress_ms);
                                                     controller.bind();
                                                 }
+
+                                                @Override
+                                                public void onError() {
+
+                                                }
                                             });
                                 }
 
@@ -512,7 +558,17 @@ public class Service extends android.app.Service {
                                     callback.onSuccess(getController());
                                 }
                             }
+
+                            @Override
+                            public void onError() {
+
+                            }
                         });
+                    }
+
+                    @Override
+                    public void onError() {
+
                     }
                 });
             }
@@ -566,6 +622,11 @@ public class Service extends android.app.Service {
                     }
                 });
             }
+
+            @Override
+            public void onError() {
+
+            }
         });
     }
 
@@ -605,6 +666,11 @@ public class Service extends android.app.Service {
 
                     }
                 });
+            }
+
+            @Override
+            public void onError() {
+
             }
         });
     }
