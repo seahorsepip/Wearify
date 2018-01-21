@@ -14,7 +14,6 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -40,7 +39,6 @@ public class Manager {
                         httpClient.addInterceptor(new Interceptor() {
                             @Override
                             public Response intercept(Interceptor.Chain chain) throws IOException {
-
                                 Request request = chain.request();
                                 return chain.proceed(request.newBuilder()
                                         .header("Authorization", "Bearer " + token.access_token)
@@ -48,9 +46,10 @@ public class Manager {
                                         .build());
                             }
                         });
+                        /*
                         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
                         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-                        httpClient.addInterceptor(loggingInterceptor);
+                        httpClient.addInterceptor(loggingInterceptor);*/
                         mDispatcher = new Dispatcher();
                         mDispatcher.setMaxRequests(10);
                         httpClient.dispatcher(mDispatcher);

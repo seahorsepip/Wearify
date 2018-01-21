@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?android:attr/selectableItemBackground"
     android:clickable="true"
+    android:focusable="true"
     android:orientation="vertical">
 
     <RelativeLayout
@@ -16,12 +18,19 @@
         android:paddingStart="@dimen/list_padding"
         android:paddingTop="8dp">
 
-        <com.seapip.thomas.wearify.RoundImageButtonView
+        <ImageButton
             android:id="@+id/button_icon"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_centerInParent="true"
-            android:clickable="false" />
+            android:adjustViewBounds="true"
+            android:background="@drawable/round_primary_button"
+            android:clickable="false"
+            android:padding="6dp"
+            android:scaleType="fitCenter"
+            android:tint="@color/primary_icon"
+            android:tintMode="src_atop"
+            tools:ignore="ContentDescription" />
 
         <TextView
             android:id="@+id/button_text"
@@ -33,6 +42,7 @@
             android:ellipsize="end"
             android:fontFamily="sans-serif-semi-bold"
             android:maxLines="1"
+            android:paddingEnd="10dp"
             android:paddingStart="10dp"
             android:textColor="@color/white"
             android:textSize="16sp"

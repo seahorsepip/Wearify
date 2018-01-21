@@ -1,5 +1,6 @@
 package com.seapip.thomas.wearify.spotify;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -7,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.media.MediaMetadata;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
@@ -346,6 +348,7 @@ public class Service extends android.app.Service {
                 .setCategory(Notification.CATEGORY_TRANSPORT)
                 .setPriority(Notification.PRIORITY_MAX)
                 .setStyle(new Notification.MediaStyle().setMediaSession(mSession.getSessionToken()))
+                .setColor(Color.RED)
                 .setDeleteIntent(PendingIntent.getService(getApplicationContext(), 0, destroyIntent, 0));
     }
 

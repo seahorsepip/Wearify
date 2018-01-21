@@ -2,6 +2,7 @@
 <resources>
     <color name="primary">#00ffe0</color>
     <color name="primary_icon">#004c43</color>
-    <color name="primary_ripple">#80004c43</color>
+    <color name="primary_ripple">#94004c43</color>
+    <color name="transparent_ripple">#48ffffff</color>
     <color name="background">#141414</color>
 </resources>

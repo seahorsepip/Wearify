@@ -14,6 +14,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -139,8 +140,6 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
     private void configureViewHolder(ActionButtonViewHolder viewHolder, int position) {
         ActionButton actionButton = (ActionButton) mList.get(position);
         viewHolder.button.setImageDrawable(actionButton.icon);
-        viewHolder.button.setBackgroundColor(actionButton.backgroundColor);
-        viewHolder.button.setTint(actionButton.iconColor);
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) viewHolder.button.getLayoutParams();
         if (actionButton.text == null) {
             layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
@@ -265,12 +264,12 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
 
     public static class ActionButtonViewHolder extends WearableRecyclerView.ViewHolder {
 
-        private final RoundImageButtonView button;
+        private final ImageButton button;
         private final TextView text;
 
         public ActionButtonViewHolder(View view) {
             super(view);
-            button = (RoundImageButtonView) view.findViewById(R.id.button_icon);
+            button = (ImageButton) view.findViewById(R.id.button_icon);
             text = (TextView) view.findViewById(R.id.button_text);
         }
     }

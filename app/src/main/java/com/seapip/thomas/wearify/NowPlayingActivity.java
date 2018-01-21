@@ -1,19 +1,21 @@
 package com.seapip.thomas.wearify;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.Settings;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -38,11 +40,11 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
     private ImageView mBackgroundImage;
     private FrameLayout mControls;
     private ProgressBar mProgressBar;
-    private RoundImageButtonView mPlay;
-    private RoundImageButtonView mPrev;
-    private RoundImageButtonView mNext;
-    private RoundImageButtonView mVolDown;
-    private RoundImageButtonView mVolUp;
+    private ImageButton mPlay;
+    private ImageButton mPrev;
+    private ImageButton mNext;
+    private ImageButton mVolDown;
+    private ImageButton mVolUp;
     private TextView mTitle;
     private TextView mSubTitle;
     private CircularProgressView mProgress;
@@ -64,22 +66,19 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         setAmbientEnabled();
         setContentView(R.layout.activity_now_playing);
 
-        mNavigationDrawer = (WearableNavigationDrawer) findViewById(R.id.top_navigation_drawer);
-        mActionDrawer = (WearableActionDrawer) findViewById(R.id.bottom_action_drawer);
-        mDrawerLayout = (WearableDrawerLayout) findViewById(R.id.drawer_layout);
-        mBackgroundImage = (ImageView) findViewById(R.id.background_image);
-        mControls = (FrameLayout) findViewById(R.id.controls);
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        mProgressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
-        mProgressBar.setVisibility(GONE);
-        mPlay = (RoundImageButtonView) findViewById(R.id.button_play);
-        mPrev = (RoundImageButtonView) findViewById(R.id.button_prev);
-        mNext = (RoundImageButtonView) findViewById(R.id.button_next);
-        mVolDown = (RoundImageButtonView) findViewById(R.id.button_vol_down);
-        mVolUp = (RoundImageButtonView) findViewById(R.id.button_vol_up);
-        mTitle = (TextView) findViewById(R.id.title);
-        mSubTitle = (TextView) findViewById(R.id.sub_title);
-        mProgress = (CircularProgressView) findViewById(R.id.circle_progress);
+        mNavigationDrawer = findViewById(R.id.top_navigation_drawer);
+        mActionDrawer = findViewById(R.id.bottom_action_drawer);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        mBackgroundImage = findViewById(R.id.background_image);
+        mControls = findViewById(R.id.controls);
+        mProgressBar = findViewById(R.id.progress_bar);
+        mPlay = findViewById(R.id.button_play);
+        mPrev = findViewById(R.id.button_prev);
+        mNext = findViewById(R.id.button_next);
+        mVolDown = findViewById(R.id.button_vol_down);
+        mVolUp = findViewById(R.id.button_vol_up);
+        mTitle = findViewById(R.id.title);
+        mSubTitle = findViewById(R.id.sub_title);
         mTitle.setSelected(true);
         mTitle.setSingleLine(true);
         mSubTitle.setSelected(true);
@@ -88,7 +87,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mProgressRunnable = new Runnable() {
             @Override
             public void run() {
-                mProgress.setProgress(System.currentTimeMillis() - mProgressTimestamp);
+                mProgressBar.setProgress((int) (System.currentTimeMillis() - mProgressTimestamp));
                 mProgressHandler.postDelayed(this, 32);
             }
         };
@@ -122,7 +121,6 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
                 }
             }
         });
-        mPlay.setClickAlpha(80);
 
         mPrev.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -130,15 +128,12 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
                 getService().getController().previous();
             }
         });
-        mPrev.setClickAlpha(20);
-
         mNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getService().getController().next();
             }
         });
-        mNext.setClickAlpha(20);
 
         mVolDown.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -146,7 +141,6 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
                 getService().getController().volume(Math.max(0, mVolume - 5));
             }
         });
-        mVolDown.setClickAlpha(20);
 
         mVolUp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -154,7 +148,6 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
                 getService().getController().volume(Math.min(100, mVolume + 5));
             }
         });
-        mVolUp.setClickAlpha(20);
 
         Menu menu = mActionDrawer.getMenu();
         mShuffleMenuItem = menu.add("Shuffle").setIcon(getDrawable(R.drawable.ic_shuffle_black_24dp));
@@ -194,14 +187,13 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         });
     }
 
-    private void setLoading(boolean loading) {
+    private void setLoading(final boolean loading) {
         mBackgroundImage.setVisibility(loading || mAmbient ? INVISIBLE : VISIBLE);
         if (loading) {
             mTitle.setText("");
             mSubTitle.setText("");
         }
-        mProgress.setVisibility(loading || mAmbient ? INVISIBLE : VISIBLE);
-        mProgressBar.setVisibility(loading && !mAmbient ? VISIBLE : INVISIBLE);
+        mProgressBar.setIndeterminate(loading);
     }
 
     private void setPlayButton() {
@@ -214,13 +206,13 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
                                 R.drawable.ic_play_arrow_black_burn_in_24dp :
                                 R.drawable.ic_play_arrow_black_24dp));
         if (mAmbient) {
-            mPlay.setBackgroundColor(Color.TRANSPARENT);
-            mPlay.setTint(Color.WHITE);
-            mPlay.setBorder(Color.parseColor("#777777"));
+            mPlay.setBackgroundResource(R.drawable.round_primary_ambient_button);
+            mPlay.setImageTintList(ColorStateList.valueOf(Color.WHITE));
+            mPlay.setImageTintMode(PorterDuff.Mode.SRC_ATOP);
         } else {
-            mPlay.setBorder(Color.TRANSPARENT);
-            mPlay.setBackgroundColor(Color.parseColor("#00ffe0"));
-            mPlay.setTint(Color.argb(180, 0, 0, 0));
+            mPlay.setBackgroundResource(R.drawable.round_primary_button);
+            mPlay.setImageTintList(ColorStateList.valueOf(getColor(R.color.primary_icon)));
+            mPlay.setImageTintMode(PorterDuff.Mode.SRC_ATOP);
         }
     }
 
@@ -230,10 +222,10 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         setPlayButton();
         if (currentlyPlaying.item != null) {
             mProgressTimestamp = System.currentTimeMillis() - currentlyPlaying.progress_ms;
+            mProgressBar.setProgress((int) (System.currentTimeMillis() - mProgressTimestamp + 1), true);
         }
-        mProgress.setProgress(System.currentTimeMillis() - mProgressTimestamp);
         mProgressHandler.removeCallbacksAndMessages(null);
-        if(mIsPlaying && !mAmbient) {
+        if (mIsPlaying && !mAmbient) {
             mProgressRunnable.run();
         }
     }
@@ -290,9 +282,9 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
                 .into(mBackgroundImage);
         mTitle.setText(currentlyPlaying.item.name);
         mSubTitle.setText(Util.names(currentlyPlaying.item.artists));
-        mProgress.setProgress(currentlyPlaying.progress_ms);
-        mProgress.setDuration(currentlyPlaying.item.duration_ms);
         mProgressTimestamp = System.currentTimeMillis() - currentlyPlaying.progress_ms;
+        mProgressBar.setProgress(0, true);
+        mProgressBar.setMax(currentlyPlaying.item.duration_ms);
         setLoading(false);
     }
 
@@ -325,6 +317,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
     protected void onPause() {
         super.onPause();
         mProgressHandler.removeCallbacksAndMessages(null);
+        getService().getController().setInterval(30000);
     }
 
     @Override
@@ -337,7 +330,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mBackgroundImage.setVisibility(INVISIBLE);
         mTitle.setSelected(false);
         mSubTitle.setSelected(false);
-        mProgress.setVisibility(INVISIBLE);
+        mProgressBar.setVisibility(INVISIBLE);
         mActionDrawer.setVisibility(GONE);
         setPlayButton();
         mNext.setImageDrawable(getDrawable(R.drawable.ic_skip_next_black_burn_in_24dp));
@@ -351,14 +344,14 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
     public void onExitAmbient() {
         super.onExitAmbient();
         mAmbient = false;
-        mDrawerLayout.setBackgroundColor(Color.parseColor("#141414"));
+        mDrawerLayout.setBackgroundColor(getColor(R.color.background));
         mBackgroundImage.setVisibility(VISIBLE);
         mNavigationDrawer.setVisibility(VISIBLE);
         mBackgroundImage.setVisibility(VISIBLE);
         mTitle.setSelected(true);
         mSubTitle.setSelected(true);
-        mProgress.setVisibility(VISIBLE);
-        mProgressRunnable.run();
+        mProgressBar.setVisibility(VISIBLE);
+        if (mIsPlaying) mProgressRunnable.run();
         mActionDrawer.setVisibility(VISIBLE);
         setPlayButton();
         mNext.setImageDrawable(getDrawable(R.drawable.ic_skip_next_black_24dp));
