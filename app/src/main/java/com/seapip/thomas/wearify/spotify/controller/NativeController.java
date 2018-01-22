@@ -9,6 +9,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.seapip.thomas.wearify.AddWifiActivity;
@@ -267,9 +268,9 @@ public class NativeController implements Controller, Player.NotificationCallback
         Player.OperationCallback callback = new Player.OperationCallback() {
             @Override
             public void onSuccess() {
-                mPlayer.setShuffle(null, mShuffle);
-                mPlayer.setRepeat(null, !mRepeat.equals("off"));
-                mPlayer.seekToPosition(null, positionMs);
+                shuffle(mShuffle);
+                repeat(mRepeat);
+                seek(positionMs);
             }
 
             @Override
@@ -278,13 +279,13 @@ public class NativeController implements Controller, Player.NotificationCallback
             }
         };
         mSongQueue.clear();
+        mOriginalSongQueue.clear();
         if (contextUri != null) {
             mPlayer.playUri(callback, contextUri, position, 0);
         } else if (uris != null && uris.length > 0) {
-            mSongQueue.clear();
             Collections.addAll(mSongQueue, uris);
+            Collections.addAll(mOriginalSongQueue, uris);
             mSongPosition = position;
-            shuffle(mShuffle, mSongQueue.get(mSongPosition));
             mPlayer.playUri(callback, mSongQueue.get(mSongPosition), 0, 0);
         }
     }
@@ -292,8 +293,11 @@ public class NativeController implements Controller, Player.NotificationCallback
     @Override
     public void play(final String[] uris, final String contextUri, final int position,
                      boolean shuffleState, String repeatState, final int positionMs) {
-        shuffle(shuffleState, "");
-        repeat(repeatState);
+        //Set states
+        mShuffle = shuffleState;
+        mRepeat = repeatState;
+
+        //Play uri collection or contextUri
         if (contextUri == null && uris != null && uris.length > 0) {
             mSongPosition = shuffleState ? ThreadLocalRandom.current().nextInt(0, uris.length) : position;
             play(uris, null, mSongPosition, positionMs);
@@ -382,34 +386,34 @@ public class NativeController implements Controller, Player.NotificationCallback
 
     @Override
     public void shuffle(boolean state) {
-        shuffle(state, mCurrentlyPlaying.item.uri);
-    }
-
-    public void shuffle(boolean state, String uri) {
         mShuffle = state;
-        if (mSongQueue.size() > 0) {
-            if (state) {
-                mOriginalSongQueue.clear();
-                mOriginalSongQueue.addAll(mSongQueue);
-                Collections.shuffle(mSongQueue);
-            } else {
-                mSongQueue.clear();
-                mSongQueue.addAll(mOriginalSongQueue);
-            }
-            for (int i = 0; i < mSongQueue.size(); i++) {
-                if (mSongQueue.get(i).equals(uri)) mSongPosition = i;
-            }
-        }
-        if (mCurrentPlaybackState != null && mCurrentPlaybackState.isPlaying) {
-            mPlayer.setShuffle(null, state);
+        if (mCurrentPlaybackState != null) {
+            if (mSongQueue.size() > 0) {
+                if (state) {
+                    mOriginalSongQueue.clear();
+                    mOriginalSongQueue.addAll(mSongQueue);
+                    Collections.shuffle(mSongQueue);
+                } else {
+                    mSongQueue.clear();
+                    mSongQueue.addAll(mOriginalSongQueue);
+                }
+                if(mCurrentlyPlaying.item != null) {
+                    for (int i = 0; i < mSongQueue.size(); i++) {
+                        if (mSongQueue.get(i).equals(mCurrentlyPlaying.item.uri)) mSongPosition = i;
+                    }
+                }
+                onPlaybackEvent(state ? PlayerEvent.kSpPlaybackNotifyShuffleOn : PlayerEvent.kSpPlaybackNotifyShuffleOff);
+            } else mPlayer.setShuffle(null, state);
         }
     }
 
     @Override
     public void repeat(String state) {
         mRepeat = state;
-        if (mCurrentPlaybackState != null && mCurrentPlaybackState.isPlaying) {
-            mPlayer.setRepeat(null, !state.equals("off"));
+        if (mCurrentPlaybackState != null) {
+            if (mSongQueue.size() > 0) {
+                onPlaybackEvent(!state.equals("off") ? PlayerEvent.kSpPlaybackNotifyRepeatOn : PlayerEvent.kSpPlaybackNotifyRepeatOff);
+            } else mPlayer.setRepeat(null, !state.equals("off"));
         }
     }
 
@@ -422,9 +426,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                     mSongPosition--;
                     if (mSongPosition < 0) mSongPosition = mSongQueue.size() - 1;
                     mPlayer.playUri(null, mSongQueue.get(mSongPosition), 0, 0);
-                } else {
-                    mPlayer.skipToPrevious(null);
-                }
+                } else mPlayer.skipToPrevious(null);
             }
 
             @Override
@@ -450,9 +452,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                     if (!triggered && mSongPosition == 0 && mRepeat.equals("off")) {
                         mPlayer.pause(null);
                     }
-                } else {
-                    mPlayer.skipToNext(null);
-                }
+                } else mPlayer.skipToNext(null);
             }
 
             @Override

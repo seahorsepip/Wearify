@@ -283,7 +283,7 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
         mTitle.setText(currentlyPlaying.item.name);
         mSubTitle.setText(Util.names(currentlyPlaying.item.artists));
         mProgressTimestamp = System.currentTimeMillis() - currentlyPlaying.progress_ms;
-        mProgressBar.setProgress(0, true);
+        //mProgressBar.setProgress(0, true);
         mProgressBar.setMax(currentlyPlaying.item.duration_ms);
         setLoading(false);
     }
