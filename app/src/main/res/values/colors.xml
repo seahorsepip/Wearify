@@ -4,5 +4,6 @@
     <color name="primary_icon">#004c43</color>
     <color name="primary_ripple">#94004c43</color>
     <color name="transparent_ripple">#48ffffff</color>
+    <color name="drawer">#222222</color>
     <color name="background">#141414</color>
 </resources>

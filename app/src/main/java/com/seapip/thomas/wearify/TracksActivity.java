@@ -43,7 +43,7 @@ public class TracksActivity extends Activity {
                 (WearableNavigationDrawer) findViewById(R.id.top_navigation_drawer),
                 (WearableActionDrawer) findViewById(R.id.bottom_action_drawer), 1);
 
-        mRecyclerView = (WearableRecyclerView) findViewById(R.id.content);
+        mRecyclerView = findViewById(R.id.content);
         mItems = new ArrayList<>();
         mItems.add(new Header("Songs"));
         ActionButtonSmall shuffle = new ActionButtonSmall();
@@ -51,6 +51,13 @@ public class TracksActivity extends Activity {
         shuffle.iconColor = Color.argb(200, 0, 0, 0);
         shuffle.backgroundColor = Color.parseColor("#00ffe0");
         shuffle.text = "Shuffle Play";
+        shuffle.onClick = new OnClick() {
+            @Override
+            public void run(Context context) {
+                getService().play(mUris.toArray(new String[mUris.size()]), null,
+                        0, true, "off", 0);
+            }
+        };
         mItems.add(shuffle);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(new Adapter(this, mItems));

@@ -39,7 +39,9 @@ public class ArtistActivity extends Activity {
 
     private WearableRecyclerView mRecyclerView;
     private ArrayList<Item> mItems;
+    private ArrayList<String> mUris;
     private String mUri;
+    private int mPosition;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,6 +69,13 @@ public class ArtistActivity extends Activity {
         shuffle.iconColor = Color.argb(200, 0, 0, 0);
         shuffle.backgroundColor = Color.parseColor("#00ffe0");
         shuffle.text = "Shuffle Play";
+        shuffle.onClick = new OnClick() {
+            @Override
+            public void run(Context context) {
+                getService().play(mUris.toArray(new String[mUris.size()]), null,
+                        0, true, "off", 0);
+            }
+        };
         mItems.add(shuffle);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(new Adapter(this, mItems));
@@ -102,6 +111,7 @@ public class ArtistActivity extends Activity {
 
             }
         });
+        mUris = new ArrayList<>();
         getTracks(50, 0);
     }
 
@@ -139,19 +149,16 @@ public class ArtistActivity extends Activity {
                                     }
                                     Item item = new Item();
                                     item.setTrack(savedTrack.track);
+                                    final int position = mPosition++;
                                     item.onClick = new OnClick() {
                                         @Override
                                         public void run(Context context) {
-                                            /*
-                                            Manager.getController(context).shuffle(false, new Callback<Void>() {
-                                                @Override
-                                                public void onSuccess(Void aVoid) {
-                                                    //Manager.play(null, contextUri, position, null);
-                                                }
-                                            });*/
+                                            getService().play(mUris.toArray(new String[mUris.size()]), null,
+                                                    position, false, "off", 0);
                                         }
                                     };
                                     mItems.add(item);
+                                    mUris.add(savedTrack.track.uri);
                                 }
 
                             }

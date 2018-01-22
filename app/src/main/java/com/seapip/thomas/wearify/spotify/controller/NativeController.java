@@ -35,6 +35,8 @@ import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -64,7 +66,9 @@ public class NativeController implements Controller, Player.NotificationCallback
     private ConnectivityManager mConnectivityManager;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
     private CurrentlyPlaying mCurrentlyPlaying;
-
+    private ArrayList<String> mSongQueue = new ArrayList<>();
+    private ArrayList<String> mOriginalSongQueue = new ArrayList<>();
+    private int mSongPosition = 0;
 
     public NativeController(Context context, Service.Callbacks callbacks) {
         mContext = context;
@@ -260,23 +264,9 @@ public class NativeController implements Controller, Player.NotificationCallback
 
     private void play(final String[] uris, final String contextUri,
                       final int position, final int positionMs) {
-        mPlayer.playUri(new Player.OperationCallback() {
+        Player.OperationCallback callback = new Player.OperationCallback() {
             @Override
             public void onSuccess() {
-                if (uris != null) {
-                    queue(uris, 1);
-                    /*
-                    Handler handler = new Handler();
-                    for (int i = 1; i < uris.length; i++) {
-                        final int offset = i;
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                mPlayer.queue(null, uris[offset]);
-                            }
-                        }, 500 * i);
-                    }*/
-                }
                 mPlayer.setShuffle(null, mShuffle);
                 mPlayer.setRepeat(null, !mRepeat.equals("off"));
                 mPlayer.seekToPosition(null, positionMs);
@@ -286,38 +276,35 @@ public class NativeController implements Controller, Player.NotificationCallback
             public void onError(Error error) {
 
             }
-        }, contextUri != null ? contextUri : uris[0], contextUri != null ? position : 0, 0);
-    }
-
-    private void queue(final String[] uris, final int offset) {
-        if (offset > uris.length - 1) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mPlayer.queue(null, uris[offset]);
-                    queue(uris, offset + 1);
-                }
-            }, 500);
+        };
+        mSongQueue.clear();
+        if (contextUri != null) {
+            mPlayer.playUri(callback, contextUri, position, 0);
+        } else if (uris != null && uris.length > 0) {
+            mSongQueue.clear();
+            Collections.addAll(mSongQueue, uris);
+            mSongPosition = position;
+            shuffle(mShuffle, mSongQueue.get(mSongPosition));
+            mPlayer.playUri(callback, mSongQueue.get(mSongPosition), 0, 0);
         }
     }
 
     @Override
     public void play(final String[] uris, final String contextUri, final int position,
                      boolean shuffleState, String repeatState, final int positionMs) {
-        shuffle(shuffleState);
+        shuffle(shuffleState, "");
         repeat(repeatState);
-        getHighBandwidthNetwork(new Callback<Void>() {
+        if (contextUri == null && uris != null && uris.length > 0) {
+            mSongPosition = shuffleState ? ThreadLocalRandom.current().nextInt(0, uris.length) : position;
+            play(uris, null, mSongPosition, positionMs);
+        } else getHighBandwidthNetwork(new Callback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 if (mShuffle) {
                     getWebAPI(mContext, new Callback<WebAPI>() {
                         @Override
                         public void onSuccess(WebAPI webAPI) {
-                            if (contextUri == null) {
-                                int position = ThreadLocalRandom.current().nextInt(0, uris.length);
-                                play(uris, null, position, positionMs);
-                                return;
-                            } else if (contextUri.contains(":playlist:")) {
+                            if (contextUri.contains(":playlist:")) {
                                 Call<Playlist> call = webAPI.getPlaylist(contextUri.split(":")[2],
                                         contextUri.split(":")[4], "tracks.total", "from_token");
                                 call.enqueue(new retrofit2.Callback<Playlist>() {
@@ -395,7 +382,24 @@ public class NativeController implements Controller, Player.NotificationCallback
 
     @Override
     public void shuffle(boolean state) {
+        shuffle(state, mCurrentlyPlaying.item.uri);
+    }
+
+    public void shuffle(boolean state, String uri) {
         mShuffle = state;
+        if (mSongQueue.size() > 0) {
+            if (state) {
+                mOriginalSongQueue.clear();
+                mOriginalSongQueue.addAll(mSongQueue);
+                Collections.shuffle(mSongQueue);
+            } else {
+                mSongQueue.clear();
+                mSongQueue.addAll(mOriginalSongQueue);
+            }
+            for (int i = 0; i < mSongQueue.size(); i++) {
+                if (mSongQueue.get(i).equals(uri)) mSongPosition = i;
+            }
+        }
         if (mCurrentPlaybackState != null && mCurrentPlaybackState.isPlaying) {
             mPlayer.setShuffle(null, state);
         }
@@ -414,7 +418,13 @@ public class NativeController implements Controller, Player.NotificationCallback
         getHighBandwidthNetwork(new Callback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                mPlayer.skipToPrevious(null);
+                if (mSongQueue.size() > 0) {
+                    mSongPosition--;
+                    if (mSongPosition < 0) mSongPosition = mSongQueue.size() - 1;
+                    mPlayer.playUri(null, mSongQueue.get(mSongPosition), 0, 0);
+                } else {
+                    mPlayer.skipToPrevious(null);
+                }
             }
 
             @Override
@@ -426,10 +436,23 @@ public class NativeController implements Controller, Player.NotificationCallback
 
     @Override
     public void next() {
+        next(true);
+    }
+
+    private void next(final boolean triggered) {
         getHighBandwidthNetwork(new Callback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                mPlayer.skipToNext(null);
+                if (mSongQueue.size() > 0) {
+                    mSongPosition++;
+                    if (mSongPosition == mSongQueue.size()) mSongPosition = 0;
+                    mPlayer.playUri(null, mSongQueue.get(mSongPosition), 0, 0);
+                    if (!triggered && mSongPosition == 0 && mRepeat.equals("off")) {
+                        mPlayer.pause(null);
+                    }
+                } else {
+                    mPlayer.skipToNext(null);
+                }
             }
 
             @Override
@@ -496,6 +519,10 @@ public class NativeController implements Controller, Player.NotificationCallback
 
     @Override
     public void onPlaybackEvent(PlayerEvent playerEvent) {
+        if (playerEvent == PlayerEvent.kSpPlaybackNotifyTrackDelivered && mSongQueue.size() > 0) {
+            next(false);
+            return;
+        }
         mCurrentPlaybackState = mPlayer.getPlaybackState();
         mMetadata = mPlayer.getMetadata();
         updateCurrentlyPlaying();

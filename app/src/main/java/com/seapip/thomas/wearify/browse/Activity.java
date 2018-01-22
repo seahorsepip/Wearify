@@ -20,6 +20,7 @@ import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -59,6 +60,7 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
                 @Override
                 public void onSuccess(Controller controller) {
                     controller.bind();
+                    controller.setInterval(INTERVAL);
                 }
 
                 @Override
@@ -171,8 +173,8 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
             getService().getController(new Callback<Controller>() {
                 @Override
                 public void onSuccess(Controller controller) {
-                    controller.setInterval(INTERVAL);
                     controller.requestPlayback();
+                    controller.setInterval(INTERVAL);
                 }
 
                 @Override

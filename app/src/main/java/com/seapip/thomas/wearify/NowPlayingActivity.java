@@ -317,7 +317,6 @@ public class NowPlayingActivity extends Activity implements Controller.Callbacks
     protected void onPause() {
         super.onPause();
         mProgressHandler.removeCallbacksAndMessages(null);
-        getService().getController().setInterval(30000);
     }
 
     @Override
