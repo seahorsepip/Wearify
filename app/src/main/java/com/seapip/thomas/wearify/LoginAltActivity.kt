@@ -57,13 +57,14 @@ class LoginAltActivity : WearableActivity() {
                     mLoginStateHandler.removeCallbacksAndMessages(null)
                     Manager.setToken(this@LoginAltActivity, it)
                     ConfirmationOverlay().setFinishedAnimationListener {
-                        val intent = Intent(this@LoginAltActivity, LibraryActivity::class.java)
-                        intent.flags =
-                                Intent.FLAG_ACTIVITY_NEW_TASK or
-                                Intent.FLAG_ACTIVITY_CLEAR_TASK or
-                                Intent.FLAG_ACTIVITY_TASK_ON_HOME
                         finishAffinity()
-                        startActivity(intent)
+                        startActivity(
+                                Intent(this@LoginAltActivity, LibraryActivity::class.java).apply {
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                                            Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                                            Intent.FLAG_ACTIVITY_TASK_ON_HOME
+                                }
+                        )
                     }.showOn(this@LoginAltActivity)
                 })
                 mLoginStateHandler.postDelayed(checkLoginState?.invoke(token, key), 5000)

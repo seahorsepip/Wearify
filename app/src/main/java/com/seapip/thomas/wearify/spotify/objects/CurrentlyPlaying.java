@@ -9,4 +9,5 @@ public class CurrentlyPlaying {
     public Track item;
     public long timestamp;
     public Context context;
+    public String[] uris;
 }

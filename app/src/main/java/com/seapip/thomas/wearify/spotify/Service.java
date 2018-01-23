@@ -1,6 +1,5 @@
 package com.seapip.thomas.wearify.spotify;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -502,17 +501,24 @@ public class Service extends android.app.Service {
                         getController(new Callback<Controller>() {
                             @Override
                             public void onSuccess(final Controller controller) {
+                                //Workaround: https://github.com/spotify/web-api/issues/565
                                 if (currentlyPlaying.context == null) {
-                                    //Workaround: https://github.com/spotify/web-api/issues/565
-                                    if (currentlyPlaying.item != null) {
-                                        controller.play(
-                                                new String[]{currentlyPlaying.item.uri}, null, 0,
+                                    if (currentlyPlaying.item.uri != null) {
+                                        String[] uris;
+                                        int position = 0;
+                                        if (currentlyPlaying.uris != null && currentlyPlaying.uris.length > 0) {
+                                            uris = currentlyPlaying.uris;
+                                            for (String uri : currentlyPlaying.uris) {
+                                                if (uri.equals(currentlyPlaying.item.uri)) break;
+                                                position++;
+                                            }
+                                        } else {
+                                            uris = new String[]{currentlyPlaying.item.uri};
+                                        }
+                                        controller.play(uris, null, position,
                                                 currentlyPlaying.shuffle_state,
                                                 currentlyPlaying.repeat_state,
                                                 currentlyPlaying.progress_ms);
-                                    } else {
-                                        //Let's resume playback with whatever is on the current controller...
-                                        controller.resume();
                                     }
                                     controller.bind();
                                 } else if (currentlyPlaying.context.uri.contains(":playlist:")) {

@@ -1,47 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/layout"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#141414">
+    android:layout_height="match_parent">
 
-    <android.support.constraint.Guideline
-        android:id="@+id/left_guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <RelativeLayout
+        android:id="@+id/layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_centerInParent="true"
+            android:src="@mipmap/ic_launcher"
+            tools:ignore="ContentDescription" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/welcome"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent=".4" />
+        android:paddingTop="62dp">
 
-    <android.support.constraint.Guideline
-        android:id="@+id/right_guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent=".6" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="2dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="Wearify"
+            android:textAlignment="center"
+            android:textColor="#ffffff"
+            android:textSize="18sp" />
 
-    <android.support.constraint.Guideline
-        android:id="@+id/top_guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent=".4" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Stream music and \ncontrol your devices \n— Spotify on your watch"
+            android:textAlignment="center"
+            android:textColor="#dddddd"
+            android:textSize="16sp" />
 
-    <android.support.constraint.Guideline
-        android:id="@+id/bottom_guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent=".6" />
-
-    <ImageView
-        android:id="@+id/logo"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:src="@drawable/ic_logo"
-        app:layout_constraintBottom_toBottomOf="@+id/bottom_guideline"
-        app:layout_constraintLeft_toLeftOf="@+id/left_guideline"
-        app:layout_constraintRight_toRightOf="@+id/right_guideline"
-        app:layout_constraintTop_toTopOf="@+id/top_guideline"
-        android:visibility="gone"/>
-</android.support.constraint.ConstraintLayout>
+        <ImageButton
+            android:id="@+id/next_welcome"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:adjustViewBounds="true"
+            android:background="@drawable/round_secondary_button"
+            android:padding="14dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_arrow_forward_black_24dp"
+            android:tint="@color/secondary_icon"
+            android:tintMode="src_atop"
+            tools:ignore="ContentDescription" />
+    </LinearLayout>
+</FrameLayout>

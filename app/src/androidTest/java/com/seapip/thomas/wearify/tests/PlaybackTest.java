@@ -41,7 +41,7 @@ public class PlaybackTest {
 
     @Test
     public void testNativePlayback() throws TimeoutException, InterruptedException {
-        Controller controller = setController(Service.Companion.getNATIVE_CONTROLLER(), null);
+        Controller controller = setController(Service.NATIVE_CONTROLLER, null);
 
         controller.play(null, "spotify:album:74EKsgjD5GJOJpthJ59dhQ",
                 2, false, "off", 0);
@@ -70,7 +70,7 @@ public class PlaybackTest {
 
     @Test
     public void testConnectedPlayback() throws TimeoutException, InterruptedException {
-        Controller controller = setController(Service.Companion.getCONNECT_CONTROLLER(), deviceId);
+        Controller controller = setController(Service.CONNECT_CONTROLLER, deviceId);
 
         controller.play(null, "spotify:album:74EKsgjD5GJOJpthJ59dhQ",
                 2, false, "off", 0);
@@ -100,13 +100,13 @@ public class PlaybackTest {
 
     @Test
     public void testNativeToConnectedPlaybackTransfer() throws TimeoutException, InterruptedException {
-        Controller controller = setController(Service.Companion.getNATIVE_CONTROLLER(), null);
+        Controller controller = setController(Service.NATIVE_CONTROLLER, null);
 
         controller.play(null, "spotify:album:3smvpv7CdrhVcGYaNDLOqn",
                 -1, true, "track", 30000);
         Thread.sleep(2000);
 
-        controller = setController(Service.Companion.getCONNECT_CONTROLLER(), deviceId);
+        controller = setController(Service.CONNECT_CONTROLLER, deviceId);
         Assert.assertEquals("Playback didn't transfer between devices", getPlayback(controller).device.id, deviceId);
         Assert.assertEquals("Track state didn't transfer between devices", getPlayback(controller).item.name, "Despacito - Remix");
         Assert.assertEquals("Shuffle state didn't transfer between devices", getPlayback(controller).shuffle_state, true);
@@ -116,12 +116,12 @@ public class PlaybackTest {
 
     @Test
     public void testConnectedToNativePlaybackTransfer() throws TimeoutException, InterruptedException {
-        Controller controller = setController(Service.Companion.getCONNECT_CONTROLLER(), deviceId);
+        Controller controller = setController(Service.CONNECT_CONTROLLER, deviceId);
         controller.play(null, "spotify:album:3smvpv7CdrhVcGYaNDLOqn",
                 -1, true, "track", 30000);
         Thread.sleep(2000);
 
-        controller = setController(Service.Companion.getNATIVE_CONTROLLER(), deviceId);
+        controller = setController(Service.NATIVE_CONTROLLER, deviceId);
         Assert.assertEquals("Playback didn't transfer between devices", getPlayback(controller).device.id, deviceId);
         Assert.assertEquals("Track state didn't transfer between devices", getPlayback(controller).item.name, "Despacito - Remix");
         Assert.assertEquals("Shuffle state didn't transfer between devices", getPlayback(controller).shuffle_state, true);

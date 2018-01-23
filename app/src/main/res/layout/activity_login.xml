@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#141414">
+    android:background="@color/background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,9 +37,8 @@
             android:id="@+id/info_login"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
             android:layout_marginStart="@dimen/list_padding"
-            android:text="Stream music from Spotify \non your watch and control \nSpotify Connect devices."
+            android:text="Sign in to stream music \nand control your devices."
             android:textColor="#dddddd"
             android:textSize="16sp" />
 
@@ -65,7 +65,8 @@
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_open_on_phone_black_24px"
                 android:tint="@color/primary_icon"
-                android:tintMode="src_atop" />
+                android:tintMode="src_atop"
+                tools:ignore="ContentDescription" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -96,13 +97,14 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:adjustViewBounds="true"
-                android:background="@drawable/round_primary_button"
+                android:background="@drawable/round_secondary_button"
                 android:clickable="false"
                 android:padding="14dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_qr_code_black_24px"
-                android:tint="@color/primary_icon"
-                android:tintMode="src_atop" />
+                android:tint="@color/secondary_icon"
+                android:tintMode="src_atop"
+                tools:ignore="ContentDescription" />
 
             <TextView
                 android:layout_width="wrap_content"
