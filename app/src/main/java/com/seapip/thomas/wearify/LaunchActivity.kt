@@ -7,7 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.support.wearable.activity.WearableActivity
-import android.util.DisplayMetrics
+import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import com.seapip.thomas.wearify.spotify.Service
 import com.seapip.thomas.wearify.wearify.Manager.getToken
@@ -57,7 +57,12 @@ class LaunchActivity : WearableActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
+
+        logo.y = logo.height / 5f
+        container.visibility = View.GONE
+
         mHasFocus.set(hasFocus)
+
         welcomeScreen()
     }
 
@@ -72,24 +77,36 @@ class LaunchActivity : WearableActivity() {
 
             mHandler.apply {
                 postDelayed({
-                    ObjectAnimator.ofFloat(logo, "y",
-                            (logo.height / 5).toFloat()).apply {
+                    logo_animated.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+
+                    ObjectAnimator.ofFloat(logo_animated, "y",
+                            logo.height / 5f).apply {
                         duration = 500
                         interpolator = AccelerateDecelerateInterpolator()
                         start()
                     }
                 }, mDelay.get())
                 postDelayed({
+                    container.visibility = View.VISIBLE
+                    welcome.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+
                     ObjectAnimator.ofFloat(welcome, "alpha", 1f).apply {
                         duration = 200
                         interpolator = AccelerateDecelerateInterpolator()
                         start()
                     }
+                }, mDelay.get() + 300)
+                postDelayed({
+                    animation.visibility = View.GONE
+                    logo.visibility = View.VISIBLE
+                    logo_animated.setLayerType(View.LAYER_TYPE_NONE, null)
+                    welcome.setLayerType(View.LAYER_TYPE_NONE, null)
+
                     next_welcome.setOnClickListener {
                         finish()
                         startActivity(intent)
                     }
-                }, mDelay.get() + 300)
+                }, mDelay.get() + 500)
             }
         }
     }

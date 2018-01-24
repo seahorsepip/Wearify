@@ -1,62 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/wrapper"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ScrollView
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/welcome"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:alpha="0"
+                android:orientation="vertical"
+                android:paddingTop="62dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="2dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Wearify"
+                    android:textAlignment="center"
+                    android:textColor="#ffffff"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Stream music and \ncontrol your devices \n— Spotify on your watch"
+                    android:textAlignment="center"
+                    android:textColor="#dddddd"
+                    android:textSize="16sp" />
+
+                <ImageButton
+                    android:id="@+id/next_welcome"
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="32dp"
+                    android:layout_marginTop="16dp"
+                    android:adjustViewBounds="true"
+                    android:background="@drawable/round_secondary_button"
+                    android:padding="14dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_arrow_forward_black_24dp"
+                    android:tint="@color/secondary_icon"
+                    android:tintMode="src_atop"
+                    tools:ignore="ContentDescription" />
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="72dp">
+
+                <ImageView
+                    android:id="@+id/logo"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_centerHorizontal="true"
+                    android:src="@mipmap/ic_launcher"
+                    android:visibility="invisible"
+                    tools:ignore="ContentDescription" />
+            </RelativeLayout>
+        </FrameLayout>
+    </ScrollView>
+
     <RelativeLayout
-        android:id="@+id/layout"
+        android:id="@+id/animation"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <ImageView
-            android:id="@+id/logo"
+            android:id="@+id/logo_animated"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_centerInParent="true"
             android:src="@mipmap/ic_launcher"
             tools:ignore="ContentDescription" />
     </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/welcome"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0"
-        android:orientation="vertical"
-        android:paddingTop="62dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="2dp"
-            android:fontFamily="sans-serif-medium"
-            android:text="Wearify"
-            android:textAlignment="center"
-            android:textColor="#ffffff"
-            android:textSize="18sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Stream music and \ncontrol your devices \n— Spotify on your watch"
-            android:textAlignment="center"
-            android:textColor="#dddddd"
-            android:textSize="16sp" />
-
-        <ImageButton
-            android:id="@+id/next_welcome"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp"
-            android:adjustViewBounds="true"
-            android:background="@drawable/round_secondary_button"
-            android:padding="14dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_arrow_forward_black_24dp"
-            android:tint="@color/secondary_icon"
-            android:tintMode="src_atop"
-            tools:ignore="ContentDescription" />
-    </LinearLayout>
 </FrameLayout>
