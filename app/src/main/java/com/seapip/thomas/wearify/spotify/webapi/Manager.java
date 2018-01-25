@@ -8,6 +8,8 @@ import com.seapip.thomas.wearify.Callback;
 import com.seapip.thomas.wearify.wearify.Token;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import okhttp3.Dispatcher;
 import okhttp3.Interceptor;
