@@ -11,25 +11,22 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
-            android:theme="@style/Theme.WearifyTheme">
+        android:supportsRtl="true">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <mediaService
-            android:name=".NotificationListener"
-            android:enabled="true"
-            android:exported="true"
+        <service
+            android:name=".NotificationService"
+            android:label="@string/app_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
-                <action android:name="android.mediaService.notification.NotificationListenerService" />
+                <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
-        </mediaService>
+        </service>
     </application>
 
 </manifest>

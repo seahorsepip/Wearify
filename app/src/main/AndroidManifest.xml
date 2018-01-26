@@ -59,7 +59,9 @@
         <activity android:name=".AddWifiActivity" />
         <activity android:name=".DeviceActivity" />
 
-        <service android:name=".spotify.Service">
+        <service
+            android:name=".spotify.Service"
+            android:exported="false">
             <intent-filter android:label="@string/app_name">
                 <action android:name="com.seapip.thomas.wearify.service.intent" />
             </intent-filter>

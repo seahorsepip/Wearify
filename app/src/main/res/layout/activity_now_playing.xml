@@ -70,9 +70,6 @@
             android:layout_height="76dp"
             android:layout_gravity="center"
             android:indeterminate="false"
-            android:indeterminateBehavior="repeat"
-            android:indeterminateDrawable="@drawable/round_progressbar"
-            android:indeterminateDuration="2000"
             android:progressDrawable="@drawable/round_progressbar" />
 
         <ImageButton
@@ -82,6 +79,7 @@
             android:layout_gravity="center"
             android:adjustViewBounds="true"
             android:background="@drawable/round_primary_button"
+            android:elevation="6dp"
             android:padding="12dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_play_arrow_black_24dp"
@@ -170,12 +168,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_marginBottom="12dp"
+        android:format12Hour="k\u200A\uEE01mm a"
+        android:format24Hour="HH\u200A\uEE01mm"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="6pt"
-        android:typeface="normal"
-        android:format12Hour="k\u200A\uEE01mm a"
-        android:format24Hour="HH\u200A\uEE01mm"/>
+        android:typeface="normal" />
 
 
 </android.support.wearable.view.drawer.WearableDrawerLayout>

@@ -12,10 +12,12 @@ import android.support.wearable.view.drawer.WearableActionDrawer
 import android.support.wearable.view.drawer.WearableDrawerLayout
 import android.support.wearable.view.drawer.WearableNavigationDrawer
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.MenuItem
 import android.view.View.*
-import android.widget.*
+import android.widget.FrameLayout
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.seapip.thomas.wearify.browse.Activity
 import com.seapip.thomas.wearify.spotify.Service.INTERVAL
@@ -74,17 +76,19 @@ class NowPlayingActivity : Activity(), Controller.Callbacks {
 
         mProgressTimestamp = System.currentTimeMillis()
 
-        var progressBarAnimation = {}
-        progressBarAnimation = {
-            Log.e("WEARIFY_PROGRESS", getProgress().toString())
-            ObjectAnimator.ofInt(progress_bar, "progress", getProgress() + 500).apply {
-                duration = 500
+        var progressbarAnimation = {}
+        progressbarAnimation = {
+            val interval = 500L
+
+            if (mIsPlaying) ObjectAnimator.ofInt(progress_bar, "progress",
+                    (System.currentTimeMillis() - mProgressTimestamp + interval).toInt()).apply {
+                duration = interval
                 this.addListener(object : Animator.AnimatorListener {
                     override fun onAnimationRepeat(p0: Animator?) {
                     }
 
                     override fun onAnimationEnd(p0: Animator?) {
-                        progressBarAnimation()
+                        progressbarAnimation()
                     }
 
                     override fun onAnimationCancel(p0: Animator?) {
@@ -95,8 +99,9 @@ class NowPlayingActivity : Activity(), Controller.Callbacks {
                 })
                 start()
             }
+            else Handler().postDelayed(progressbarAnimation, interval)
         }
-        progressBarAnimation()
+        progressbarAnimation()
 
         setDrawers(mDrawerLayout, null, null, 1)
 
@@ -154,17 +159,13 @@ class NowPlayingActivity : Activity(), Controller.Callbacks {
         }
     }
 
-    private fun getProgress(): Int {
-        return (System.currentTimeMillis() - mProgressTimestamp).toInt()
-    }
-
     private fun setLoading(loading: Boolean) {
         mBackgroundImage!!.visibility = if (loading || mAmbient) INVISIBLE else VISIBLE
         if (loading) {
             mTitle!!.text = ""
             mSubTitle!!.text = ""
+            mProgressTimestamp = System.currentTimeMillis() + progress_bar.max
         }
-        progress_bar.isIndeterminate = loading
     }
 
     private fun setPlayButton() {

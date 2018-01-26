@@ -4,7 +4,6 @@ import android.app.KeyguardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaMetadata;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
 import android.net.Uri;
@@ -12,7 +11,6 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.WindowManager;
 
 import java.util.List;
@@ -46,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         MediaSessionManager sessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
         List<MediaController> controllers = null;
-        controllers = sessionManager.getActiveSessions(new ComponentName(this, NotificationListener.class));
+        controllers = sessionManager.getActiveSessions(new ComponentName(this, NotificationService.class));
         for (MediaController controller : controllers) {
             if(controller.getPackageName().equals("com.spotify.music")) {
                 controller.getTransportControls().pause();

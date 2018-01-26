@@ -3,9 +3,9 @@ package com.seapip.thomas.wearify.phone;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 
-public class NotificationListener extends NotificationListenerService {
+public class NotificationService extends NotificationListenerService {
 
-    public NotificationListener() {
+    public NotificationService() {
 
     }
 
