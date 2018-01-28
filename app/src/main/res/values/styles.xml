@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="WearifyTheme" parent="android:Theme.DeviceDefault">
         <item name="android:colorBackground">@color/background</item>
         <item name="android:windowBackground">@color/background</item>
+        <item name="android:colorAccent">@color/primary</item>
+        <item name="android:dialogTheme">@style/WearifyDialogTheme</item>
+        <item name="android:dialogPreferenceStyle">@style/WearifyDialogTheme</item>
+        <item name="android:alertDialogStyle">@style/WearifyDialogTheme</item>
+    </style>
+
+    <style name="WearifyDialogTheme" parent="android:Theme.Material.Dialog">
+        <item name="android:colorForeground">@color/primary</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:colorAccent">@color/primary</item>
+        <item name="android:colorControlActivated">@color/primary</item>
     </style>
 </resources>

@@ -112,4 +112,7 @@ public interface WebAPI {
 
     @PUT("me/player")
     Call<Void> transfer(@Body Transfer transfer);
+
+    @GET("me")
+    Call<User> me();
 }

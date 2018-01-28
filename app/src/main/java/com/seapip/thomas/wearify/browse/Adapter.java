@@ -174,6 +174,7 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
                 /*
                 Album art shouldn't be altered, according to Spotify guidelines.
                 This includes making it circular.
+                */
 
                 @Override
                 protected void setResource(Bitmap resource) {
@@ -182,7 +183,6 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
                     roundedBitmapDrawable.setCircular(true);
                     viewHolder.image.setImageDrawable(roundedBitmapDrawable);
                 }
-                */
             });
             viewHolder.image.setVisibility(View.VISIBLE);
         } else if (item.image != null) {

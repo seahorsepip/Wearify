@@ -11,4 +11,5 @@ public class User {
     public Image[] images;
     public String type;
     public String uri;
+    public String product;
 }

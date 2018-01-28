@@ -20,7 +20,6 @@ import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.drawer.WearableActionDrawer;
 import android.support.wearable.view.drawer.WearableDrawerLayout;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
-import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -29,10 +28,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.seapip.thomas.wearify.Callback;
 import com.seapip.thomas.wearify.NavigationDrawerAdapter;
 import com.seapip.thomas.wearify.NowPlayingActivity;
 import com.seapip.thomas.wearify.R;
-import com.seapip.thomas.wearify.Callback;
 import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.controller.Controller;
 import com.seapip.thomas.wearify.spotify.objects.CurrentlyPlaying;
@@ -169,7 +168,7 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
     @Override
     protected void onResume() {
         super.onResume();
-        if(mIsBound) {
+        if (mIsBound) {
             getService().getController(new Callback<Controller>() {
                 @Override
                 public void onSuccess(Controller controller) {
@@ -188,7 +187,7 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
     @Override
     protected void onPause() {
         super.onPause();
-        if(mIsBound) {
+        if (mIsBound) {
             getService().getController(new Callback<Controller>() {
                 @Override
                 public void onSuccess(Controller controller) {

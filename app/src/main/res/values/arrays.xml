@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="streaming_quality_entries">
+        <item>Normal quality</item>
+        <item>High quality</item>
+        <item>Extreme quality</item>
+    </string-array>
+</resources>

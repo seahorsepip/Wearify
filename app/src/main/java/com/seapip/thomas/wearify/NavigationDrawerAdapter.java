@@ -49,11 +49,18 @@ public class NavigationDrawerAdapter extends WearableNavigationDrawer.WearableNa
 
     @Override
     public void onItemSelected(int i) {
-        Intent intent = new Intent(mContext, LibraryActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        if(mSelect) {
-            mContext.startActivity(intent);
+        Intent intent;
+        switch (i) {
+            case 1:
+                intent = new Intent(mContext, LibraryActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                break;
+            case 2:
+            default:
+                intent = new Intent(mContext, SettingsActivity.class);
+                break;
         }
+        if (mSelect) mContext.startActivity(intent);
 
     }
 

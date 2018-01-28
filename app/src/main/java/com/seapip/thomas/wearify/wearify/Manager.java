@@ -104,4 +104,9 @@ public class Manager {
             }
         });
     }
+
+    static public void removeToken(Context context) {
+        mToken = null;
+        PreferenceManager.getDefaultSharedPreferences(context).edit().remove("refresh_token").apply();
+    }
 }
