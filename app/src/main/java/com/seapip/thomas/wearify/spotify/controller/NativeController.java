@@ -397,7 +397,7 @@ public class NativeController implements Controller, Player.NotificationCallback
                     mSongQueue.clear();
                     mSongQueue.addAll(mOriginalSongQueue);
                 }
-                if(mCurrentlyPlaying.item != null) {
+                if (mCurrentlyPlaying.item != null) {
                     for (int i = 0; i < mSongQueue.size(); i++) {
                         if (mSongQueue.get(i).equals(mCurrentlyPlaying.item.uri)) mSongPosition = i;
                     }
@@ -483,6 +483,8 @@ public class NativeController implements Controller, Player.NotificationCallback
 
     @Override
     public void destroy() {
+        Log.d("WEARIFY", "STOPPING_NATIVE_CONTROLLER");
+        //if (mPlayer != null) mPlayer.pause(null);
         releaseHighBandwidthNetwork();
         Spotify.destroyPlayer(this);
     }

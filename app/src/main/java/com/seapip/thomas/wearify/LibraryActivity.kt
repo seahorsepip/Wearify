@@ -13,7 +13,7 @@ class LibraryActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_browse)
 
-        setDrawers(drawer_layout, top_navigation_drawer, bottom_action_drawer, 1)
+        setDrawers(drawer_layout, top_navigation_drawer, bottom_action_drawer, 0)
 
         val loading = Loading(getColor(primary))
         val retry = ActionButtonSmall(getDrawable(ic_repeat_black_24dp), "Failed loading, retry?")
@@ -32,6 +32,9 @@ class LibraryActivity : Activity() {
                 }),
                 Category("Artists", getDrawable(R.drawable.ic_artist_black_24dp), OnClick {
                     it.startActivity(Intent(it, ArtistsActivity::class.java))
+                }),
+                Category("New UI", getDrawable(R.drawable.ic_arrow_forward_black_24dp), OnClick {
+                    it.startActivity(Intent(it, LibraryAltActivity::class.java))
                 }),
                 Header("Recently Played"),
                 loading

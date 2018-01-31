@@ -176,13 +176,14 @@ public class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> imple
                 This includes making it circular.
                 */
 
+                /*
                 @Override
                 protected void setResource(Bitmap resource) {
                     super.setResource(resource);
                     RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(mContext.getResources(), resource);
                     roundedBitmapDrawable.setCircular(true);
                     viewHolder.image.setImageDrawable(roundedBitmapDrawable);
-                }
+                }*/
             });
             viewHolder.image.setVisibility(View.VISIBLE);
         } else if (item.image != null) {

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_logo_waves">
+    <target
+        android:name="group1"
+        android:animation="@animator/rotate1" />
+    <target
+        android:name="group2"
+        android:animation="@animator/rotate2" />
+    <target
+        android:name="group3"
+        android:animation="@animator/rotate3" />
+</animated-vector>

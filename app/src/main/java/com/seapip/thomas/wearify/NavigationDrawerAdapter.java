@@ -7,10 +7,12 @@ import android.graphics.drawable.Drawable;
 import android.support.wearable.view.drawer.WearableNavigationDrawer;
 
 public class NavigationDrawerAdapter extends WearableNavigationDrawer.WearableNavigationDrawerAdapter {
-    private Context mContext;
-    private boolean mSelect;
 
-    public NavigationDrawerAdapter(Context context) {
+    private int mPosition;
+    private Context mContext;
+
+    public NavigationDrawerAdapter(int position, Context context) {
+        mPosition = position;
         mContext = context;
     }
 
@@ -18,10 +20,8 @@ public class NavigationDrawerAdapter extends WearableNavigationDrawer.WearableNa
     public String getItemText(int i) {
         switch (i) {
             case 0:
-                return "Browse";
-            case 1:
                 return "Library";
-            case 2:
+            case 1:
                 return "Settings";
         }
         return null;
@@ -33,12 +33,9 @@ public class NavigationDrawerAdapter extends WearableNavigationDrawer.WearableNa
         switch (i) {
             default:
             case 0:
-                id = R.drawable.ic_browse_black_24dp;
-                break;
-            case 1:
                 id = R.drawable.ic_library_music_black_24dp;
                 break;
-            case 2:
+            case 1:
                 id = R.drawable.ic_settings_black_24dp;
                 break;
         }
@@ -51,25 +48,21 @@ public class NavigationDrawerAdapter extends WearableNavigationDrawer.WearableNa
     public void onItemSelected(int i) {
         Intent intent;
         switch (i) {
-            case 1:
+            case 0:
                 intent = new Intent(mContext, LibraryActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 break;
-            case 2:
+            case 1:
             default:
                 intent = new Intent(mContext, SettingsActivity.class);
                 break;
         }
-        if (mSelect) mContext.startActivity(intent);
+        if (mPosition != i) mContext.startActivity(intent);
 
     }
 
     @Override
     public int getCount() {
-        return 3;
-    }
-
-    public void enabledSelect() {
-        mSelect = true;
+        return 2;
     }
 }

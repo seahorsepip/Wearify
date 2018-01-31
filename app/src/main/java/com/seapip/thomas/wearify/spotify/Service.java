@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.wearable.media.MediaControlConstants;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import com.bumptech.glide.Glide;
@@ -46,10 +47,10 @@ public class Service extends android.app.Service {
     final public static int CONNECT_CONTROLLER = 2;
     final public static int BLUETOOTH_CONTROLLER = 3;
     final public static int INTERVAL = 3000;
+    final public static String ACTION_CMD = "com.seapip.thomas.wearify.ACTION_CMD";
+    final public static String CMD_NAME = "CMD_NAME";
+    final public static String CMD_DESTROY = "CMD_DESTROY";
     final private static Manager webApiManager = new Manager();
-    final private static String ACTION_CMD = "com.seapip.thomas.wearify.ACTION_CMD";
-    final private static String CMD_NAME = "CMD_NAME";
-    final private static String CMD_DESTROY = "CMD_DESTROY";
     private NotificationManager mNotificationManager;
     private IBinder mBinder;
     private ArrayList<Controller.Callbacks> mCallbacks;
@@ -361,12 +362,15 @@ public class Service extends android.app.Service {
                     mNativeController.destroy();
                     mConnectController.destroy();
                     mSession.setActive(false);
-                    stopForeground(false);
                     for (Controller.Callbacks callbacks : mCallbacks) {
                         ((Activity) callbacks).finish();
                     }
+                    webApiManager.cancelAll();
+                    mConnectController.destroy();
+                    mNativeController.destroy();
+                    stopForeground(false);
                     stopSelf();
-                    System.exit(1);
+                    Runtime.getRuntime().exit(0);
                 }
             }
         }
@@ -388,10 +392,13 @@ public class Service extends android.app.Service {
 
     @Override
     public void onDestroy() {
-        mNativeController.destroy();
+        webApiManager.cancelAll();
         mConnectController.destroy();
+        mNativeController.destroy();
         mSession.setActive(false);
         stopForeground(false);
+        Log.d("WEARIFY", "STOPPING_SERVICE");
+        Runtime.getRuntime().exit(0);
         super.onDestroy();
     }
 

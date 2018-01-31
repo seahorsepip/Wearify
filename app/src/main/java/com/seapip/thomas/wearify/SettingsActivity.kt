@@ -4,10 +4,11 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
-import android.support.wearable.activity.WearableActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.BitmapImageViewTarget
+import com.seapip.thomas.wearify.browse.Activity
 import com.seapip.thomas.wearify.spotify.Service
+import com.seapip.thomas.wearify.spotify.Service.*
 import com.seapip.thomas.wearify.spotify.Util
 import com.seapip.thomas.wearify.spotify.objects.User
 import com.seapip.thomas.wearify.spotify.webapi.Manager
@@ -17,10 +18,11 @@ import retrofit2.Call
 import retrofit2.Response
 
 
-class SettingsActivity : WearableActivity() {
+class SettingsActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+        setDrawers(drawer_layout, top_navigation_drawer, null, 1);
 
         button_sign_out.setOnClickListener {
             //Clear token
@@ -30,11 +32,16 @@ class SettingsActivity : WearableActivity() {
             stopService(Intent(this, Service::class.java))
 
             //Restart application
+            startService(Intent(applicationContext, Service::class.java).apply {
+                action = ACTION_CMD
+                putExtra(CMD_NAME, CMD_DESTROY)
+            })
+            /*
             startActivity(Intent(this, LaunchActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or
                         Intent.FLAG_ACTIVITY_TASK_ON_HOME
-            })
+            })*/
         }
 
         getUser {

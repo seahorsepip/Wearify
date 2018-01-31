@@ -70,6 +70,6 @@ class Manager {
     }
 
     fun cancelAll() {
-        mDispatcher!!.cancelAll()
+        //mDispatcher!!.cancelAll()
     }
 }

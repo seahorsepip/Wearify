@@ -70,6 +70,8 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
         }
     };
     private WearableDrawerLayout mLayout;
+    private WearableNavigationDrawer mNavigationDrawer;
+    private int mNavigationDrawerPosition;
     private WearableActionDrawer mActionDrawer;
     private ImageView mActionImage;
     private Drawable mDrawablePlay;
@@ -90,12 +92,11 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
 
         // Top Navigation Drawer
         if (navigationDrawer != null) {
-            NavigationDrawerAdapter adapter = new NavigationDrawerAdapter(this);
+            mNavigationDrawer = navigationDrawer;
+            mNavigationDrawerPosition = position;
+            NavigationDrawerAdapter adapter = new NavigationDrawerAdapter(position, this);
             navigationDrawer.setAdapter(adapter);
-            if (position > 0) {
-                navigationDrawer.setCurrentItem(1, false);
-            }
-            adapter.enabledSelect();
+            navigationDrawer.setCurrentItem(position, false);
         }
 
         // Bottom Action Drawer
@@ -182,6 +183,9 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
                 }
             });
         }
+        if (mNavigationDrawer != null) {
+            mNavigationDrawer.setCurrentItem(mNavigationDrawerPosition, false);
+        }
     }
 
     @Override
@@ -213,16 +217,18 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
 
     @Override
     public void onPlaybackState(CurrentlyPlaying currentlyPlaying) {
-        if (currentlyPlaying.item == null) {
-            mActionDrawer.setVisibility(INVISIBLE);
-        } else {
-            mActionDrawer.setVisibility(VISIBLE);
-            if (currentlyPlaying.is_playing) {
-                mActionImage.setImageDrawable(mDrawablePlaying);
-                mDrawablePlaying.start();
-                mLayout.peekDrawer(Gravity.BOTTOM);
+        if (mActionDrawer != null) {
+            if (currentlyPlaying.item == null) {
+                mActionDrawer.setVisibility(INVISIBLE);
             } else {
-                mActionImage.setImageDrawable(mDrawablePlay);
+                mActionDrawer.setVisibility(VISIBLE);
+                if (currentlyPlaying.is_playing) {
+                    mActionImage.setImageDrawable(mDrawablePlaying);
+                    mDrawablePlaying.start();
+                    mLayout.peekDrawer(Gravity.BOTTOM);
+                } else {
+                    mActionImage.setImageDrawable(mDrawablePlay);
+                }
             }
         }
     }
@@ -264,17 +270,21 @@ public class Activity extends WearableActivity implements Controller.Callbacks {
 
     @Override
     public void onPlaybackDevice(CurrentlyPlaying currentlyPlaying) {
-        if (currentlyPlaying.device.is_active) {
-            mActionDrawer.setVisibility(VISIBLE);
-            mLayout.peekDrawer(Gravity.BOTTOM);
-        } else {
-            mActionDrawer.setVisibility(INVISIBLE);
+        if (mActionDrawer != null) {
+            if (currentlyPlaying.device.is_active) {
+                mActionDrawer.setVisibility(VISIBLE);
+                mLayout.peekDrawer(Gravity.BOTTOM);
+            } else {
+                mActionDrawer.setVisibility(INVISIBLE);
+            }
         }
     }
 
     @Override
     public void onPlaybackBuffering() {
-        mActionDrawer.setVisibility(VISIBLE);
-        mLayout.peekDrawer(Gravity.BOTTOM);
+        if (mActionDrawer != null) {
+            mActionDrawer.setVisibility(VISIBLE);
+            mLayout.peekDrawer(Gravity.BOTTOM);
+        }
     }
 }

@@ -232,6 +232,10 @@ class NowPlayingActivity : Activity(), Controller.Callbacks {
     }
 
     override fun onPlaybackMetaData(currentlyPlaying: CurrentlyPlaying) {
+        if(currentlyPlaying.item == null) {
+            finish()
+            return
+        }
         Glide.with(applicationContext)
                 .load(largestImageUrl(currentlyPlaying.item.album.images))
                 .fitCenter()
