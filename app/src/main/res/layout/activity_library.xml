@@ -25,7 +25,7 @@
         android:layout_height="match_parent" />
 
     <android.support.wear.widget.drawer.WearableDrawerView
-        android:id="@+id/now_playing_drawer"
+        android:id="@+id/playback_drawer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="bottom"
