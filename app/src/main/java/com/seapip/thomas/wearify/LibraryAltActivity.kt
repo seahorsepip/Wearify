@@ -45,10 +45,7 @@ class LibraryAltActivity : Activity(), AmbientMode.AmbientCallbackProvider {
             mAmbientAttached = true
 
             if (mAmbientMode == null) AmbientMode.attachAmbientSupport(this@LibraryAltActivity)
-            else fragmentManager
-                    .beginTransaction()
-                    .add(mAmbientMode, AmbientMode.FRAGMENT_TAG)
-                    .commit()
+            else fragmentManager.beginTransaction().add(mAmbientMode, AmbientMode.FRAGMENT_TAG).commit()
         }
     }
 
@@ -56,16 +53,8 @@ class LibraryAltActivity : Activity(), AmbientMode.AmbientCallbackProvider {
         if (mAmbientAttached) {
             mAmbientAttached = false
 
-            if (mAmbientMode == null) {
-                mAmbientMode = fragmentManager.findFragmentByTag(AmbientMode.FRAGMENT_TAG) as AmbientMode?
-            }
-            if (mAmbientMode != null) {
-                fragmentManager
-                        .beginTransaction()
-                        .remove(mAmbientMode)
-                        .commit()
-
-            }
+            if (mAmbientMode == null) mAmbientMode = fragmentManager.findFragmentByTag(AmbientMode.FRAGMENT_TAG) as AmbientMode?
+            if (mAmbientMode != null) fragmentManager.beginTransaction().remove(mAmbientMode).commit()
         }
     }
 
