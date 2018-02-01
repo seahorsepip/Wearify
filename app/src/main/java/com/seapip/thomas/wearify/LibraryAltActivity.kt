@@ -62,38 +62,12 @@ class LibraryAltActivity : Activity(), AmbientMode.AmbientCallbackProvider {
         return object : AmbientMode.AmbientCallback() {
             override fun onExitAmbient() {
                 super.onExitAmbient()
-
-                //Background
-                album_art_background_image.visibility = View.VISIBLE
-
-                //Progressbar
-                progress_bar.visibility = View.VISIBLE
-
-                //Play button
-                button_play.apply {
-                    background = getDrawable(round_primary_button)
-                    setImageDrawable(getDrawable(ic_pause_black_24dp))
-                    imageTintList = ColorStateList.valueOf(getColor(primary_icon))
-                }
+                (drawer_content as NowPlayingFragment).ambientCallback.onExitAmbient()
             }
 
             override fun onEnterAmbient(ambientDetails: Bundle?) {
                 super.onEnterAmbient(ambientDetails)
-                val burnIn = ambientDetails!!.getBoolean(AmbientMode.EXTRA_BURN_IN_PROTECTION)
-                val lowBit = ambientDetails.getBoolean(AmbientMode.EXTRA_LOWBIT_AMBIENT)
-
-                //Background
-                if (burnIn || lowBit) album_art_background_image.visibility = View.INVISIBLE
-
-                //Progressbar
-                progress_bar.visibility = View.INVISIBLE
-
-                //Play button
-                button_play.apply {
-                    if (burnIn || lowBit) background = getDrawable(round_primary_ambient_button)
-                    if (burnIn) setImageDrawable(getDrawable(ic_pause_black_burn_in_24dp))
-                    if (burnIn || lowBit) imageTintList = ColorStateList.valueOf(Color.WHITE)
-                }
+                (drawer_content as NowPlayingFragment).ambientCallback.onEnterAmbient(ambientDetails)
             }
         }
     }

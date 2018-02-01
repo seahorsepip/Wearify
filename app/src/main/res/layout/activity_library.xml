@@ -33,6 +33,13 @@
         app:drawerContent="@+id/drawer_content"
         app:peekView="@+id/peek_view">
 
+        <fragment
+            android:name="com.seapip.thomas.wearify.NowPlayingFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@id/drawer_content" />
+
+        <!--
         <FrameLayout
             android:id="@id/drawer_content"
             android:layout_width="match_parent"
@@ -179,6 +186,7 @@
                 android:tintMode="src_atop"
                 tools:ignore="ContentDescription" />
         </FrameLayout>
+        -->
 
         <LinearLayout
             android:id="@id/peek_view"
