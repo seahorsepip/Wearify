@@ -34,7 +34,7 @@ class LibraryActivity : Activity() {
                     it.startActivity(Intent(it, ArtistsActivity::class.java))
                 }),
                 Category("New UI", getDrawable(R.drawable.ic_arrow_forward_black_24dp), OnClick {
-                    it.startActivity(Intent(it, LibraryAltActivity::class.java))
+                    it.startActivity(Intent(it, MainActivity::class.java))
                 }),
                 Header("Recently Played"),
                 loading

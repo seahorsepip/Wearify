@@ -62,7 +62,7 @@
         <activity
             android:name=".SettingsActivity"
             android:theme="@style/WearifyTheme" />
-        <activity android:name=".LibraryAltActivity" />
+        <activity android:name=".MainActivity" />
 
         <service
             android:name=".spotify.Service"

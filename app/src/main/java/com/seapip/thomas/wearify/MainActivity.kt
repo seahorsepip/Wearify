@@ -1,22 +1,29 @@
 package com.seapip.thomas.wearify
 
 import android.app.Activity
-import android.content.res.ColorStateList
-import android.graphics.Color
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Bundle
 import android.support.wear.ambient.AmbientMode
 import android.support.wear.widget.drawer.WearableDrawerLayout
-import android.view.View
-import com.seapip.thomas.wearify.R.color.primary_icon
-import com.seapip.thomas.wearify.R.drawable.*
+import com.seapip.thomas.wearify.R.drawable.ic_logo_waves_animated
 import com.seapip.thomas.wearify.R.layout.activity_library
 import kotlinx.android.synthetic.main.activity_library.*
 
-class LibraryAltActivity : Activity(), AmbientMode.AmbientCallbackProvider {
+class MainActivity : Activity(), AmbientMode.AmbientCallbackProvider {
 
     private var mAmbientMode: AmbientMode? = null
     private var mAmbientAttached = false
+    private val mAmbientCallback = object : AmbientMode.AmbientCallback() {
+        override fun onExitAmbient() {
+            super.onExitAmbient()
+            (drawer_content as NowPlayingFragment).ambientCallback.onExitAmbient()
+        }
+
+        override fun onEnterAmbient(ambientDetails: Bundle?) {
+            super.onEnterAmbient(ambientDetails)
+            (drawer_content as NowPlayingFragment).ambientCallback.onEnterAmbient(ambientDetails)
+        }
+    }
     private val mDrawerStateCallback = object : WearableDrawerLayout.DrawerStateCallback() {
         override fun onDrawerStateChanged(layout: WearableDrawerLayout?, newState: Int) {
             super.onDrawerStateChanged(layout, newState)
@@ -44,7 +51,7 @@ class LibraryAltActivity : Activity(), AmbientMode.AmbientCallbackProvider {
         if (!mAmbientAttached) {
             mAmbientAttached = true
 
-            if (mAmbientMode == null) AmbientMode.attachAmbientSupport(this@LibraryAltActivity)
+            if (mAmbientMode == null) AmbientMode.attachAmbientSupport(this@MainActivity)
             else fragmentManager.beginTransaction().add(mAmbientMode, AmbientMode.FRAGMENT_TAG).commit()
         }
     }
@@ -59,16 +66,6 @@ class LibraryAltActivity : Activity(), AmbientMode.AmbientCallbackProvider {
     }
 
     override fun getAmbientCallback(): AmbientMode.AmbientCallback {
-        return object : AmbientMode.AmbientCallback() {
-            override fun onExitAmbient() {
-                super.onExitAmbient()
-                (drawer_content as NowPlayingFragment).ambientCallback.onExitAmbient()
-            }
-
-            override fun onEnterAmbient(ambientDetails: Bundle?) {
-                super.onEnterAmbient(ambientDetails)
-                (drawer_content as NowPlayingFragment).ambientCallback.onEnterAmbient(ambientDetails)
-            }
-        }
+        return mAmbientCallback
     }
 }
