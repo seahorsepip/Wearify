@@ -30,7 +30,7 @@
             android:marqueeRepeatLimit="marquee_forever"
             android:requiresFadingEdge="horizontal"
             android:singleLine="true"
-            android:text="Artist"
+            android:text="Nick Jonas, Anne-Marie, Mike Posner"
             android:textAlignment="center"
             android:textColor="#aaaaaa"
             android:textSize="13sp" />
@@ -50,7 +50,7 @@
             android:marqueeRepeatLimit="marquee_forever"
             android:requiresFadingEdge="horizontal"
             android:singleLine="true"
-            android:text="Title"
+            android:text="Remember I Told You"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="15sp" />

@@ -34,10 +34,10 @@
         app:peekView="@+id/peek_view">
 
         <fragment
+            android:id="@id/drawer_content"
             android:name="com.seapip.thomas.wearify.NowPlayingFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@id/drawer_content" />
+            android:layout_height="match_parent" />
 
         <!--
         <FrameLayout
@@ -188,22 +188,58 @@
         </FrameLayout>
         -->
 
-        <LinearLayout
+        <FrameLayout
             android:id="@id/peek_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:orientation="horizontal"
-            android:paddingBottom="8dp"
-            android:paddingTop="8dp">
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="center">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="horizontal">
+
+            </LinearLayout>
 
             <ImageView
                 android:id="@+id/icon_drawer_peek"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="40dp"
+                android:layout_marginTop="6dp"
                 android:src="@drawable/ic_play_arrow_black_24dp"
                 android:tint="@color/white"
                 tools:ignore="ContentDescription" />
-        </LinearLayout>
+
+            <TextView
+                android:id="@+id/track_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="28dp"
+                android:layout_marginStart="64dp"
+                android:ellipsize="marquee"
+                android:fadingEdgeLength="16dp"
+                android:fontFamily="sans-serif-semi-bold"
+                android:gravity="top"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:requiresFadingEdge="horizontal"
+                android:singleLine="true"
+                android:text="Remember I Told You"
+                android:textColor="@color/white"
+                android:textSize="13sp" />
+
+            <ProgressBar
+                android:id="@+id/small_progress_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:indeterminate="false"
+                android:max="100"
+                android:progress="60"
+                android:progressDrawable="@drawable/horizontal_progressbar" />
+
+        </FrameLayout>
     </android.support.wear.widget.drawer.WearableDrawerView>
 </android.support.wear.widget.drawer.WearableDrawerLayout>

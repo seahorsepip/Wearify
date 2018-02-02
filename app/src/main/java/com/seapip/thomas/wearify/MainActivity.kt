@@ -1,13 +1,16 @@
 package com.seapip.thomas.wearify
 
 import android.app.Activity
+import android.graphics.Rect
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Bundle
 import android.support.wear.ambient.AmbientMode
 import android.support.wear.widget.drawer.WearableDrawerLayout
-import com.seapip.thomas.wearify.R.drawable.ic_logo_waves_animated
-import com.seapip.thomas.wearify.R.layout.activity_library
-import kotlinx.android.synthetic.main.activity_library.*
+import android.util.Log
+import com.seapip.thomas.wearify.R.drawable.ic_audio_waves_animated
+import com.seapip.thomas.wearify.R.layout.main_view
+import kotlinx.android.synthetic.main.main_view.*
+import java.lang.Math.sqrt
 
 class MainActivity : Activity(), AmbientMode.AmbientCallbackProvider {
 
@@ -36,15 +39,29 @@ class MainActivity : Activity(), AmbientMode.AmbientCallbackProvider {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(activity_library)
+        setContentView(main_view)
 
         drawer_layout.setDrawerStateCallback(mDrawerStateCallback)
 
-        val drawablePlaying = getDrawable(ic_logo_waves_animated) as AnimatedVectorDrawable
+        val drawablePlaying = getDrawable(ic_audio_waves_animated) as AnimatedVectorDrawable
         icon_drawer_peek.setImageDrawable(drawablePlaying)
         drawablePlaying.start()
 
         playback_drawer.controller.peekDrawer()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            val rect = Rect()
+            peek_view.getGlobalVisibleRect(rect)
+            val width = 2.0 * sqrt(Math.pow(rect.right / 2.0, 2.0)
+                    - Math.pow((rect.bottom / 2.0 - peek_view.height), 2.0))
+            peek_view.layoutParams.width = width.toInt()
+            peek_view.requestLayout()
+            track_title.isSelected = true
+            Log.e("WEARIFY", width.toString())
+        }
     }
 
     private fun addAmbientSupport() {
