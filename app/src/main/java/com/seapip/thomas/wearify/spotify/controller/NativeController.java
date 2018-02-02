@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.seapip.thomas.wearify.AddWifiActivity;
 import com.seapip.thomas.wearify.Callback;
+import com.seapip.thomas.wearify.CustomAudioController;
 import com.seapip.thomas.wearify.spotify.Service;
 import com.seapip.thomas.wearify.spotify.objects.Album;
 import com.seapip.thomas.wearify.spotify.objects.Artist;
@@ -88,7 +89,10 @@ public class NativeController implements Controller, Player.NotificationCallback
                 if (mPlayer == null) {
                     Config playerConfig = new Config(mContext, token.access_token, CLIENT_ID);
 
-                    mPlayer = Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
+                    SpotifyPlayer.Builder builder = new SpotifyPlayer.Builder(playerConfig);
+                    builder.setAudioController(new CustomAudioController(mContext));
+
+                    mPlayer = Spotify.getPlayer(builder, this, new SpotifyPlayer.InitializationObserver() {
                         @Override
                         public void onInitialized(final SpotifyPlayer player) {
                             //Lets handle connection stuff later...
@@ -127,11 +131,11 @@ public class NativeController implements Controller, Player.NotificationCallback
 
     private void getHighBandwidthNetwork(Callback<Void> callback) {
         mNetworkHandler.removeCallbacksAndMessages(null);
-        if (isNetworkHighBandwidth()) {
-            callback.onSuccess(null);
-            return;
-        }
-        requestHighBandwidthNetwork(callback);
+        //if (isNetworkHighBandwidth()) {
+        callback.onSuccess(null);
+        //return;
+        //}
+        //requestHighBandwidthNetwork(callback);
     }
 
     private boolean isNetworkHighBandwidth() {

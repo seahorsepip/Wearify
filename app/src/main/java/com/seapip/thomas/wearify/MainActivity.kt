@@ -48,6 +48,9 @@ class MainActivity : Activity(), AmbientMode.AmbientCallbackProvider {
         drawablePlaying.start()
 
         playback_drawer.controller.peekDrawer()
+
+
+        track_title.isSelected = true
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -59,7 +62,6 @@ class MainActivity : Activity(), AmbientMode.AmbientCallbackProvider {
                     - Math.pow((rect.bottom / 2.0 - peek_view.height), 2.0))
             peek_view.layoutParams.width = width.toInt()
             peek_view.requestLayout()
-            track_title.isSelected = true
             Log.e("WEARIFY", width.toString())
         }
     }
