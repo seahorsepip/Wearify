@@ -45,7 +45,7 @@ public class ArtistsActivity extends Activity {
         setContentView(R.layout.activity_browse);
 
         setDrawers((WearableDrawerLayout) findViewById(R.id.drawer_layout),
-                (WearableNavigationDrawer) findViewById(R.id.top_navigation_drawer),
+                (WearableNavigationDrawer) findViewById(R.id.navigation_drawer),
                 (WearableActionDrawer) findViewById(R.id.bottom_action_drawer), 0);
 
         mRecyclerView = (WearableRecyclerView) findViewById(R.id.content);

@@ -149,7 +149,7 @@
     </FrameLayout>
 
     <android.support.wearable.view.drawer.WearableNavigationDrawer
-        android:id="@+id/top_navigation_drawer"
+        android:id="@+id/navigation_drawer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/drawer"

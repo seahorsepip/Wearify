@@ -5,18 +5,31 @@ import android.graphics.Rect
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Bundle
 import android.support.wear.ambient.AmbientMode
+import android.support.wear.ambient.AmbientMode.*
 import android.support.wear.widget.drawer.WearableDrawerLayout
+import android.support.wear.widget.drawer.WearableDrawerLayout.DrawerStateCallback
 import android.util.Log
-import com.seapip.thomas.wearify.R.drawable.ic_audio_waves_animated
+import android.view.View
+import android.view.View.OnApplyWindowInsetsListener
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
+import android.view.WindowInsets
+import com.seapip.thomas.wearify.R.drawable.ic_logo_waves_animated
 import com.seapip.thomas.wearify.R.layout.main_view
+import com.seapip.thomas.wearify.spotify.SpotifyApi
+import com.seapip.thomas.wearify.wearify.WearifyApi
 import kotlinx.android.synthetic.main.main_view.*
+import org.koin.android.ext.android.inject
+import java.lang.Math.pow
 import java.lang.Math.sqrt
 
-class MainActivity : Activity(), AmbientMode.AmbientCallbackProvider {
 
+class MainActivity : Activity(), AmbientCallbackProvider, OnApplyWindowInsetsListener {
+
+    private val mWearifyApi: WearifyApi by inject()
+    private val mSpotifyApi: SpotifyApi by inject()
     private var mAmbientMode: AmbientMode? = null
     private var mAmbientAttached = false
-    private val mAmbientCallback = object : AmbientMode.AmbientCallback() {
+    private val mAmbientCallback = object : AmbientCallback() {
         override fun onExitAmbient() {
             super.onExitAmbient()
             (drawer_content as NowPlayingFragment).ambientCallback.onExitAmbient()
@@ -27,51 +40,82 @@ class MainActivity : Activity(), AmbientMode.AmbientCallbackProvider {
             (drawer_content as NowPlayingFragment).ambientCallback.onEnterAmbient(ambientDetails)
         }
     }
-    private val mDrawerStateCallback = object : WearableDrawerLayout.DrawerStateCallback() {
+    private val mDrawerStateCallback = object : DrawerStateCallback() {
         override fun onDrawerStateChanged(layout: WearableDrawerLayout?, newState: Int) {
             super.onDrawerStateChanged(layout, newState)
             if (newState == 0) {
-                if ((playback_drawer.isClosed || playback_drawer.isPeeking)) removeAmbientSupport()
-                else if (playback_drawer.isOpened) addAmbientSupport()
+                now_playing_drawer.apply {
+                    if (isClosed || isPeeking) removeAmbientSupport()
+                    else if (isOpened) addAmbientSupport()
+                }
             }
         }
     }
+    private lateinit var mWindowInsets: WindowInsets;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(main_view)
 
+        drawer_layout.setOnApplyWindowInsetsListener(this)
         drawer_layout.setDrawerStateCallback(mDrawerStateCallback)
 
-        val drawablePlaying = getDrawable(ic_audio_waves_animated) as AnimatedVectorDrawable
-        icon_drawer_peek.setImageDrawable(drawablePlaying)
+        val drawablePlaying = getDrawable(ic_logo_waves_animated) as AnimatedVectorDrawable
+        peek_view_icon.setImageDrawable(drawablePlaying)
         drawablePlaying.start()
 
-        playback_drawer.controller.peekDrawer()
-
-
         track_title.isSelected = true
+
+        mWearifyApi.getToken(this, {
+            Log.e("WEARIFY", it.toString())
+        })
+
+        //Adapt peek view for screens with a chin
+        peek_view_content.waitForLayout {
+            (mWindowInsets.systemWindowInsetBottom * 1.2).toInt().also {
+                if (mWindowInsets.systemWindowInsetBottom > 0) setPadding(it, 0, it, 0)
+            }
+        }
+
+        //Make peek view width fit
+        peek_view.waitForLayout {
+            val rect = Rect()
+            getGlobalVisibleRect(rect)
+            layoutParams.width = (2.0 * (rect.right / 2.0).let {
+                sqrt(pow(it, 2.0) - pow((it - mWindowInsets.systemWindowInsetBottom - height), 2.0))
+            }).toInt()
+            requestLayout()
+        }
+
+        //Make drawer content ignore chin
+        drawer_content.view.waitForLayout {
+            layoutParams.height = width
+        }
+
+        Log.e("WEARIFY", mSpotifyApi.hello())
+    }
+
+    override fun onApplyWindowInsets(view: View?, insets: WindowInsets?): WindowInsets {
+        mWindowInsets = insets!!
+        view!!.onApplyWindowInsets(insets)
+        return insets;
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            val rect = Rect()
-            peek_view.getGlobalVisibleRect(rect)
-            val width = 2.0 * sqrt(Math.pow(rect.right / 2.0, 2.0)
-                    - Math.pow((rect.bottom / 2.0 - peek_view.height), 2.0))
-            peek_view.layoutParams.width = width.toInt()
-            peek_view.requestLayout()
-            Log.e("WEARIFY", width.toString())
-        }
+        if (hasFocus) now_playing_drawer.controller.openDrawer()
     }
 
     private fun addAmbientSupport() {
         if (!mAmbientAttached) {
             mAmbientAttached = true
 
-            if (mAmbientMode == null) AmbientMode.attachAmbientSupport(this@MainActivity)
-            else fragmentManager.beginTransaction().add(mAmbientMode, AmbientMode.FRAGMENT_TAG).commit()
+            fragmentManager.apply {
+                mAmbientMode.also {
+                    if (it == null) attachAmbientSupport(this@MainActivity)
+                    else beginTransaction().add(it, FRAGMENT_TAG).commit()
+                }
+            }
         }
     }
 
@@ -79,12 +123,27 @@ class MainActivity : Activity(), AmbientMode.AmbientCallbackProvider {
         if (mAmbientAttached) {
             mAmbientAttached = false
 
-            if (mAmbientMode == null) mAmbientMode = fragmentManager.findFragmentByTag(AmbientMode.FRAGMENT_TAG) as AmbientMode?
-            if (mAmbientMode != null) fragmentManager.beginTransaction().remove(mAmbientMode).commit()
+            fragmentManager.apply {
+                mAmbientMode.also {
+                    if (it == null) mAmbientMode = findFragmentByTag(FRAGMENT_TAG) as AmbientMode?
+                    if (mAmbientMode != null) beginTransaction().remove(mAmbientMode).commit()
+                }
+            }
         }
     }
 
-    override fun getAmbientCallback(): AmbientMode.AmbientCallback {
+    override fun getAmbientCallback(): AmbientCallback {
         return mAmbientCallback
+    }
+
+    private inline fun <T : View> T.waitForLayout(crossinline f: T.() -> Unit) {
+        viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                if (width > 0 && height > 0) {
+                    viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    f()
+                }
+            }
+        })
     }
 }

@@ -40,7 +40,7 @@ public class TracksActivity extends Activity {
         setContentView(R.layout.activity_browse);
 
         setDrawers((WearableDrawerLayout) findViewById(R.id.drawer_layout),
-                (WearableNavigationDrawer) findViewById(R.id.top_navigation_drawer),
+                (WearableNavigationDrawer) findViewById(R.id.navigation_drawer),
                 (WearableActionDrawer) findViewById(R.id.bottom_action_drawer), 1);
 
         mRecyclerView = findViewById(R.id.content);

@@ -57,7 +57,7 @@ class NowPlayingActivity : Activity(), Controller.Callbacks {
         setAmbientEnabled()
         setContentView(R.layout.activity_now_playing)
 
-        mNavigationDrawer = findViewById(R.id.top_navigation_drawer)
+        mNavigationDrawer = findViewById(R.id.navigation_drawer)
         mActionDrawer = findViewById(R.id.bottom_action_drawer)
         mDrawerLayout = findViewById(R.id.drawer_layout)
         mBackgroundImage = findViewById(R.id.background_image)

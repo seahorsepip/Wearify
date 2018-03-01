@@ -22,7 +22,7 @@ class SettingsActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
-        setDrawers(drawer_layout, top_navigation_drawer, null, 1);
+        setDrawers(drawer_layout, navigation_drawer, null, 1);
 
         button_sign_out.setOnClickListener {
             //Clear token

@@ -44,15 +44,17 @@ public class CustomAudioController implements AudioController {
     private VorbisFileOutputStream mVorbisFileOutputStream;
 
     public CustomAudioController(Context context) {
+        /*
         File dir = context.getExternalFilesDir(null);
         Log.e("WEARIFY", dir.getAbsolutePath());
         try {
             mVorbisFileOutputStream = new VorbisFileOutputStream(dir.getAbsolutePath() + "/test.ogg");
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
+    @Override
     public int onAudioDataDelivered(short[] samples, int sampleCount, int sampleRate, int channels) {
         if (this.mAudioTrack != null && (this.mSampleRate != sampleRate || this.mChannels != channels)) {
             Object var5 = this.mPlayingMutex;
@@ -77,6 +79,7 @@ public class CustomAudioController implements AudioController {
         return this.mAudioBuffer.write(samples, sampleCount);
     }
 
+    @Override
     public void onAudioFlush() {
         this.mAudioBuffer.clear();
         if (this.mAudioTrack != null) {
@@ -91,6 +94,7 @@ public class CustomAudioController implements AudioController {
 
     }
 
+    @Override
     public void onAudioPaused() {
         if (this.mAudioTrack != null) {
             this.mAudioTrack.pause();
@@ -98,6 +102,7 @@ public class CustomAudioController implements AudioController {
 
     }
 
+    @Override
     public void onAudioResumed() {
         if (this.mAudioTrack != null) {
             this.mAudioTrack.play();
@@ -105,9 +110,11 @@ public class CustomAudioController implements AudioController {
 
     }
 
+    @Override
     public void start() {
     }
 
+    @Override
     public void stop() {
         this.mExecutorService.shutdown();
     }
@@ -152,11 +159,12 @@ public class CustomAudioController implements AudioController {
     private int writeSamplesToAudioOutput(short[] samples, int samplesCount) {
         if (this.isAudioTrackPlaying()) {
             //Uhm this seems a bad idea...
+            /*
             try {
                 mVorbisFileOutputStream.write(samples);
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+            }*/
             int itemsWritten = this.mAudioTrack.write(samples, 0, samplesCount);
             if (itemsWritten > 0) {
                 return itemsWritten;

@@ -28,23 +28,27 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.22.2'
     compile 'com.android.support:wear:27.0.2'
     compile 'com.google.android.gms:play-services-wearable:11.8.0'
     compile 'com.android.support:support-v13:27.0.2'
-    provided 'com.google.android.wearable:wearable:2.1.0'
-    compile 'com.google.android.support:wearable:2.1.0'
+    provided 'com.google.android.wearable:wearable:2.2.0'
+    compile 'com.google.android.support:wearable:2.2.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.spotify.sdk:spotify-player-24-noconnect-2.20b@aar'
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
     compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    compile "com.squareup.retrofit2:adapter-rxjava2:2.3.0"
+    compile "io.reactivex.rxjava2:rxandroid:2.0.1"
     compile 'com.squareup.okhttp3:logging-interceptor:3.5.0'
+    compile 'org.koin:koin-android:0.8.2'
     compile 'com.github.bumptech.glide:glide:3.8.0'
     compile 'com.journeyapps:zxing-android-embedded:3.5.0'
     testCompile 'junit:junit:4.12'
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 }
 repositories {
     mavenCentral()

@@ -13,7 +13,7 @@ class LibraryActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_browse)
 
-        setDrawers(drawer_layout, top_navigation_drawer, bottom_action_drawer, 0)
+        setDrawers(drawer_layout, navigation_drawer, bottom_action_drawer, 0)
 
         val loading = Loading(getColor(primary))
         val retry = ActionButtonSmall(getDrawable(ic_repeat_black_24dp), "Failed loading, retry?")

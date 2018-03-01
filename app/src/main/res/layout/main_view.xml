@@ -20,16 +20,16 @@
     </ScrollView>
 
     <android.support.wear.widget.drawer.WearableNavigationDrawerView
-        android:id="@+id/top_navigation_drawer"
+        android:id="@+id/navigation_drawer"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
     <android.support.wear.widget.drawer.WearableDrawerView
-        android:id="@+id/playback_drawer"
+        android:id="@+id/now_playing_drawer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="bottom"
-        android:background="#222222"
+        android:background="@color/drawer"
         app:drawerContent="@+id/drawer_content"
         app:peekView="@+id/peek_view">
 
@@ -39,196 +39,48 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <!--
         <FrameLayout
-            android:id="@id/drawer_content"
+            android:id="@id/peek_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/black">
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
 
-            <ImageView
-                android:id="@+id/album_art_background_image"
+            <FrameLayout
+                android:id="@+id/peek_view_content"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:foreground="@drawable/now_playing_gradient_alt"
-                android:src="@drawable/example_album_art"
-                tools:ignore="ContentDescription" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:paddingBottom="8dp"
+                android:paddingEnd="36dp"
+                android:paddingStart="36dp">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="38dp"
-                android:layout_marginTop="@dimen/list_padding"
-                android:paddingEnd="@dimen/list_padding"
-                android:paddingStart="@dimen/list_padding">
+                <ImageView
+                    android:id="@+id/peek_view_icon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginTop="6dp"
+                    android:src="@drawable/ic_play_arrow_black_24dp"
+                    android:tint="@color/white"
+                    tools:ignore="ContentDescription" />
 
                 <TextView
-                    android:id="@+id/sub_title"
+                    android:id="@+id/track_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="6dp"
                     android:ellipsize="marquee"
-                    android:fadingEdgeLength="40dp"
-                    android:fontFamily="sans-serif-semi-bold"
-                    android:marqueeRepeatLimit="marquee_forever"
-                    android:requiresFadingEdge="horizontal"
-                    android:singleLine="true"
-                    android:text="Artist"
-                    android:textAlignment="center"
-                    android:textColor="#aaaaaa"
-                    android:textSize="13sp" />
-
-                <TextView
-                    android:id="@+id/title"
-                    android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_above="@id/sub_title"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignWithParentIfMissing="true"
-                    android:ellipsize="marquee"
-                    android:fadingEdgeLength="40dp"
+                    android:fadingEdgeLength="16dp"
                     android:fontFamily="sans-serif-semi-bold"
                     android:gravity="top"
                     android:marqueeRepeatLimit="marquee_forever"
                     android:requiresFadingEdge="horizontal"
                     android:singleLine="true"
-                    android:text="Title"
-                    android:textAlignment="center"
+                    android:text="Remember I Told You"
                     android:textColor="@color/white"
-                    android:textSize="15sp" />
-
-            </RelativeLayout>
-
-            <ProgressBar
-                android:id="@+id/progress_bar"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="76dp"
-                android:layout_height="76dp"
-                android:layout_gravity="center"
-                android:indeterminate="false"
-                android:max="100"
-                android:progress="40"
-                android:progressDrawable="@drawable/round_progressbar" />
-
-            <ImageButton
-                android:id="@+id/button_play"
-                android:layout_width="58dp"
-                android:layout_height="58dp"
-                android:layout_gravity="center"
-                android:adjustViewBounds="true"
-                android:background="@drawable/round_primary_button"
-                android:elevation="6dp"
-                android:padding="12dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_pause_black_24dp"
-                android:tint="@color/primary_icon"
-                android:tintMode="src_atop"
-                tools:ignore="ContentDescription" />
-
-            <ImageButton
-                android:id="@+id/button_prev"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="14dp"
-                android:adjustViewBounds="true"
-                android:background="@drawable/round_transparent_button"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_skip_previous_black_24dp"
-                android:tint="@color/white"
-                android:tintMode="src_atop"
-                tools:ignore="ContentDescription" />
-
-            <ImageButton
-                android:id="@+id/button_next"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="center_vertical|end"
-                android:layout_marginEnd="14dp"
-                android:adjustViewBounds="true"
-                android:background="@drawable/round_transparent_button"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_skip_next_black_24dp"
-                android:tint="@color/white"
-                android:tintMode="src_atop"
-                tools:ignore="ContentDescription" />
-
-            <ImageButton
-                android:id="@+id/button_vol_down"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="bottom"
-                android:layout_margin="40dp"
-                android:adjustViewBounds="true"
-                android:background="@drawable/round_transparent_button"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_volume_down_black_24dp"
-                android:tint="@color/white"
-                android:tintMode="src_atop"
-                tools:ignore="ContentDescription" />
-
-            <ImageButton
-                android:id="@+id/button_vol_up"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="40dp"
-                android:adjustViewBounds="true"
-                android:background="@drawable/round_transparent_button"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_volume_up_black_24dp"
-                android:tint="@color/white"
-                android:tintMode="src_atop"
-                tools:ignore="ContentDescription" />
-        </FrameLayout>
-        -->
-
-        <FrameLayout
-            android:id="@id/peek_view"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_gravity="center">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:orientation="horizontal">
-
-            </LinearLayout>
-
-            <ImageView
-                android:id="@+id/icon_drawer_peek"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginStart="40dp"
-                android:layout_marginTop="6dp"
-                android:src="@drawable/ic_play_arrow_black_24dp"
-                android:tint="@color/white"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/track_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:layout_marginEnd="28dp"
-                android:layout_marginStart="64dp"
-                android:ellipsize="marquee"
-                android:fadingEdgeLength="16dp"
-                android:fontFamily="sans-serif-semi-bold"
-                android:gravity="top"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:requiresFadingEdge="horizontal"
-                android:singleLine="true"
-                android:text="Remember I Told You"
-                android:textColor="@color/white"
-                android:textSize="13sp" />
+                    android:textSize="13sp" />
+            </FrameLayout>
 
             <ProgressBar
                 android:id="@+id/small_progress_bar"
@@ -239,7 +91,6 @@
                 android:max="100"
                 android:progress="60"
                 android:progressDrawable="@drawable/horizontal_progressbar" />
-
         </FrameLayout>
     </android.support.wear.widget.drawer.WearableDrawerView>
 </android.support.wear.widget.drawer.WearableDrawerLayout>
